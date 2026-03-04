@@ -12,8 +12,8 @@ create table users(
 	p_last_name varchar(100) not null,
 	m_last_name varchar(100) not null,
 	email varchar(50) not null unique,
-	matricula varchar(10) unique,
-	num_telefono varchar(12),
+	enrolment_number varchar(10) unique,
+	phone_number varchar(12),
 	password varchar(100) not null,
 	salt varchar(10) not null,
 	admin boolean default false not null,
@@ -21,68 +21,67 @@ create table users(
 	semester tinyint
 );
 
-create table socio (
+create table partner (
    id int auto_increment primary key,
    name varchar(100) not null 
 );
 
-create table dias (
+create table week_days (
 	id tinyint auto_increment primary key,
-	description varchar(50) unique
+	name varchar(50) unique
 );
 
-create table modalidad (
+create table modality (
 	id tinyint auto_increment primary key,
-	description varchar(50) unique
+	name varchar(50) unique
 );
 
-create table horario (
+create table schedule (
 	id tinyint auto_increment primary key,
-	description varchar(50) unique
+	name varchar(50) unique
 );
 
 create table project (
 	id int auto_increment primary key,
 	name varchar(100) not null,
-	id_socio int not null,
-	id_modalidad tinyint not null,
-	id_dias tinyint not null, 
-	id_horario tinyint not null,
-	cupos int not null,
-	descripcion_horario varchar(256),
-	descripcion varchar(512),
-	foreign key(id_socio) references socio(id),
-	foreign key(id_modalidad) references modalidad(id),
-	foreign key(id_dias) references dias(id),
-	foreign key(id_horario) references horario(id)
+	id_partner int not null,
+	id_modality tinyint not null,
+	id_week_days tinyint not null, 
+	id_schedule tinyint not null,
+	slots int not null,
+	schedule_description varchar(256),
+	project_description varchar(512),
+	foreign key(id_partner) references partner(id),
+	foreign key(id_modality) references modality(id),
+	foreign key(id_week_days) references week_days(id),
+	foreign key(id_schedule) references schedule(id)
 );
 
-create table inscripcion (
+create table enrolment (
 	id BIGINT auto_increment primary key,
-	id_alumno BIGINT not null,
-	id_proyecto INT not null,
-	fecha_inscripcion DATETIME DEFAULT NOW(),
+	id_student BIGINT not null,
+	id_project INT not null,
+	enrolment_date DATETIME DEFAULT NOW(),
 	id_status tinyint,
 	id_token BIGINT,
-	foreign key(id_alumno) references users(id),
-	foreign key(id_proyecto) references project(id),
+	foreign key(id_student) references users(id),
+	foreign key(id_project) references project(id),
 	foreign key(id_status) references status(id),
 	foreign key(id_token) references token(id)
 );
 
 create table status (
-	id tinyint AUTO_INCREMENT,
-	name varchar(10) not null unique,
-	primary key(id)
+	id tinyint AUTO_INCREMENT primary key,
+	name varchar(10) not null unique
 );
 
 create table token (
 	id BIGINT AUTO_INCREMENT,
-	id_proyecto int,
+	id_project int,
 	token varchar(10) unique,
 	used boolean default false,
 	primary key(id),
-	foreign key (id_proyecto) references project(id)
+	foreign key (id_project) references project(id)
 );
 
 CREATE TABLE email_verification_codes (
@@ -99,5 +98,7 @@ set foreign_key_checks = 1;
 
 -- Status
 
-insert into status (name) values ('Pendiente'), ('Rechazado'), ('Aceptado');
-
+insert into week_days (name) values ('entre semana'), ('fines de semana'), ('mixto');
+insert into modality (name) values ('en linea'), ('presencial'), ('mixto');
+insert into schedule(name) values('matutino'), ('vespertino'), ('mixto');
+insert into status(name) values('pendiente'), ('aceptado'), ('rechazado');
