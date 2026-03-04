@@ -415,4 +415,4 @@ def create_inscripcion():
 if __name__ == "__main__":
     # Ejecutar: python app.py
     # Dependencias: pip install flask mysql-connector-python
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=False)
