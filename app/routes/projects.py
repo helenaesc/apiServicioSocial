@@ -3,97 +3,128 @@ from ..database import fetch_all, fetch_one
 
 projects_bp = Blueprint("projects", __name__)
 
+@projects_bp.get("/api/projects")
 def list_projects():
     q = request.args.get("q", "").strip()
-    socio = request.args.get("socio", type=int)
-    modalidad = request.args.get("modalidad", type=int)
-    dia = request.args.get("dia", type=int)
-    horario = request.args.get("horario", type=int)
-    only_available = request.args.get("only_available", "false").lower() in {"1", "true", "yes"}
+    socio = request.args.get("socio", type=int)        # partner
+    modalidad = request.args.get("modalidad", type=int) # modality
+    dia = request.args.get("dia", type=int)            # week_days
+    horario = request.args.get("horario", type=int)    # schedule
 
     where = []
     params = []
 
     if q:
-        where.append("(p.name LIKE %s OR p.descripcion LIKE %s OR p.descripcion_horario LIKE %s)")
+        where.append("(p.name LIKE %s OR p.project_description LIKE %s OR p.schedule_description LIKE %s)")
         like = f"%{q}%"
         params.extend([like, like, like])
     if socio:
-        where.append("p.id_socio = %s")
+        where.append("p.id_partner = %s")
         params.append(socio)
     if modalidad:
-        where.append("p.id_modalidad = %s")
+        where.append("p.id_modality = %s")
         params.append(modalidad)
     if dia:
-        where.append("p.id_dias = %s")
+        where.append("p.id_week_days = %s")
         params.append(dia)
     if horario:
-        where.append("p.id_horario = %s")
+        where.append("p.id_schedule = %s")
         params.append(horario)
 
     where_sql = f"WHERE {' AND '.join(where)}" if where else ""
 
-    # Nota: contamos inscripciones activas (todo excepto Rechazado). Si id_status es NULL, se considera activa.
+    # ESENCIA: cupos “reales” por tokens si existen; si no, fallback a slots - inscritos
     sql = f"""
         SELECT
             p.id,
             p.name,
-            p.cupos,
-            p.descripcion,
-            p.descripcion_horario,
-            s.name AS socio,
-            m.description AS modalidad,
-            d.description AS dia,
-            h.description AS horario,
-            COALESCE(SUM(CASE WHEN st.name = 'Rechazado' THEN 0 ELSE 1 END), 0) AS inscritos,
-            GREATEST(p.cupos - COALESCE(SUM(CASE WHEN st.name = 'Rechazado' THEN 0 ELSE 1 END), 0), 0) AS cupos_disponibles
+            p.slots AS cupos,
+            p.project_description AS descripcion,
+            p.schedule_description AS descripcion_horario,
+            pa.name AS socio,
+            m.name AS modalidad,
+            wd.name AS dia,
+            sc.name AS horario,
+
+            -- inscritos (todo excepto rechazado)
+            (
+              SELECT COUNT(*)
+              FROM enrolment e
+              LEFT JOIN status st ON st.id = e.id_status
+              WHERE e.id_project = p.id
+                AND (st.name IS NULL OR LOWER(st.name) <> 'rechazado')
+            ) AS inscritos,
+
+            -- tokens totales y disponibles
+            (SELECT COUNT(*) FROM token t WHERE t.id_project = p.id) AS tokens_total,
+            (SELECT COUNT(*) FROM token t WHERE t.id_project = p.id AND t.used = FALSE) AS tokens_disponibles
+
         FROM project p
-        INNER JOIN socio s ON s.id = p.id_socio
-        INNER JOIN modalidad m ON m.id = p.id_modalidad
-        INNER JOIN dias d ON d.id = p.id_dias
-        INNER JOIN horario h ON h.id = p.id_horario
-        LEFT JOIN inscripcion i ON i.id_proyecto = p.id
-        LEFT JOIN status st ON st.id = i.id_status
+        JOIN partner pa ON pa.id = p.id_partner
+        JOIN modality m ON m.id = p.id_modality
+        JOIN week_days wd ON wd.id = p.id_week_days
+        JOIN schedule sc ON sc.id = p.id_schedule
         {where_sql}
-        GROUP BY p.id, p.name, p.cupos, p.descripcion, p.descripcion_horario, s.name, m.description, d.description, h.description
+        ORDER BY p.name
     """
 
     rows = fetch_all(sql, params)
-    if only_available:
-        rows = [r for r in rows if (r.get("cupos_disponibles") or 0) > 0]
+
+    for r in rows:
+        tokens_total = int(r.get("tokens_total") or 0)
+        if tokens_total > 0:
+            r["cupos_disponibles"] = int(r.get("tokens_disponibles") or 0)
+        else:
+            r["cupos_disponibles"] = max(int(r["cupos"]) - int(r["inscritos"]), 0)
+
     return jsonify(rows)
 
 
+@projects_bp.get("/api/projects/<int:project_id>")
 def get_project(project_id: int):
     sql = """
         SELECT
             p.id,
             p.name,
-            p.cupos,
-            p.descripcion,
-            p.descripcion_horario,
-            s.id AS socio_id,
-            s.name AS socio,
+            p.slots AS cupos,
+            p.project_description AS descripcion,
+            p.schedule_description AS descripcion_horario,
+            pa.id AS socio_id,
+            pa.name AS socio,
             m.id AS modalidad_id,
-            m.description AS modalidad,
-            d.id AS dia_id,
-            d.description AS dia,
-            h.id AS horario_id,
-            h.description AS horario,
-            COALESCE(SUM(CASE WHEN st.name = 'Rechazado' THEN 0 ELSE 1 END), 0) AS inscritos,
-            GREATEST(p.cupos - COALESCE(SUM(CASE WHEN st.name = 'Rechazado' THEN 0 ELSE 1 END), 0), 0) AS cupos_disponibles
+            m.name AS modalidad,
+            wd.id AS dia_id,
+            wd.name AS dia,
+            sc.id AS horario_id,
+            sc.name AS horario,
+
+            (
+              SELECT COUNT(*)
+              FROM enrolment e
+              LEFT JOIN status st ON st.id = e.id_status
+              WHERE e.id_project = p.id
+                AND (st.name IS NULL OR LOWER(st.name) <> 'rechazado')
+            ) AS inscritos,
+
+            (SELECT COUNT(*) FROM token t WHERE t.id_project = p.id) AS tokens_total,
+            (SELECT COUNT(*) FROM token t WHERE t.id_project = p.id AND t.used = FALSE) AS tokens_disponibles
+
         FROM project p
-        INNER JOIN socio s ON s.id = p.id_socio
-        INNER JOIN modalidad m ON m.id = p.id_modalidad
-        INNER JOIN dias d ON d.id = p.id_dias
-        INNER JOIN horario h ON h.id = p.id_horario
-        LEFT JOIN inscripcion i ON i.id_proyecto = p.id
-        LEFT JOIN status st ON st.id = i.id_status
+        JOIN partner pa ON pa.id = p.id_partner
+        JOIN modality m ON m.id = p.id_modality
+        JOIN week_days wd ON wd.id = p.id_week_days
+        JOIN schedule sc ON sc.id = p.id_schedule
         WHERE p.id = %s
-        GROUP BY p.id, p.name, p.cupos, p.descripcion, p.descripcion_horario,
-                 s.id, s.name, m.id, m.description, d.id, d.description, h.id, h.description
+        LIMIT 1
     """
     row = fetch_one(sql, [project_id])
     if not row:
         return jsonify({"error": "Proyecto no encontrado"}), 404
+
+    tokens_total = int(row.get("tokens_total") or 0)
+    if tokens_total > 0:
+        row["cupos_disponibles"] = int(row.get("tokens_disponibles") or 0)
+    else:
+        row["cupos_disponibles"] = max(int(row["cupos"]) - int(row["inscritos"]), 0)
+
     return jsonify(row)
