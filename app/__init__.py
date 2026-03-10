@@ -4,6 +4,7 @@ from .routes.catalogs import catalogs_bp
 from .routes.projects import projects_bp
 from .routes.inscripciones import inscripciones_bp
 from .routes.admin_tokens import admin_tokens_bp
+from .routes.admin_projects import admin_projects_bp
 
 def create_app():
     app = Flask(__name__)
@@ -14,5 +15,7 @@ def create_app():
     app.register_blueprint(projects_bp)
     app.register_blueprint(inscripciones_bp)
     app.register_blueprint(admin_tokens_bp)
+    app.register_blueprint(admin_projects_bp)
+
 
     return app

@@ -24,7 +24,7 @@ def generate_tokens(project_id: int):
     count = int(payload.get("count", 10))
     length = int(payload.get("length", 10))
 
-    if count <= 0 or count > 500:
+    if count <= 0 or count > 100:
         return jsonify({"error": "count debe estar entre 1 y 100"}), 400
     if length < 6 or length > 20:
         return jsonify({"error": "length debe estar entre 6 y 20"}), 400
