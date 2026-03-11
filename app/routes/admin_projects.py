@@ -1,19 +1,16 @@
 from flask import Blueprint, jsonify, request
 from mysql.connector import Error
 from ..database import execute_tx
+from ..authz import require_role, ROLE_ADMIN
 import os
 
 admin_projects_bp = Blueprint("admin_projects", __name__)
 
-def _require_admin_key(req):
-    key = req.headers.get("X-ADMIN-KEY", "")
-    expected = os.getenv("ADMIN_API_KEY", "")
-    return bool(expected) and key == expected
-
 @admin_projects_bp.post("/api/admin/projects")
 def create_project():
-    if not _require_admin_key(request):
-        return jsonify({"error": "No autorizado (X-ADMIN-KEY)"}), 401
+    role = require_role(request, {ROLE_ADMIN})
+    if not role:
+        return jsonify({"error": "No autorizado (solo ADMIN)"}),401
 
     payload = request.get_json(silent=True) or {}
 
@@ -25,6 +22,17 @@ def create_project():
     slots = payload.get("slots")
     schedule_description = payload.get("schedule_description")
     project_description = payload.get("project_description")
+    team_owners = payload.get("team_owners")
+    carreer = payload.get("carreer")
+    objectives = payload.get("objectives")
+    activities = payload.get("activities")
+    clave = payload.get("clave")
+    competencies = payload.get("competencies")
+    location = payload.get("location")
+    duration = payload.get("duration")
+    audience = payload.get("audience")
+    max_hours = payload.get("max_hours")
+    comments = payload.get("comments")
 
     if not name:
         return jsonify({"error": "name es obligatorio"}), 400
@@ -44,6 +52,16 @@ def create_project():
             return jsonify({"error": "slots debe ser >= 0"}), 400
     except:
         return jsonify({"error": "slots debe ser número"}), 400
+
+    if max_hours is not None and max_hours != "":
+        try:
+            max_hours = int(max_hours)
+            if max_hours < 0:
+                return jsonify({"error": "max_hours debe ser >= 0"}), 400
+        except:
+            return jsonify({"error": "max_hours debe ser número"}), 400
+    else:
+        max_hours = None
 
     def tx(conn, cur):
         cur.execute("SELECT id FROM partner WHERE id=%s LIMIT 1", [partner_id])
@@ -78,12 +96,19 @@ def create_project():
         cur.execute(
             """
             INSERT INTO project
-              (name, id_partner, id_modality, id_week_days, id_schedule,
-               slots, schedule_description, project_description)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                (name, id_partner, id_modality, id_week_days, id_schedule,
+                slots, schedule_description, project_description,
+                team_owners, carreers, objectives, activities, clave,
+                competencies, location, duration, audience, max_hours, comments)
+            VALUES (%s, %s, %s, %s, %s,
+                    %s, %s, %s,
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s, %s)
             """,
             [name, partner_id, modality_id, week_days_id, schedule_id,
-             slots, schedule_description, project_description],
+            slots, schedule_description, project_description,
+            team_owners, carreer, objectives, activities, clave,
+            competencies, location, duration, audience, max_hours, comments],   
         )
         new_id = cur.lastrowid
         return {"id": new_id, "status": 201}

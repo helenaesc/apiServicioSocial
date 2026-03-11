@@ -33,7 +33,6 @@ def list_projects():
 
     where_sql = f"WHERE {' AND '.join(where)}" if where else ""
 
-    # ESENCIA: cupos “reales” por tokens si existen; si no, fallback a slots - inscritos
     sql = f"""
         SELECT
             p.id,
@@ -41,6 +40,17 @@ def list_projects():
             p.slots AS cupos,
             p.project_description AS descripcion,
             p.schedule_description AS descripcion_horario,
+            p.team_owners,
+            p.carreer,
+            p.objectives,
+            p.activities,
+            p.clave,
+            p.competencies,
+            p.location,
+            p.duration,
+            p.audience,
+            p.max_hours,
+            p.comments,
             pa.name AS socio,
             m.name AS modalidad,
             wd.name AS dia,
@@ -89,6 +99,17 @@ def get_project(project_id: int):
             p.slots AS cupos,
             p.project_description AS descripcion,
             p.schedule_description AS descripcion_horario,
+            p.team_owners,
+            p.carreer,
+            p.objectives,
+            p.activities,
+            p.clave,
+            p.competencies,
+            p.location,
+            p.duration,
+            p.audience,
+            p.max_hours,
+            p.comments,
             pa.id AS socio_id,
             pa.name AS socio,
             m.id AS modalidad_id,

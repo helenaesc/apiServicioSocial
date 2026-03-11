@@ -6,7 +6,6 @@ catalogs_bp = Blueprint("catalogs", __name__)
 @catalogs_bp.get("/api/catalogs")
 def catalogs():
     return jsonify({
-        # mantenemos las llaves en español porque el HTML espera: socio/dias/modalidad/horario
         "socio": fetch_all("SELECT id, name FROM partner ORDER BY name"),
         "dias": fetch_all("SELECT id, name AS description FROM week_days ORDER BY id"),
         "modalidad": fetch_all("SELECT id, name AS description FROM modality ORDER BY id"),

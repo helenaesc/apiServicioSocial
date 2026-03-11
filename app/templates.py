@@ -166,7 +166,7 @@ ADMIN_HTML = r"""
   <header>
     <div>
       <strong>Panel Admin</strong>
-      <span class="small">— Crear proyectos y abrir cupos (tokens)</span>
+      <span class="small">— ADMIN crea proyectos y abre cupos; STAFF solo genera códigos de acceso</span>
     </div>
     <div class="row" style="max-width:420px;">
       <a href="/">Ver catálogo</a>
@@ -180,27 +180,47 @@ ADMIN_HTML = r"""
     <div class="grid2">
 
       <div class="card">
-        <h3>Clave Admin</h3>
-        <div class="small">Se guarda en este navegador para no teclearla cada vez.</div>
+        <h3>Acceso</h3>
+        <div class="small">Escribe tu clave, se valida con <code>/api/admin/ping</code> y se guarda en este navegador.</div>
 
-        <label>ADMIN KEY</label>
-        <input id="adminKey" type="password" placeholder="Escribe tu clave admin">
+        <label>KEY</label>
+        <input id="adminKey" type="password" placeholder="Clave ADMIN o STAFF">
 
         <div class="actions">
-          <button onclick="saveKey()">Guardar clave</button>
-          <button class="btn2" onclick="clearKey()">Borrar clave</button>
+          <button onclick="validateAndSaveKey()">Validar y guardar</button>
+          <button class="btn2" onclick="clearKey()">Borrar</button>
         </div>
 
         <div class="hr"></div>
-        <div class="small">
-          Todas las llamadas admin mandan el header <code>X-ADMIN-KEY</code>.
-        </div>
+        <div class="small" id="roleBadge">Rol: —</div>
       </div>
 
-      <div class="card">
-        <h3>Crear proyecto</h3>
+      <!-- STAFF y ADMIN -->
+      <div class="card" id="accessCodeCard" style="display:none;">
+        <h3>Generar código de acceso (para entrar al catálogo)</h3>
 
-        <label>Nombre</label>
+        <label>Email del jugador (debe existir en users)</label>
+        <input id="access_email" placeholder="ej: jugador@correo.com">
+
+        <label>Duración (horas)</label>
+        <input id="access_hours" type="number" min="1" max="168" value="72">
+
+        <div class="actions">
+          <button onclick="createAccessCode()">Generar</button>
+          <button class="btn2" onclick="resetAccess()">Limpiar</button>
+        </div>
+
+        <div class="small">El código se entrega en el stand. En BD se guarda hasheado (no en claro).</div>
+        <div class="hr"></div>
+        <div class="small"><strong>Último código generado:</strong> <span id="last_code">—</span></div>
+        <div class="small"><strong>Expira:</strong> <span id="last_exp">—</span></div>
+      </div>
+
+      <!-- SOLO ADMIN -->
+      <div class="card" id="createProjectCard" style="display:none;">
+        <h3>Crear proyecto (solo ADMIN)</h3>
+
+        <label>Nombre del proyecto</label>
         <input id="name" placeholder="Ej: Ampre 100h">
 
         <div class="row">
@@ -225,7 +245,7 @@ ADMIN_HTML = r"""
           </div>
         </div>
 
-        <label>Cupos (slots)</label>
+        <label>Cupo (slots)</label>
         <input id="slots" type="number" min="0" value="0">
 
         <label>Descripción de horario</label>
@@ -234,19 +254,51 @@ ADMIN_HTML = r"""
         <label>Descripción del proyecto</label>
         <textarea id="project_description" placeholder="Ej: Stand A1. Buscamos 2 defensas..."></textarea>
 
+        <label>Nombre del equipo (dueños)</label>
+        <input id="team_owners" placeholder="Ej: Dueños / responsables">
+
+        <label>Posiciones</label>
+        <textarea id="carreers" placeholder="Ej: 1 portero, 2 defensas, 1 delantero"></textarea>
+
+        <label>Objetivos</label>
+        <textarea id="objectives" placeholder="Objetivos del equipo/proyecto"></textarea>
+
+        <label>Actividades a realizar</label>
+        <textarea id="activities" placeholder="Actividades que realizarán"></textarea>
+
+        <label>Clave (informativa del proyecto)</label>
+        <input id="clave" placeholder="Ej: AMPRE-100">
+
+        <label>Competencias</label>
+        <textarea id="competencies" placeholder="Competencias"></textarea>
+
+        <label>Lugar donde se realizará</label>
+        <input id="location" placeholder="Lugar">
+
+        <label>Duración</label>
+        <input id="duration" placeholder="Ej: 3 días / 8 semanas">
+
+        <label>Público</label>
+        <input id="audience" placeholder="Ej: alumnos 3°-6°">
+
+        <label>Horas máximas a acreditar</label>
+        <input id="max_hours" type="number" min="0" placeholder="Ej: 100">
+
+        <label>Comentarios adicionales</label>
+        <textarea id="comments" placeholder="Notas extra"></textarea>
+
         <div class="actions">
           <button onclick="createProject()">Crear</button>
-          <button class="btn2" onclick="resetForm()">Limpiar</button>
+          <button class="btn2" onclick="resetProjectForm()">Limpiar</button>
         </div>
-
-        <div class="small">Después de crear, abre cupos generando tokens.</div>
       </div>
 
     </div>
 
-    <div class="card" style="margin-top:14px;">
-      <h3>Proyectos</h3>
-      <div class="small">Aquí puedes ver cupos disponibles (tokens no usados) y generar más tokens.</div>
+    <!-- SOLO ADMIN (porque genera tokens/cupos) -->
+    <div class="card" id="projectsCard" style="margin-top:14px; display:none;">
+      <h3>Proyectos (solo ADMIN para abrir cupos)</h3>
+      <div class="small">Generar tokens = abrir cupos reales (1 token = 1 cupo).</div>
       <div id="projects" class="projects"></div>
     </div>
 
@@ -261,19 +313,55 @@ ADMIN_HTML = r"""
     setTimeout(() => { el.style.display = 'none'; }, 4500);
   }
 
-  function getKey() {
-    return localStorage.getItem('ADMIN_API_KEY') || '';
-  }
-  function saveKey() {
-    const v = document.getElementById('adminKey').value.trim();
-    if (!v) return showMsg('Escribe una clave primero', false);
-    localStorage.setItem('ADMIN_API_KEY', v);
-    showMsg('Clave guardada');
-  }
+  function getKey() { return localStorage.getItem('ADMIN_API_KEY') || ''; }
+  function getRole() { return localStorage.getItem('ADMIN_ROLE') || ''; }
+
   function clearKey() {
     localStorage.removeItem('ADMIN_API_KEY');
+    localStorage.removeItem('ADMIN_ROLE');
     document.getElementById('adminKey').value = '';
+    applyRoleUI('');
     showMsg('Clave borrada');
+  }
+
+  async function validateAndSaveKey() {
+    const v = document.getElementById('adminKey').value.trim();
+    if (!v) return showMsg('Escribe una clave primero', false);
+
+    try {
+      const r = await fetch('/api/admin/ping', { headers: { 'X-ADMIN-KEY': v }});
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+
+      localStorage.setItem('ADMIN_API_KEY', v);
+      localStorage.setItem('ADMIN_ROLE', data.role);
+
+      showMsg(`Clave válida. Rol: ${data.role}`);
+      applyRoleUI(data.role);
+
+      await loadCatalogs();
+      if (data.role === 'ADMIN') await loadProjects();
+    } catch (e) {
+      showMsg('Clave inválida: ' + e.message, false);
+      localStorage.removeItem('ADMIN_API_KEY');
+      localStorage.removeItem('ADMIN_ROLE');
+      applyRoleUI('');
+    }
+  }
+
+  function applyRoleUI(role) {
+    document.getElementById('roleBadge').textContent = role ? `Rol: ${role}` : 'Rol: —';
+
+    const access = document.getElementById('accessCodeCard');
+    const create = document.getElementById('createProjectCard');
+    const projCard = document.getElementById('projectsCard');
+
+    // STAFF y ADMIN ven access codes
+    access.style.display = (role === 'ADMIN' || role === 'STAFF') ? 'block' : 'none';
+
+    // SOLO ADMIN ve crear proyecto y abrir cupos
+    create.style.display = (role === 'ADMIN') ? 'block' : 'none';
+    projCard.style.display = (role === 'ADMIN') ? 'block' : 'none';
   }
 
   async function getJSON(url) {
@@ -298,8 +386,8 @@ ADMIN_HTML = r"""
     return data;
   }
 
-  function fillSelect(selectId, items, labelKey='name') {
-    const el = document.getElementById(selectId);
+  function fillSelect(id, items, labelKey='name') {
+    const el = document.getElementById(id);
     el.innerHTML = '<option value="">Selecciona...</option>';
     for (const item of items) {
       const opt = document.createElement('option');
@@ -311,21 +399,41 @@ ADMIN_HTML = r"""
 
   async function loadCatalogs() {
     const data = await getJSON('/api/catalogs');
-    // /api/catalogs devuelve llaves en español: socio/dias/modalidad/horario
     fillSelect('partner_id', data.socio, 'name');
     fillSelect('modality_id', data.modalidad, 'description');
     fillSelect('week_days_id', data.dias, 'description');
     fillSelect('schedule_id', data.horario, 'description');
   }
 
-  function resetForm() {
-    ['name','partner_id','modality_id','week_days_id','schedule_id','slots','schedule_description','project_description']
-      .forEach(id => {
-        const el = document.getElementById(id);
-        if (el.tagName === 'SELECT') el.value = '';
-        else if (id === 'slots') el.value = 0;
-        else el.value = '';
-      });
+  function resetAccess() {
+    document.getElementById('access_email').value = '';
+    document.getElementById('access_hours').value = 72;
+  }
+
+  async function createAccessCode() {
+    try {
+      const email = document.getElementById('access_email').value.trim();
+      const hours = Number(document.getElementById('access_hours').value || 72);
+      const res = await postJSON('/api/admin/access-codes', { email, hours });
+      document.getElementById('last_code').textContent = res.code || '—';
+      document.getElementById('last_exp').textContent = res.expires_at || '—';
+      showMsg('Código generado');
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  function resetProjectForm() {
+    ['name','partner_id','modality_id','week_days_id','schedule_id','slots',
+     'schedule_description','project_description','team_owners','carreers','objectives','activities',
+     'clave','competencies','location','duration','audience','max_hours','comments'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'SELECT') el.value = '';
+      else if (id === 'slots') el.value = 0;
+      else el.value = '';
+    });
   }
 
   async function createProject() {
@@ -338,6 +446,17 @@ ADMIN_HTML = r"""
       slots: Number(document.getElementById('slots').value),
       schedule_description: document.getElementById('schedule_description').value.trim(),
       project_description: document.getElementById('project_description').value.trim(),
+      team_owners: document.getElementById('team_owners').value.trim(),
+      carreers: document.getElementById('carreers').value.trim(),
+      objectives: document.getElementById('objectives').value.trim(),
+      activities: document.getElementById('activities').value.trim(),
+      clave: document.getElementById('clave').value.trim(),
+      competencies: document.getElementById('competencies').value.trim(),
+      location: document.getElementById('location').value.trim(),
+      duration: document.getElementById('duration').value.trim(),
+      audience: document.getElementById('audience').value.trim(),
+      max_hours: document.getElementById('max_hours').value.trim(),
+      comments: document.getElementById('comments').value.trim(),
     };
 
     if (!body.name) return showMsg('Falta nombre', false);
@@ -348,7 +467,7 @@ ADMIN_HTML = r"""
     try {
       const res = await postJSON('/api/admin/projects', body);
       showMsg(`Proyecto creado (id=${res.id})`);
-      resetForm();
+      resetProjectForm();
       await loadProjects();
     } catch (e) {
       showMsg(e.message, false);
@@ -375,16 +494,12 @@ ADMIN_HTML = r"""
           <div>${pill}</div>
         </div>
 
-        ${(p.descripcion || '') ? `<div class="small" style="margin-top:8px;">${p.descripcion}</div>` : ''}
-        ${(p.descripcion_horario || '') ? `<div class="small" style="margin-top:6px;"><strong>Horario:</strong> ${p.descripcion_horario}</div>` : ''}
-
         <div class="hr"></div>
 
         <div class="actions">
           <input id="count-${p.id}" type="number" min="1" value="10" />
           <button onclick="genTokens(${p.id})">Generar tokens</button>
         </div>
-        <div class="small">Generar tokens = abrir cupos reales (1 token = 1 cupo).</div>
       </div>
     `;
   }
@@ -392,11 +507,7 @@ ADMIN_HTML = r"""
   async function loadProjects() {
     const data = await getJSON('/api/projects');
     const root = document.getElementById('projects');
-    if (!data.length) {
-      root.innerHTML = '<div class="card">No hay proyectos. Crea uno arriba.</div>';
-      return;
-    }
-    root.innerHTML = data.map(projectCard).join('');
+    root.innerHTML = data.length ? data.map(projectCard).join('') : '<div class="card">No hay proyectos.</div>';
   }
 
   async function genTokens(projectId) {
@@ -412,9 +523,13 @@ ADMIN_HTML = r"""
 
   (async () => {
     try {
+      // Cargar key/rol guardados y adaptar UI
       document.getElementById('adminKey').value = getKey();
-      await loadCatalogs();
-      await loadProjects();
+      applyRoleUI(getRole());
+
+      // Si ya hay rol, carga catálogos
+      if (getRole()) await loadCatalogs();
+      if (getRole() === 'ADMIN') await loadProjects();
     } catch (e) {
       showMsg('Error cargando admin: ' + e.message, false);
     }

@@ -1,15 +1,11 @@
 from flask import Blueprint, jsonify, request
 from mysql.connector import Error
 from ..database import execute_tx
+from ..authz import require_role, ROLE_ADMIN
 import os
 import secrets
 
 admin_tokens_bp = Blueprint("admin_tokens", __name__)
-
-def _require_admin_key(req):
-    key = req.headers.get("X-ADMIN-KEY", "")
-    expected = os.getenv("ADMIN_API_KEY", "")
-    return bool(expected) and key == expected
 
 def _gen_token(length=10):
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -17,8 +13,9 @@ def _gen_token(length=10):
 
 @admin_tokens_bp.post("/api/admin/projects/<int:project_id>/tokens")
 def generate_tokens(project_id: int):
-    if not _require_admin_key(request):
-        return jsonify({"error": "No autorizado (X-ADMIN-KEY)"}), 401
+    role = require_role(request, {ROLE_ADMIN})
+    if not role:
+        return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
     payload = request.get_json(silent=True) or {}
     count = int(payload.get("count", 10))
