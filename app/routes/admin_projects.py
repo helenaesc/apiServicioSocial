@@ -13,7 +13,8 @@ def create_project():
         return jsonify({"error": "No autorizado (solo ADMIN)"}),401
 
     payload = request.get_json(silent=True) or {}
-
+    
+    season = payload.get("season")
     name = (payload.get("name") or "").strip()
     partner_id = payload.get("partner_id")
     modality_id = payload.get("modality_id")
@@ -97,7 +98,7 @@ def create_project():
             """
             INSERT INTO project
                 (name, id_partner, id_modality, id_week_days, id_schedule,
-                slots, schedule_description, project_description,
+                slots, schedule_description, project_description, season,
                 team_owners, carreers, objectives, activities, clave,
                 competencies, location, duration, audience, max_hours, comments)
             VALUES (%s, %s, %s, %s, %s,

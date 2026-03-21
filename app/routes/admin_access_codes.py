@@ -24,11 +24,11 @@ def generate_access_code():
         return jsonify({"error": "No autorizado (ADMIN o STAFF)"}), 401
 
     payload = request.get_json(silent=True) or {}
-    email = (payload.get("email") or "").strip().lower()
+    enrolment_number = (payload.get("enrolment_number") or "").strip().lower()
     hours = payload.get("hours", 24)
 
-    if not email:
-        return jsonify({"error": "email es obligatorio"}), 400
+    if not enrolment_number:
+        return jsonify({"error": "Matrícula es obligatorio"}), 400
 
     try:
         hours = int(hours)
@@ -38,7 +38,7 @@ def generate_access_code():
         return jsonify({"error": "hours debe ser número"}), 400
 
     def tx(conn, cur):
-        cur.execute("SELECT id FROM users WHERE LOWER(email)=LOWER(%s) LIMIT 1", [email])
+        cur.execute("SELECT id FROM users WHERE enrolment_number=%s LIMIT 1", [enrolment_number])
         user = cur.fetchone()
         if not user:
             return {"error": "Usuario no encontrado", "status": 404}
