@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, render_template_string
 from ..database import fetch_one
-from ..templates import INDEX_HTML, ADMIN_HTML
+from ..templates import INDEX_HTML
+from ..admin_template import ADMIN_HTML
 
 views_bp = Blueprint("views", __name__)
 

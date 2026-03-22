@@ -15,7 +15,7 @@ def list_projects():
     params = []
 
     if q:
-        where.append("(p.name LIKE %s OR p.project_description LIKE %s OR p.schedule_description LIKE %s)")
+        where.append("(p.name LIKE %s OR p.schedule_description LIKE %s OR p.team_owners LIKE %s)")
         like = f"%{q}%"
         params.extend([like, like, like])
     if socio:
@@ -38,10 +38,8 @@ def list_projects():
             p.id,
             p.name,
             p.slots AS cupos,
-            p.project_description AS descripcion,
             p.schedule_description AS descripcion_horario,
             p.team_owners,
-            p.carreer,
             p.objectives,
             p.activities,
             p.clave,
@@ -98,10 +96,8 @@ def get_project(project_id: int):
             p.id,
             p.name,
             p.slots AS cupos,
-            p.project_description AS descripcion,
             p.schedule_description AS descripcion_horario,
             p.team_owners,
-            p.carreer,
             p.objectives,
             p.activities,
             p.clave,

@@ -11,4 +11,5 @@ def catalogs():
         "modalidad": fetch_all("SELECT id, name AS description FROM modality ORDER BY id"),
         "horario": fetch_all("SELECT id, name AS description FROM schedule ORDER BY id"),
         "status": fetch_all("SELECT id, name FROM status ORDER BY id"),
+        "partner_group": fetch_all("SELECT id, name FROM partner_group ORDER BY name"),
     })

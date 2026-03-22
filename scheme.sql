@@ -50,7 +50,6 @@ create table project (
 	id_schedule tinyint not null,
 	slots int not null,
 	schedule_description varchar(256),
-	project_description varchar(512),
 	foreign key(id_partner) references partner(id),
 	foreign key(id_modality) references modality(id),
 	foreign key(id_week_days) references week_days(id),
