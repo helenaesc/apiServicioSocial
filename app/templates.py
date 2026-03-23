@@ -582,7 +582,7 @@ INDEX_HTML = """
         </div>
 
         <div class="field">
-          <label for="socio">Socio</label>
+          <label for="socio">Carrera</label>
           <select id="socio"><option value="">Todos</option></select>
         </div>
 
@@ -621,7 +621,6 @@ INDEX_HTML = """
     <div id="results" class="loading">Selecciona una temporada para cargar el catálogo...</div>
 
     <div class="footer">
-      Este catálogo consume <code>/api/projects</code> y catálogos de apoyo desde <code>/api/catalogs</code>.
     </div>
   </main>
 
