@@ -7,6 +7,7 @@ from .routes.admin_tokens import admin_tokens_bp
 from .routes.admin_projects import admin_projects_bp
 from .routes.admin_auth import admin_auth_bp
 from .routes.admin_access_codes import admin_access_bp
+from .routes.admin_settings import admin_settings_bp
 
 def create_app():
     app = Flask(__name__)
@@ -20,5 +21,6 @@ def create_app():
     app.register_blueprint(admin_projects_bp)
     app.register_blueprint(admin_auth_bp)
     app.register_blueprint(admin_access_bp)
+    app.register_blueprint(admin_settings_bp)
 
     return app

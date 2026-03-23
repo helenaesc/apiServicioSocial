@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, jsonify, request
 from mysql.connector import Error
 from ..database import execute_tx
@@ -15,17 +17,15 @@ def create_enrolment():
     if not id_student or not id_project:
         return jsonify({"error": "id_student/id_alumno e id_project/id_proyecto son obligatorios"}), 400
 
-    # Token obligatorio
     if not token_value:
         return jsonify({"error": "token es obligatorio (1 token = 1 cupo)"}), 400
 
     def tx(conn, cur):
-        # validar que exista el projecto
+
         cur.execute("SELECT id FROM project WHERE id=%s LIMIT 1", [id_project])
         if not cur.fetchone():
             return {"error": "Proyecto no encontrado", "status": 404}
 
-        # un alumno requiere token
         cur.execute(
             "SELECT id FROM enrolment WHERE id_student=%s LIMIT 1 FOR UPDATE",
             [id_student],
@@ -48,15 +48,17 @@ def create_enrolment():
             return {"error": "Token no existe", "status": 400}
         if tk["used"]:
             return {"error": "Token ya fue utilizado", "status": 409}
+        if tk["revoked"]:
+            return {"error": "Token fue revocado", "status": 409}
+        if tk["expires_at"] is not None and datetime.now() > tk["expires_at"]:
+            return {"error": "Token expiró", "status": 409}
         if tk["id_project"] is None or int(tk["id_project"]) != int(id_project):
             return {"error": "Token no corresponde al proyecto", "status": 400}
 
-        # Status pendiente
         cur.execute("SELECT id FROM status WHERE LOWER(name)='pendiente' LIMIT 1")
         st = cur.fetchone()
         status_id = st["id"] if st else None
 
-        # Resgistros finales
         cur.execute(
             """
             INSERT INTO enrolment (id_student, id_project, id_status, id_token)
@@ -66,7 +68,6 @@ def create_enrolment():
         )
         enrolment_id = cur.lastrowid
 
-        # Consumir el cupo para mantenerlo como un uso
         cur.execute(
             "UPDATE token SET used=TRUE WHERE id=%s AND used=FALSE",
             [tk["id"]],
