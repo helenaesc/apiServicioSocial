@@ -4,99 +4,360 @@ ADMIN_HTML = r"""
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Panel Admin</title>
+  <title>Portal Administrativo | Servicio Social</title>
   <style>
-    :root{
-      --bg:#f5f7fb; --card:#ffffff; --text:#0f172a; --muted:#64748b; --line:#e2e8f0;
-      --brand:#0ea5e9; --dark:#0b1220; --ok:#dcfce7; --okText:#166534; --err:#fee2e2; --errText:#991b1b;
-      --danger:#ef4444; --warn:#f59e0b; --soft:#e2e8f0;
+    :root {
+      /* Paleta Dashboard Profesional */
+      --bg: #f8fafc;        /* Fondo Slate muy claro */
+      --card: #ffffff;      /* Tarjetas Blancas puras */
+      
+      --text: #0f172a;      /* Texto Navy oscuro (principal) */
+      --text-label: #475569; /* Etiquetas Slate oscuro */
+      --text-muted: #94a3b8; /* Texto desactivado/secundario */
+      
+      --border: #e2e8f0;    /* Línea Slate sutil */
+      --border-soft: #cbd5e1; /* Línea ligeramente más fuerte (inputs) */
+      
+      /* Acentos de Marca (Blue) */
+      --brand: #2563eb;     /* Azul moderno y vibrante */
+      --brand-hover: #1d4ed8; /* Azul oscuro para hover */
+      --brand-soft: #eff6ff;  /* Fondo azul muy suave para highlights */
+      
+      /* Estados Semánticos Pulidos */
+      --ok-bg: #d1fae5;     /* Emerald suave */
+      --ok-text: #065f46;
+      --err-bg: #fee2e2;    /* Red suave */
+      --err-text: #991b1b;
+      --danger: #ef4444;    /* Red vibrante (acciones de peligro) */
+      --warn-bg: #fff7ed;   /* Orange suave */
+      --warn-text: #9a3412;
+
+      /* UI Details */
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:var(--bg);color:var(--text);}
-    header{background:var(--dark);color:white;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-    header .title{display:flex;flex-direction:column;gap:2px}
-    header .title strong{font-size:1.05rem;}
-    header .title span{font-size:.85rem;color:#cbd5e1}
-    header a{color:#e2e8f0;text-decoration:none;font-size:.9rem}
-    .container{max-width:1100px;margin:16px auto;padding:0 14px;}
-    .msg{display:none;margin-bottom:12px;padding:12px;border-radius:12px;font-size:.95rem}
-    .msg.ok{background:var(--ok);color:var(--okText)}
-    .msg.err{background:var(--err);color:var(--errText)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;}
-    .card{background:var(--card);padding:14px;border-radius:14px;box-shadow:0 2px 10px rgba(2,6,23,.06);border:1px solid rgba(226,232,240,.7);}
-    h3{margin:0 0 10px 0;font-size:1rem}
-    .muted{color:var(--muted);font-size:.85rem;line-height:1.4}
-    label{display:block;margin:10px 0 5px;color:#475569;font-size:.84rem}
-    input,select,textarea,button{width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #cbd5e1;background:white}
-    textarea{min-height:82px;resize:vertical}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row>*{flex:1;min-width:160px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center}
-    .actions button{width:auto;padding:10px 14px;border:none;border-radius:10px;cursor:pointer}
-    .btn{background:var(--brand);color:white}
-    .btn2{background:#64748b;color:white}
-    .btnDanger{background:var(--danger);color:white}
-    .btnWarn{background:var(--warn);color:white}
-    .hr{height:1px;background:var(--line);margin:12px 0}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--soft);color:#0f172a;font-size:.78rem}
-    .pill.ok{background:var(--ok);color:var(--okText)}
-    .pill.err{background:var(--err);color:var(--errText)}
-    .pill.warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
-    .projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-top:10px}
-    .meta{font-size:.9rem;color:#475569;line-height:1.45}
-    .mini{font-size:.8rem;color:var(--muted)}
-    .hide{display:none !important}
-    .topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .tokbox textarea{min-height:140px}
-    .tokbox .actions{margin-top:8px}
-    table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid var(--line);padding:8px;font-size:.9rem;text-align:left;vertical-align:top}
-    th{color:#475569;font-size:.82rem}
-    code{background:#0b1220;color:#e2e8f0;padding:2px 6px;border-radius:6px}
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header Limpio */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    header .title {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    header .title strong {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    header .title span {
+      font-size: 0.875rem;
+      color: var(--text-label);
+      font-weight: 500;
+    }
+
+    header a {
+      color: var(--text-label);
+      text-decoration: none;
+      font-size: 0.93rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+
+    header a:hover {
+      background: var(--bg);
+      color: var(--brand);
+    }
+
+    /* Contenedor Principal */
+    .container {
+      max-width: 1280px;
+      margin: 32px auto;
+      padding: 0 32px;
+      width: 100%;
+    }
+
+    /* Mensajes de Estado Flotantes */
+    .msg {
+      display: none;
+      margin-bottom: 24px;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .msg.ok { background: var(--ok-bg); color: var(--ok-text); border-color: #a7f3d0; }
+    .msg.err { background: var(--err-bg); color: var(--err-text); border-color: #fecaca; }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+    }
+
+    /* Diseño de Tarjetas Pulido */
+    .card {
+      background: var(--card);
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1; /* Borde sutil en hover */
+    }
+
+    h3 {
+      margin: 0 0 16px 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .muted {
+      color: var(--text-label);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* Formularios Modernos */
+    label {
+      display: block;
+      margin: 16px 0 6px;
+      color: var(--text-label);
+      font-size: 0.84rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      background: white;
+      font-size: 0.93rem;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input::placeholder { color: var(--text-muted); }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    textarea { min-height: 100px; resize: vertical; line-height: 1.4; }
+
+    .row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 180px; }
+
+    /* Acciones */
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      align-items: center;
+    }
+
+    .actions button {
+      width: auto !important;
+      padding: 10px 18px;
+    }
+
+    /* Botones Modernos */
+    button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      background: var(--card);
+      font-size: 0.93rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn { /* Primario Azul */
+      background: var(--brand);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+    .btn:hover { background: var(--brand-hover); transform: translateY(-1px); }
+
+    .btn2 { /* Secundario Blanco con borde */
+      background: white;
+      border: 1px solid var(--border-soft);
+      color: var(--text-label);
+    }
+    .btn2:hover { background: var(--bg); color: var(--text); border-color: var(--border-soft); }
+
+    .btnDanger { /* Peligro Rojo */
+      background: var(--danger);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+    }
+    .btnDanger:hover { background: #dc2626; transform: translateY(-1px); }
+
+    .btnWarn { /* Advertencia Naranja */
+      background: #f97316; /* Orange más vibrante que el de root */
+      color: white;
+    }
+    .btnWarn:hover { background: #ea580c; }
+
+    .hr { height: 1px; background: var(--border); margin: 20px 0; border: none; }
+
+    /* Píldoras de Estado (Pills) */
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--bg);
+      color: var(--text-label);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pill.ok { background: var(--ok-bg); color: var(--ok-text); }
+    .pill.err { background: var(--err-bg); color: var(--err-text); }
+    .pill.warn { background: var(--warn-bg); color: var(--warn-text); border: 1px solid #fed7aa; }
+
+    /* Lista de Proyectos */
+    .projects {
+      display: grid;
+      grid-template-columns: 1fr; /* Lista vertical para Admin */
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .meta { font-size: 0.93rem; color: var(--text-label); line-height: 1.5; }
+    .meta div { margin-bottom: 4px; }
+    .meta strong { color: var(--text); font-weight: 600; }
+    
+    .mini { font-size: 0.8rem; color: var(--text-label); line-height: 1.4; }
+
+    .hide { display: none !important; }
+
+    .topbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    /* Box de Tokens */
+    .tokbox {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .tokbox textarea { min-height: 160px; font-family: monospace; font-size: 0.9rem; }
+
+    /* Tablas Modernas */
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 12px 8px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-label); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+    td { font-size: 0.93rem; }
+    tr:last-child td { border-bottom: none; }
+    
+    code {
+      background: var(--text);
+      color: #e2e8f0;
+      padding: 3px 6px;
+      border-radius: var(--radius-sm);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9em;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header { padding: 16px; flex-direction: column; align-items: flex-start; }
+      .container { padding: 0 16px; margin: 20px auto; }
+      .grid { grid-template-columns: 1fr; }
+      .card { padding: 18px; }
+      .topbar { width: 100%; justify-content: flex-end; }
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="title">
-      <strong>Panel Admin</strong>
-      <span>ADMIN: proyectos + cupos + tokens | STAFF: solo códigos de acceso</span>
+      <strong>Portal Administrativo</strong>
+      <span>Proyectos · Cupos · Acceso Staff</span>
     </div>
     <div class="topbar">
-      <a href="/">Catálogo</a>
-      <a href="/health">Health</a>
+      <a href="/">Vista Estudiante</a>
+      <a href="/health">Health Check</a>
     </div>
   </header>
 
   <div class="container">
     <div id="msg" class="msg"></div>
 
-    <!-- Login -->
     <div class="card" id="loginCard">
-      <h3>Acceso</h3>
-      <div class="muted">Escribe tu clave. Al validar, se activa el panel y se oculta esta sección.</div>
+      <h3>Acceso Administrador</h3>
+      <div class="muted">Ingresa tu clave de acceso. Al validarla, se activarán las funciones de gestión correspondientes a tu rol.</div>
 
       <label>Clave</label>
-      <input id="adminKey" type="password" placeholder="Clave ADMIN o STAFF">
+      <input id="adminKey" type="password" placeholder="Ingresa clave ADMIN o STAFF">
 
       <div class="actions">
-        <button class="btn" onclick="validateAndSaveKey()">Entrar</button>
+        <button class="btn" onclick="validateAndSaveKey()">Entrar al Panel</button>
         <button class="btn2" onclick="clearKey(true)">Limpiar</button>
       </div>
 
       <div class="hr"></div>
-      <div class="muted" id="roleBadge">Rol: —</div>
+      <div class="mini" id="roleBadge">Sesión actual: —</div>
     </div>
 
-    <div class="grid" style="margin-top:14px;">
+    <div class="grid hide" id="mainDashboard" style="margin-top:20px;">
 
-      <!-- STAFF y ADMIN -->
       <div class="card hide" id="accessCodeCard">
-        <h3>Códigos de acceso (catálogo) — STAFF y ADMIN</h3>
+        <h3>Códigos Estudiantes</h3>
         <div class="muted">
-          El staff solo hace esto: genera códigos de acceso al catálogo viendo gafete/foto + ID único.
-          (En BD se guarda hasheado.)
+          Genera códigos temporales para que los estudiantes puedan visualizar el catálogo. Verifica su identidad antes de entregar el código.
         </div>
 
-        <label>ID único del jugador (enrolment_number)</label>
+        <label>ID Único del Estudiante</label>
         <input id="access_enrolment" placeholder="Ej: A01234567">
 
         <div class="row">
@@ -106,42 +367,42 @@ ADMIN_HTML = r"""
           </div>
           <div>
             <label>&nbsp;</label>
-            <button class="btn" onclick="createAccessCode()">Generar código de acceso</button>
+            <button class="btn" onclick="createAccessCode()">Generar Código</button>
           </div>
         </div>
 
-        <div class="actions">
-          <button class="btn2" onclick="resetAccess()">Limpiar</button>
-          <button class="btnDanger" onclick="logout()">Cerrar sesión</button>
+        <div class="actions" style="justify-content:space-between; margin-top: 24px;">
+          <button class="btn2" onclick="resetAccess()">Limpiar Datos</button>
+          <button class="btnDanger" onclick="logout()">Cerrar Sesión Panel</button>
         </div>
 
-        <div class="hr"></div>
-        <div class="mini"><strong>Último código:</strong> <span id="last_code">—</span></div>
-        <div class="mini"><strong>Expira:</strong> <span id="last_exp">—</span></div>
+        <div class="tokbox" style="margin-top: 20px; border-style: dashed; padding: 16px;">
+          <div class="mini"><strong>Último código generado:</strong> <code id="last_code">—</code></div>
+          <div class="mini" style="margin-top: 4px;"><strong>Expira:</strong> <span id="last_exp">—</span></div>
+        </div>
       </div>
 
-      <!-- SOLO ADMIN -->
       <div class="card hide" id="createProjectCard">
-        <h3>Crear proyecto (solo ADMIN)</h3>
+        <h3>Crear Nuevo Proyecto Operativo</h3>
 
         <div class="row">
           <div>
-            <label>Nombre general (familia)</label>
-            <input id="name" placeholder="Ej: Nombre del Socio">
+            <label>Socio Formador (Familia)</label>
+            <input id="name" placeholder="Nombre de la Organización">
           </div>
           <div>
-            <label>Nombre único</label>
-            <input id="team_owners" placeholder="Ej: Nombre del proyecto específico">
+            <label>Nombre del Equipo/Proyecto</label>
+            <input id="team_owners" placeholder="Nombre específico del proyecto">
           </div>
         </div>
 
         <div class="row">
           <div>
-            <label>Temporada / Evento / Año</label>
+            <label>Temporada / Año</label>
             <input id="season" placeholder="Ej: Verano 2026">
           </div>
           <div>
-            <label>Cupo total (slots)</label>
+            <label>Cupo Total (Slots)</label>
             <input id="slots" type="number" min="0" value="0">
           </div>
         </div>
@@ -161,25 +422,25 @@ ADMIN_HTML = r"""
           </div>
         </div>
 
-        <label>Detalle horario</label>
-        <input id="schedule_description" placeholder="Ej: 3 días, 9-12, etc.">
+        <label>Descripción detallada horario</label>
+        <input id="schedule_description" placeholder="Ej: Lunes y Miércoles 9-12">
 
-        <label>Academias permitidas</label>
+        <label>Filtro de Carreras Permitidas (Socio)</label>
         <select id="academy_mode" onchange="onAcademyModeChange()">
-          <option value="ALL">Todas</option>
-          <option value="GROUP">Por grupo (Grupos de Carreras)</option>
-          <option value="CUSTOM">Manual (selección)</option>
+          <option value="ALL">Todas las carreras</option>
+          <option value="GROUP">Por Grupo (Grupos de Carreras)</option>
+          <option value="CUSTOM">Manual (Selección específica)</option>
         </select>
 
         <div id="academy_group_wrap" class="hide">
-          <label>Grupo</label>
+          <label>Grupo de Carreras</label>
           <select id="academy_group_id"><option value="">Selecciona...</option></select>
         </div>
 
         <div id="academy_custom_wrap" class="hide">
-          <label>Carreras (manual)</label>
+          <label>Selección Manual (Carreras)</label>
           <select id="partner_ids" multiple size="10"></select>
-          <div class="mini">Tip: Ctrl (Windows) / Cmd (Mac) para seleccionar varias.</div>
+          <div class="mini" style="margin-top:4px;">Tip: Usa Ctrl (Win) o Cmd (Mac) para selección múltiple.</div>
         </div>
 
         <div class="hr"></div>
@@ -195,103 +456,50 @@ ADMIN_HTML = r"""
           </div>
         </div>
 
-        <div class="row">
-          <div>
-            <label>Clave </label>
-            <input id="clave" placeholder="Ej: Clave para IRIS">
-          </div>
-          <div>
-            <label>Competencias</label>
-            <textarea id="competencies"></textarea>
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label>Lugar</label>
-            <input id="location">
-          </div>
-          <div>
-            <label>Duración</label>
-            <input id="duration">
-          </div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label>Público</label>
-            <input id="audience">
-          </div>
-          <div>
-            <label>Horas máximas</label>
-            <input id="max_hours" type="number" min="0">
-          </div>
-        </div>
-
-        <label>Comentarios</label>
-        <textarea id="comments"></textarea>
-
         <div class="actions">
-          <button class="btn" onclick="createProject()">Crear proyecto</button>
-          <button class="btn2" onclick="resetProjectForm()">Limpiar formulario</button>
+          <button class="btn" onclick="createProject()">Crear Proyecto</button>
+          <button class="btn2" onclick="resetProjectForm()">Limpiar Formulario</button>
         </div>
       </div>
 
-    </div>
-
-    <!-- SOLO ADMIN -->
-    <div class="card hide" id="projectsCard" style="margin-top:14px;">
-      <h3>Control total de cupos y tokens (solo ADMIN)</h3>
+    </div> <div class="card hide" id="projectsCard" style="margin-top:20px;">
+      <h3>Gestión de Cupos Reales y Tokens (Control Total)</h3>
       <div class="muted">
-        Reglas: <strong>slots</strong> = cupo total del equipo. <strong>tokens</strong> = cupos abiertos reales.
-        Si quieres “meter más gente”: 1) sube slots 2) genera más tokens.
+        Usa esta sección para monitorear inscritos y abrir vacantes reales generando tokens. <br>
+        <strong>Slots</strong> = Cupo total del equipo. <strong>Tokens</strong> = Vacantes abiertas para inscripciones.
       </div>
 
-      <!-- CONFIG TTL -->
       <div class="hr"></div>
-      <h3 style="margin-top:0;">Duración global de tokens</h3>
-      <div class="muted">
-        Esto define cuánto duran los tokens que se generen a partir de ahora.
-        Los tokens ya creados conservan su <code>expires_at</code>.
-      </div>
+      <h3 style="font-size: 1rem; margin-bottom: 8px;">Vigencia Global de Nuevos Tokens</h3>
+      <div class="muted">Cuánto tiempo durarán los tokens (vacantes) generados a partir de este momento.</div>
 
-      <div class="row" style="align-items:flex-end; margin-top:8px;">
+      <div class="row" style="align-items:flex-end;">
         <div>
-          <label>Duración (horas)</label>
+          <label>Duración por defecto (horas)</label>
           <input id="ttl_hours" type="number" min="1" max="168" value="24">
-          <div class="mini">Ej: 24 = 1 día. Máximo 168 (7 días).</div>
         </div>
         <div>
           <label>&nbsp;</label>
-          <button class="btn" onclick="saveTokenTTL()">Guardar duración global</button>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button class="btn2" onclick="loadTokenTTL()">Cargar valor actual</button>
+          <button class="btn2" onclick="saveTokenTTL()">Guardar TTL</button>
         </div>
       </div>
-      <div class="mini"><strong>Actual:</strong> <span id="ttl_current">—</span></div>
+      <div class="mini" style="margin-top:8px;"><strong>Valor actual:</strong> <span id="ttl_current" class="pill">—</span></div>
 
       <div class="hr"></div>
-
+      
       <div id="projects" class="projects"></div>
 
-      <div class="hr"></div>
-
-      <!-- Tokens recién generados -->
-      <div id="tokensOut" class="tokbox hide">
-        <h3 style="margin-top:0;">Tokens recién generados (para entregar ahora)</h3>
+      <div id="tokensOut" class="tokbox hide" style="border-style:dashed; margin-top:24px;">
+        <h3 style="font-size: 1rem;">Tokens Recién Generados (Vacantes Abiertas)</h3>
         <div class="muted" id="tokensOutMeta">—</div>
 
-        <label>Lista (1 token por línea)</label>
+        <label>Lista de Tokens (uno por línea)</label>
         <textarea id="tokensOutText" readonly></textarea>
 
         <div class="actions">
-          <button class="btn" onclick="copyTokensOut()">Copiar tokens recién generados</button>
-          <button class="btn2" onclick="clearTokensOut()">Borrar lista</button>
+          <button class="btn" onclick="copyTokensOut()">Copiar Lista de Tokens</button>
+          <button class="btn2" onclick="clearTokensOut()">Cerrar y Limpiar Caja</button>
         </div>
-
-        <div class="mini">Tip: después de entregarlos, presiona “Borrar lista” para no dejarlos visibles.</div>
       </div>
     </div>
 
@@ -306,22 +514,26 @@ ADMIN_HTML = r"""
     el.className = 'msg ' + (ok ? 'ok' : 'err');
     el.textContent = text;
     el.style.display = 'block';
+    el.scrollIntoView({behavior:'smooth', block:'start'}); // Scroll al mensaje
     setTimeout(() => { el.style.display = 'none'; }, 5200);
   }
 
   function getKey() { return storage.getItem('ADMIN_API_KEY') || ''; }
   function getRole() { return storage.getItem('ADMIN_ROLE') || ''; }
 
+  // Actualiza la UI basándose en el rol
   function applyRoleUI(role) {
-    document.getElementById('roleBadge').textContent = role ? `Rol: ${role}` : 'Rol: —';
+    document.getElementById('roleBadge').textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: —';
 
     const loginCard = document.getElementById('loginCard');
+    const mainDash = document.getElementById('mainDashboard'); // Contenedor Grid
     const access = document.getElementById('accessCodeCard');
     const create = document.getElementById('createProjectCard');
     const projCard = document.getElementById('projectsCard');
 
     const logged = (role === 'ADMIN' || role === 'STAFF');
     loginCard.classList.toggle('hide', logged);
+    mainDash.classList.toggle('hide', !logged);
 
     access.classList.toggle('hide', !(role === 'ADMIN' || role === 'STAFF'));
     create.classList.toggle('hide', !(role === 'ADMIN'));
@@ -330,7 +542,7 @@ ADMIN_HTML = r"""
 
   async function validateAndSaveKey() {
     const v = document.getElementById('adminKey').value.trim();
-    if (!v) return showMsg('Escribe una clave primero', false);
+    if (!v) return showMsg('Escribe tu clave', false);
 
     try {
       const r = await fetch('/api/admin/ping', { headers: { 'X-ADMIN-KEY': v }});
@@ -341,6 +553,7 @@ ADMIN_HTML = r"""
       storage.setItem('ADMIN_ROLE', data.role);
       applyRoleUI(data.role);
 
+      // Carga de datos tras login
       await loadCatalogs();
       if (data.role === 'ADMIN') {
         await loadProjects();
@@ -348,7 +561,7 @@ ADMIN_HTML = r"""
       }
       onAcademyModeChange();
 
-      showMsg(`Sesión activa (${data.role})`);
+      showMsg(`Sesión iniciada (${data.role})`);
     } catch (e) {
       showMsg('Clave inválida: ' + e.message, false);
       clearKey(false);
@@ -360,11 +573,12 @@ ADMIN_HTML = r"""
     storage.removeItem('ADMIN_ROLE');
     document.getElementById('adminKey').value = '';
     applyRoleUI('');
-    if (show) showMsg('Sesión borrada');
+    if (show) showMsg('Sesión cerrada correctamente');
   }
 
   function logout(){ clearKey(true); resetAccess(); }
 
+  // HELPERS API
   async function getJSON(url) {
     const r = await fetch(url);
     const data = await r.json().catch(() => ({}));
@@ -416,60 +630,54 @@ ADMIN_HTML = r"""
     return data;
   }
 
+  // TTL SETTINGS
   async function loadTokenTTL() {
     try {
       const data = await getJSONAuth('/api/admin/settings');
       const hours = Number(data.token_ttl_hours || 24);
       document.getElementById('ttl_hours').value = hours;
       document.getElementById('ttl_current').textContent = `${hours} horas`;
-      showMsg('Duración global cargada');
-    } catch (e) {
-      showMsg(e.message, false);
-    }
+    } catch (e) { showMsg('Error TTL: '+e.message, false); }
   }
 
   async function saveTokenTTL() {
     const hours = Number(document.getElementById('ttl_hours').value || 24);
     if (!hours || hours < 1 || hours > 168) return showMsg('Horas inválidas (1 a 168)', false);
-
     try {
       const res = await putJSONAuth('/api/admin/settings/token-ttl-hours', { hours });
       document.getElementById('ttl_current').textContent = `${res.token_ttl_hours} horas`;
-      showMsg('Duración global guardada');
-    } catch (e) {
-      showMsg(e.message, false);
-    }
+      showMsg('TTL Global actualizado');
+    } catch (e) { showMsg(e.message, false); }
   }
 
+  // CATALOGS
   function fillSelect(id, items) {
     const el = document.getElementById(id);
     el.innerHTML = '<option value="">Selecciona...</option>';
     for (const item of items || []) {
       const opt = document.createElement('option');
       opt.value = item.id;
-      opt.textContent = item.name || item.description || ('ID ' + item.id);
+      opt.textContent = item.name || item.description || item.team_owners || ('ID ' + item.id); // Agregué team_owners para academies
       el.appendChild(opt);
     }
   }
 
   async function loadCatalogs() {
-    const data = await getJSON('/api/catalogs');
-
-    fillSelect('modality_id', data.modalidad || data.modality);
-    fillSelect('week_days_id', data.dias || data.week_days);
-    fillSelect('schedule_id', data.horario || data.schedule);
-
-    fillSelect('academy_group_id', data.partner_group || []);
-
-    const academias = (data.socio || data.partner || []);
-    const ms = document.getElementById('partner_ids');
-    ms.innerHTML = '';
-    for (const a of academias) {
-      const opt = document.createElement('option');
-      opt.value = a.id;
-      opt.textContent = a.name;
-      ms.appendChild(opt);
-    }
+    try {
+      const data = await getJSON('/api/catalogs');
+      fillSelect('modality_id', data.modalidad || data.modality);
+      fillSelect('week_days_id', data.dias || data.week_days);
+      fillSelect('schedule_id', data.horario || data.schedule);
+      fillSelect('academy_group_id', data.partner_group || []);
+      const ms = document.getElementById('partner_ids');
+      ms.innerHTML = '';
+      for (const a of (data.socio || data.partner || [])) {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.name + (a.team_owners ? ` (${a.team_owners})` : '');
+        ms.appendChild(opt);
+      }
+    } catch(e) { console.error('Error catálogos', e); }
   }
 
   function onAcademyModeChange(){
@@ -478,6 +686,7 @@ ADMIN_HTML = r"""
     document.getElementById('academy_custom_wrap').classList.toggle('hide', mode !== 'CUSTOM');
   }
 
+  // ACCESS CODES (STAFF)
   function resetAccess() {
     document.getElementById('access_enrolment').value = '';
     document.getElementById('access_hours').value = 72;
@@ -489,27 +698,26 @@ ADMIN_HTML = r"""
     try {
       const enrolment_number = document.getElementById('access_enrolment').value.trim();
       const hours = Number(document.getElementById('access_hours').value || 72);
-      if (!enrolment_number) return showMsg('Falta ID único', false);
-
+      if (!enrolment_number) return showMsg('Ingresa ID del estudiante', false);
       const res = await postJSON('/api/admin/access-codes', { enrolment_number, hours });
       document.getElementById('last_code').textContent = res.code || '—';
       document.getElementById('last_exp').textContent = res.expires_at || '—';
-      showMsg('Código generado');
+      showMsg('Código de acceso generado');
     } catch (e) { showMsg(e.message, false); }
   }
 
+  // CREATE PROJECT (ADMIN)
   function resetProjectForm() {
-    ['name','team_owners','season','slots','schedule_description','modality_id','week_days_id','schedule_id',
-     'academy_mode','academy_group_id','objectives','activities','clave','competencies','location','duration','audience','max_hours','comments'
-    ].forEach(id => {
+    [ 'name','team_owners','season','slots','schedule_description','modality_id','week_days_id','schedule_id','academy_mode','academy_group_id','objectives','activities'].forEach(id => {
       const el = document.getElementById(id);
-      if (!el) return;
-      if (el.tagName === 'SELECT') el.value = '';
+      if(!el) return;
+      if (el.tagName === 'SELECT' && id !== 'academy_mode') el.value = '';
+      else if (el.tagName === 'SELECT' && id === 'academy_mode') el.value = 'ALL';
       else if (id === 'slots') el.value = 0;
       else el.value = '';
     });
     const ms = document.getElementById('partner_ids');
-    if (ms) Array.from(ms.options).forEach(o => o.selected = false);
+    Array.from(ms.options).forEach(o => o.selected = false);
     onAcademyModeChange();
   }
 
@@ -517,360 +725,131 @@ ADMIN_HTML = r"""
     const academy_mode = document.getElementById('academy_mode').value;
     const academy_group_id = document.getElementById('academy_group_id').value ? Number(document.getElementById('academy_group_id').value) : null;
     const partner_ids = Array.from(document.getElementById('partner_ids').selectedOptions).map(o => Number(o.value));
-
-    if (academy_mode === 'GROUP' && !academy_group_id) return showMsg('Selecciona un grupo', false);
-    if (academy_mode === 'CUSTOM' && partner_ids.length === 0) return showMsg('Selecciona al menos 1 academia manual', false);
+    if (academy_mode === 'GROUP' && !academy_group_id) return showMsg('Selecciona Grupo de Carreras', false);
+    if (academy_mode === 'CUSTOM' && partner_ids.length === 0) return showMsg('Selecciona al menos 1 carrera manual', false);
 
     const body = {
       name: document.getElementById('name').value.trim(),
       team_owners: document.getElementById('team_owners').value.trim(),
       season: document.getElementById('season').value.trim(),
-
+      slots: Number(document.getElementById('slots').value),
+      schedule_description: document.getElementById('schedule_description').value.trim(),
       modality_id: Number(document.getElementById('modality_id').value),
       week_days_id: Number(document.getElementById('week_days_id').value),
       schedule_id: Number(document.getElementById('schedule_id').value),
-
-      slots: Number(document.getElementById('slots').value),
-      schedule_description: document.getElementById('schedule_description').value.trim(),
-
-      academy_mode,
-      academy_group_id,
-      partner_ids,
-
-      objectives: document.getElementById('objectives').value.trim(),
-      activities: document.getElementById('activities').value.trim(),
-      clave: document.getElementById('clave').value.trim(),
-      competencies: document.getElementById('competencies').value.trim(),
-      location: document.getElementById('location').value.trim(),
-      duration: document.getElementById('duration').value.trim(),
-      audience: document.getElementById('audience').value.trim(),
-      max_hours: document.getElementById('max_hours').value.trim(),
-      comments: document.getElementById('comments').value.trim(),
+      academy_mode, academy_group_id, partner_ids, objectives: document.getElementById('objectives').value.trim(), activities: document.getElementById('activities').value.trim()
     };
-
-    if (!body.name) return showMsg('Falta nombre general', false);
-    if (!body.team_owners) return showMsg('Falta nombre del equipo', false);
-    if (!body.modality_id || !body.week_days_id || !body.schedule_id) {
-      return showMsg('Faltan catálogos (modalidad/días/horario)', false);
-    }
+    if (!body.name || !body.team_owners || !body.modality_id) return showMsg('Faltan datos obligatorios', false);
 
     try {
       const res = await postJSON('/api/admin/projects', body);
-      showMsg(`Proyecto creado (id=${res.id})`);
+      showMsg(`Proyecto creado (ID=${res.id})`);
       resetProjectForm();
       await loadProjects();
     } catch (e) { showMsg(e.message, false); }
   }
 
-  function tokenStatusRow(t) {
-    const now = new Date();
-    const exp = t.expires_at ? new Date(t.expires_at) : null;
-
-    let status = 'Disponible';
-    let cls = 'ok';
-    if (t.used) { status = 'Usado'; cls = 'warn'; }
-    else if (t.revoked) { status = 'Revocado'; cls = 'err'; }
-    else if (exp && exp <= now) { status = 'Expirado'; cls = 'warn'; }
-
-    return { status, cls, exp };
+  // PROJ CONTROL LIST (ADMIN)
+  async function loadProjects() {
+    try {
+      const data = await getJSONAuth('/api/admin/projects');
+      const root = document.getElementById('projects');
+      root.innerHTML = (data || []).map(projectCard).join('');
+    } catch(e){ showMsg(e.message, false); }
   }
 
-  function fmtDate(d) {
-    if (!d) return '—';
-    try { return d.toLocaleString(); } catch { return String(d); }
-  }
-
+  // Slots
   async function updateSlots(projectId) {
-    const v = document.getElementById(`slots-${projectId}`).value;
-    const slots = Number(v);
-    if (Number.isNaN(slots) || slots < 0) return showMsg('Cupo total inválido', false);
-
+    const slots = Number(document.getElementById(`slots-${projectId}`).value);
+    if (slots < 0) return showMsg('Cupo inválido', false);
     try {
       const res = await patchJSON(`/api/admin/projects/${projectId}/slots`, { slots });
-      showMsg(`Cupo total actualizado: ${res.slots}`);
+      showMsg(`Slots actualizados: ${res.slots}`);
       await loadProjects();
-    } catch (e) {
-      showMsg(e.message, false);
-    }
+    } catch (e) { showMsg(e.message, false); }
   }
 
+  // Tokens
   async function genTokens(projectId) {
     const count = Number(document.getElementById(`count-${projectId}`).value || 1);
     const projectName = document.getElementById(`projname-${projectId}`)?.textContent || '';
-    if (!count || count < 1) return showMsg('Cantidad a abrir inválida', false);
-
+    if (count < 1) return showMsg('Cantidad inválida', false);
     try {
-      const res = await postJSON(`/api/admin/projects/${projectId}/tokens`, { count, length: 10 });
-      showMsg(`Cupos abiertos (tokens creados): ${res.created}`);
-
-      if (res.tokens && res.tokens.length) {
-        showTokensOut(res.tokens, res.ttl_hours, projectName);
-      }
-
+      const res = await postJSON(`/api/admin/projects/${projectId}/tokens`, { count });
+      showMsg(`Vacantes abiertas: ${res.created} (tokens)`);
+      if (res.tokens?.length) showTokensOut(res.tokens, res.ttl_hours, projectName);
       await loadProjects();
-      const box = document.getElementById(`tokwrap-${projectId}`);
-      if (box && !box.classList.contains('hide')) await loadTokenTable(projectId);
-
-    } catch (e) {
-      showMsg(e.message, false);
-    }
+    } catch (e) { showMsg(e.message, false); }
   }
 
+  // Tokens Output
   function showTokensOut(tokens, ttlHours, projectName='') {
     const box = document.getElementById('tokensOut');
-    const meta = document.getElementById('tokensOutMeta');
-    const txt = document.getElementById('tokensOutText');
-
-    txt.value = (tokens || []).join('\n');
-    meta.textContent = `Proyecto: ${projectName || '—'} | Tokens: ${(tokens || []).length} | Vigencia: ${ttlHours || '—'} horas`;
+    document.getElementById('tokensOutText').value = (tokens || []).join('\n');
+    document.getElementById('tokensOutMeta').textContent = `Proyecto: ${projectName} | Cantidad: ${tokens.length} | Vigencia: ${ttlHours} horas`;
     box.classList.remove('hide');
     box.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   async function copyTokensOut() {
     const txt = document.getElementById('tokensOutText');
-    try{
-      await navigator.clipboard.writeText(txt.value);
-      showMsg('Tokens recién generados copiados');
-    }catch{
-      txt.focus(); txt.select();
-      document.execCommand('copy');
-      showMsg('Tokens recién generados copiados');
-    }
+    txt.select(); document.execCommand('copy');
+    showMsg('Tokens copiados al portapapeles');
   }
+  function clearTokensOut() { document.getElementById('tokensOut').classList.add('hide'); }
 
-  function clearTokensOut() {
-    document.getElementById('tokensOutText').value = '';
-    document.getElementById('tokensOutMeta').textContent = '—';
-    document.getElementById('tokensOut').classList.add('hide');
-  }
-
-  function openTokenPanel(projectId){
-    document.getElementById(`tokwrap-${projectId}`).classList.remove('hide');
-    loadTokenTable(projectId);
-  }
-  function closeTokenPanel(projectId){
-    document.getElementById(`tokwrap-${projectId}`).classList.add('hide');
-  }
-
-  async function loadTokenTable(projectId){
-    try {
-      const rows = await getJSONAuth(`/api/admin/projects/${projectId}/tokens?status=all`);
-      const tbody = document.getElementById(`toktbody-${projectId}`);
-      const meta = document.getElementById(`tokmeta-${projectId}`);
-
-      let total=0, disp=0, usados=0, rev=0, exp=0;
-      total = (rows || []).length;
-
-      const linesDisponibles = [];
-
-      const html = (rows || []).map(t => {
-        const {status, cls} = tokenStatusRow(t);
-
-        if (status === 'Disponible') { disp += 1; linesDisponibles.push(t.token); }
-        if (status === 'Usado') usados += 1;
-        if (status === 'Revocado') rev += 1;
-        if (status === 'Expirado') exp += 1;
-
-        const canRevoke = (status === 'Disponible');
-        const expText = t.expires_at ? fmtDate(new Date(t.expires_at)) : '—';
-
-        return `
-          <tr>
-            <td><code>${t.token}</code></td>
-            <td><span class="pill ${cls}">${status}</span></td>
-            <td>${expText}</td>
-            <td>${t.used ? 'Sí' : 'No'}</td>
-            <td>${t.revoked ? 'Sí' : 'No'}</td>
-            <td>
-              <button class="${canRevoke ? 'btnDanger' : 'btn2'}" style="width:auto;padding:8px 10px;"
-                onclick="${canRevoke ? `revokeOneToken('${t.token}', ${projectId})` : 'return false;'}"
-                ${canRevoke ? '' : 'disabled'}>
-                ${canRevoke ? 'Revocar token' : '—'}
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      tbody.innerHTML = html || `<tr><td colspan="6" class="mini">No hay tokens.</td></tr>`;
-      meta.innerHTML = `
-        <span class="pill">Total: ${total}</span>
-        <span class="pill ok">Disponibles: ${disp}</span>
-        <span class="pill warn">Usados: ${usados}</span>
-        <span class="pill err">Revocados: ${rev}</span>
-        <span class="pill warn">Expirados: ${exp}</span>
-      `;
-
-      document.getElementById(`tokavail-${projectId}`).value = linesDisponibles.join('\n');
-
-    } catch (e) {
-      showMsg(e.message, false);
-    }
-  }
-
-  async function revokeOneToken(token, projectId){
-    try{
-      await postJSON('/api/admin/tokens/revoke', { token });
-      showMsg('Token revocado');
-      await loadTokenTable(projectId);
-      await loadProjects();
-    }catch(e){
-      showMsg(e.message, false);
-    }
-  }
-
-  async function revokePasted(projectId){
-    const inp = document.getElementById(`tokpaste-${projectId}`);
-    const token = (inp.value || '').trim().toUpperCase();
-    if (!token) return showMsg('Pega un token para revocar', false);
-    inp.value = '';
-    await revokeOneToken(token, projectId);
-  }
-
-  async function copyAvailable(projectId){
-    const txt = document.getElementById(`tokavail-${projectId}`);
-    try{
-      await navigator.clipboard.writeText(txt.value || '');
-      showMsg('Tokens disponibles copiados');
-    }catch{
-      txt.focus(); txt.select();
-      document.execCommand('copy');
-      showMsg('Tokens disponibles copiados');
-    }
-  }
-
+  // Template para tarjeta proyecto
   function projectCard(p) {
     const disp = (p.cupos_disponibles ?? 0);
-    const pill = disp > 0 ? '<span class="pill ok">Disponible</span>' : '<span class="pill warn">Sin cupo</span>';
-
+    const pill = disp > 0 ? '<span class="pill ok">Cupo Real</span>' : '<span class="pill warn">Sin Vacantes</span>';
     return `
-      <div class="card">
+      <div class="card" style="margin-bottom: 12px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
           <div>
-            <div style="font-weight:700;" id="projname-${p.id}">${p.name} <span class="mini">(${p.team_owners || ''})</span></div>
-            <div class="meta">
-              ${p.season ? `<div><strong>Temporada:</strong> ${p.season}</div>` : ''}
-              <div><strong>Modalidad:</strong> ${p.modalidad}</div>
-              <div><strong>Día:</strong> ${p.dia}</div>
-              <div><strong>Horario:</strong> ${p.horario}</div>
-              <div><strong>Cupo total:</strong> ${p.cupos} | <strong>Inscritos:</strong> ${p.inscritos} | <strong>Disponibles:</strong> ${disp}</div>
+            <strong id="projname-${p.id}">${p.name}</strong> <span class="mini">(${p.team_owners})</span>
+            <div class="meta" style="margin-top:8px;">
+              <div>T: <strong>${p.cupos}</strong> slots (total) · I: <strong>${p.inscritos}</strong> · V Reales: <strong>${disp}</strong> (tokens disp.)</div>
+              <div class="mini">${p.modality} · ${p.dia} · ${p.horario}</div>
             </div>
           </div>
-          <div>${pill}</div>
+          ${pill}
         </div>
-
-        <div class="hr"></div>
-
-        <div class="row" style="align-items:flex-end;">
+        <div class="hr" style="margin: 16px 0;"></div>
+        <div class="row">
           <div>
-            <label>Actualizar cupo total (slots)</label>
-            <input id="slots-${p.id}" type="number" min="0" value="${p.cupos}" />
-            <div class="mini">Bajar cupo solo se permite si no rompe tokens usados/abiertos vigentes.</div>
+            <label>Subir Slots Total</label>
+            <input id="slots-${p.id}" type="number" value="${p.cupos}">
           </div>
           <div>
             <label>&nbsp;</label>
-            <button class="btn" onclick="updateSlots(${p.id})">Actualizar cupo total</button>
+            <button class="btn2" onclick="updateSlots(${p.id})">Guardar Slots</button>
           </div>
         </div>
-
-        <div class="row" style="align-items:flex-end; margin-top:8px;">
+        <div class="row" style="margin-top:10px;">
           <div>
-            <label>Abrir cupos reales (generar tokens)</label>
-            <input id="count-${p.id}" type="number" min="1" value="1" />
-            <div class="mini">Si sale 409: sube el cupo total o baja la cantidad.</div>
+            <label>Abrir Vacantes Reales (Cantidad)</label>
+            <input id="count-${p.id}" type="number" value="1" min="1">
           </div>
           <div>
             <label>&nbsp;</label>
-            <button class="btn" onclick="genTokens(${p.id})">Abrir cupos (generar tokens)</button>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="actions">
-          <button class="btn2" onclick="openTokenPanel(${p.id})">Ver y controlar tokens (visión total)</button>
-          <button class="btn2" onclick="closeTokenPanel(${p.id})">Ocultar tokens</button>
-        </div>
-
-        <div id="tokwrap-${p.id}" class="hide" style="margin-top:10px;">
-          <div class="muted">Control de tokens del proyecto (estado, expiración, revocar, copiar disponibles).</div>
-          <div class="actions" style="justify-content:space-between;">
-            <div id="tokmeta-${p.id}"></div>
-            <button class="btn2" onclick="loadTokenTable(${p.id})" style="width:auto;">Refrescar lista</button>
-          </div>
-
-          <div class="row" style="align-items:flex-end; margin-top:8px;">
-            <div>
-              <label>Revocar token específico (pegar token)</label>
-              <input id="tokpaste-${p.id}" placeholder="Pega el token aquí">
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <button class="btnDanger" onclick="revokePasted(${p.id})">Revocar token pegado</button>
-            </div>
-          </div>
-
-          <div class="row" style="align-items:flex-end; margin-top:8px;">
-            <div>
-              <label>Tokens disponibles (solo para entregar)</label>
-              <textarea id="tokavail-${p.id}" readonly style="min-height:90px;"></textarea>
-              <div class="mini">Solo “Disponibles” (no usados, no revocados, no expirados).</div>
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <button class="btn" onclick="copyAvailable(${p.id})">Copiar disponibles</button>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Token</th>
-                <th>Estado</th>
-                <th>Expira</th>
-                <th>Usado</th>
-                <th>Revocado</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="toktbody-${p.id}">
-              <tr><td colspan="6" class="mini">Cargando...</td></tr>
-            </tbody>
-          </table>
-
-          <div class="mini" style="margin-top:8px;">
-            * “Eliminar” operativo = <strong>Revocar</strong>. No borramos tokens para mantener trazabilidad.
+            <button class="btn" onclick="genTokens(${p.id})">Abrir Vacantes (Generar Tokens)</button>
           </div>
         </div>
       </div>
     `;
   }
 
-  async function loadProjects() {
-    const data = await getJSON('/api/projects');
-    const root = document.getElementById('projects');
-    root.innerHTML = data.length ? data.map(projectCard).join('') : '<div class="card">No hay proyectos.</div>';
-  }
+  // Inicialización
+  document.addEventListener('DOMContentLoaded', () => {
+    // Si ya hay key en session, saltamos login
+    if (getKey()) validateAndSaveKey(); 
+    else applyRoleUI('');
 
-  (async () => {
-    try {
-      document.getElementById('adminKey').value = getKey();
-      applyRoleUI(getRole());
-      if (getRole()) {
-        await loadCatalogs();
-        if (getRole() === 'ADMIN') {
-          await loadProjects();
-          await loadTokenTTL();
-        }
-        onAcademyModeChange();
-      }
-    } catch (e) {
-      showMsg('Error cargando panel: ' + e.message, false);
-    }
-  })();
+    // Enter en clave
+    document.getElementById('adminKey').addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') validateAndSaveKey();
+    });
+  });
 </script>
 </body>
 </html>
