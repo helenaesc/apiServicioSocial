@@ -1,32 +1,51 @@
+import time
 import mysql.connector
-from mysql.connector import Error
 from .config import DB_CONFIG
 
 def get_conn():
-    return mysql.connector.connect(**DB_CONFIG)
+    retries = 10
+    delay = 3
+
+    for i in range(retries):
+        try:
+            conn = mysql.connector.connect(**DB_CONFIG)
+            print("✅ Conectado a la base de datos")
+            return conn
+        except Exception as e:
+            print(f"❌ Intento {i+1} fallido: {e}")
+            time.sleep(delay)
+
+    raise Exception("No se pudo conectar a la base de datos")
 
 def fetch_all(sql, params=None):
     conn = get_conn()
+    cur = None
     try:
         cur = conn.cursor(dictionary=True)
         cur.execute(sql, params or [])
         return cur.fetchall()
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def fetch_one(sql, params=None):
     conn = get_conn()
+    cur = None
     try:
         cur = conn.cursor(dictionary=True)
         cur.execute(sql, params or [])
         return cur.fetchone()
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def execute_tx(statements_fn):
     conn = get_conn()
+    cur = None
     try:
         cur = conn.cursor(dictionary=True)
         result = statements_fn(conn, cur)
@@ -36,5 +55,7 @@ def execute_tx(statements_fn):
         conn.rollback()
         raise
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
