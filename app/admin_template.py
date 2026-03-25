@@ -4,7 +4,7 @@ ADMIN_HTML = r"""
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Portal Administrativo | Servicio Social</title>
+  <title>Portal Administrativo test DOCKER | Servicio Social</title>
   <style>
     :root {
       /* Paleta Dashboard Profesional */
