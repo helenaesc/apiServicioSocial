@@ -4,7 +4,7 @@ ADMIN_HTML = r"""
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Portal Administrativo test DOCKER | Servicio Social</title>
+  <title>Portal test DOCKER | Servicio Social</title>
   <style>
     :root {
       /* Paleta Dashboard Profesional */
@@ -352,7 +352,7 @@ ADMIN_HTML = r"""
     <div class="grid hide" id="mainDashboard" style="margin-top:20px;">
 
       <div class="card hide" id="accessCodeCard">
-        <h3>Códigos Estudiantes</h3>
+        <h3>Códigos Anastasio</h3>
         <div class="muted">
           Genera códigos temporales para que los estudiantes puedan visualizar el catálogo. Verifica su identidad antes de entregar el código.
         </div>
