@@ -1,7 +1,7 @@
 CREATE TABLE events (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   year SMALLINT NOT NULL,
-  season ENUM('VERANO','INVIERNO') NOT NULL,
+  season ENUM('PRIMAVERA','INVIERNO') NOT NULL,
   display_name VARCHAR(40) NOT NULL,
   catalog_open_at DATETIME NULL,
   onsite_start_at DATETIME NULL,
