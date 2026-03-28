@@ -1,0 +1,20 @@
+CREATE TABLE project_tokens (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  event_project_id BIGINT NOT NULL,
+  token_value VARCHAR(20) NOT NULL,
+  status ENUM('AVAILABLE','RESERVED','USED','REVOKED','EXPIRED') NOT NULL DEFAULT 'AVAILABLE',
+  reserved_by_request_id BIGINT NULL,
+  reserved_at DATETIME NULL,
+  reserved_until DATETIME NULL,
+  used_by_request_id BIGINT NULL,
+  used_at DATETIME NULL,
+  revoked_at DATETIME NULL,
+  revoke_reason VARCHAR(255) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at DATETIME NULL,
+  UNIQUE KEY uk_project_tokens_value (token_value),
+  KEY idx_project_tokens_event_project (event_project_id),
+  CONSTRAINT fk_project_tokens_event_project FOREIGN KEY (event_project_id) REFERENCES event_projects(id),
+  CONSTRAINT fk_project_tokens_reserved_request FOREIGN KEY (reserved_by_request_id) REFERENCES student_event_requests(id),
+  CONSTRAINT fk_project_tokens_used_request FOREIGN KEY (used_by_request_id) REFERENCES student_event_requests(id)
+);

@@ -1,0 +1,21 @@
+CREATE TABLE student_event_requests (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  event_id BIGINT NOT NULL,
+  id_user BIGINT NOT NULL,
+  folio VARCHAR(20) NOT NULL,
+  status ENUM('REQUESTED','VALIDATED','ACCESS_ENABLED','REGISTERED','CANCELLED','CLOSED') NOT NULL DEFAULT 'REQUESTED',
+  requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  validated_at DATETIME NULL,
+  validated_by_user_id BIGINT NULL,
+  access_enabled_at DATETIME NULL,
+  registered_at DATETIME NULL,
+  cancelled_at DATETIME NULL,
+  closed_at DATETIME NULL,
+  notes VARCHAR(255) NULL,
+  UNIQUE KEY uk_request_event_user (event_id, id_user),
+  UNIQUE KEY uk_request_folio (folio),
+  KEY idx_request_event (event_id),
+  KEY idx_request_user (id_user),
+  CONSTRAINT fk_request_event FOREIGN KEY (event_id) REFERENCES events(id),
+  CONSTRAINT fk_request_user FOREIGN KEY (id_user) REFERENCES users(id)
+);

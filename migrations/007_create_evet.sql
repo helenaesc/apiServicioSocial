@@ -1,0 +1,15 @@
+CREATE TABLE events (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  year SMALLINT NOT NULL,
+  season ENUM('VERANO','INVIERNO') NOT NULL,
+  display_name VARCHAR(40) NOT NULL,
+  catalog_open_at DATETIME NULL,
+  onsite_start_at DATETIME NULL,
+  onsite_end_at DATETIME NULL,
+  registration_close_at DATETIME NULL,
+  status ENUM('DRAFT','VISIBLE','ONSITE','CLOSED','ARCHIVED') NOT NULL DEFAULT 'DRAFT',
+  is_visible_to_students BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_events_year_season (year, season)
+);
