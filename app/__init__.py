@@ -10,6 +10,15 @@ from .routes.admin_access_codes import admin_access_bp
 from .routes.admin_settings import admin_settings_bp
 from .routes.player_auth import player_auth_bp
 from .routes.player_register import player_register_bp
+from .routes.admin_events import admin_events_bp
+from .routes.admin_event_projects import admin_event_projects_bp
+from .routes.student_requests import student_requests_bp
+from .routes.student_pass import student_pass_bp
+from .routes.staff_checkin import staff_checkin_bp
+from .routes.student_registration import student_registration_bp
+from .routes.admin_incidents import admin_incidents_bp
+from .routes.admin_dashboard import admin_dashboard_bp
+from .routes.admin_master_projects import admin_master_projects_bp
 
 def create_app():
     app = Flask(__name__)
@@ -26,5 +35,13 @@ def create_app():
     app.register_blueprint(admin_settings_bp)
     app.register_blueprint(player_auth_bp)
     app.register_blueprint(player_register_bp)
+    app.register_blueprint(admin_events_bp)
+    app.register_blueprint(admin_event_projects_bp)
+    app.register_blueprint(student_requests_bp)
+    app.register_blueprint(student_pass_bp)
+    app.register_blueprint(staff_checkin_bp)
+    app.register_blueprint(student_registration_bp)
+    app.register_blueprint(admin_dashboard_bp)
+    app.register_blueprint(admin_master_projects_bp)
 
     return app

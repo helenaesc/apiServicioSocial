@@ -1,0 +1,2 @@
+ALTER TABLE project
+ADD COLUMN general_name VARCHAR(150) NULL AFTER name;

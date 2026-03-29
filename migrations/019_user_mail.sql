@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN secondary_email VARCHAR(100) NULL;
