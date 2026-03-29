@@ -19,6 +19,7 @@ from .routes.student_registration import student_registration_bp
 from .routes.admin_incidents import admin_incidents_bp
 from .routes.admin_dashboard import admin_dashboard_bp
 from .routes.admin_master_projects import admin_master_projects_bp
+from .routes.admin_catalogs import admin_catalogs_bp
 
 def create_app():
     app = Flask(__name__)
@@ -43,5 +44,7 @@ def create_app():
     app.register_blueprint(student_registration_bp)
     app.register_blueprint(admin_dashboard_bp)
     app.register_blueprint(admin_master_projects_bp)
+    app.register_blueprint(admin_catalogs_bp)
+    app.register_blueprint(admin_incidents_bp)
 
     return app

@@ -26,7 +26,6 @@ ADMIN_HTML = r"""
       --purple-bg: #ede9fe;
       --purple-text: #6d28d9;
       --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-      --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
       --radius-xl: 22px;
       --radius-lg: 16px;
       --radius-md: 12px;
@@ -55,7 +54,7 @@ ADMIN_HTML = r"""
       position: sticky;
       top: 0;
       z-index: 50;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
 
     .title-wrap {
@@ -95,11 +94,6 @@ ADMIN_HTML = r"""
       cursor: pointer;
     }
 
-    .top-links a:hover, .top-links button:hover {
-      border-color: var(--brand);
-      color: var(--brand);
-    }
-
     .container {
       max-width: 1450px;
       margin: 28px auto;
@@ -114,7 +108,7 @@ ADMIN_HTML = r"""
       font-size: .94rem;
       font-weight: 700;
       border: 1px solid transparent;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
 
     .msg.ok {
@@ -141,8 +135,8 @@ ADMIN_HTML = r"""
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-sm);
       padding: 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
     }
 
     .span-12 { grid-column: span 12; }
@@ -202,17 +196,11 @@ ADMIN_HTML = r"""
       font-size: .94rem;
       padding: 10px 12px;
       outline: none;
-      transition: .18s ease;
     }
 
     textarea {
       min-height: 100px;
       resize: vertical;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
     }
 
     .actions {
@@ -232,24 +220,13 @@ ADMIN_HTML = r"""
       color: white;
       border: none;
       font-weight: 800;
-      box-shadow: 0 10px 20px rgba(37,99,235,.18);
       cursor: pointer;
     }
-
-    .btn-primary:hover { background: var(--brand-dark); }
 
     .btn-secondary {
       background: #eef2f7;
       color: #334155;
       border: 1px solid #dbe3ee;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .btn-danger {
-      background: #ef4444;
-      color: white;
-      border: none;
       font-weight: 800;
       cursor: pointer;
     }
@@ -343,7 +320,6 @@ ADMIN_HTML = r"""
       border-radius: 18px;
       background: white;
       padding: 16px;
-      box-shadow: 0 6px 18px rgba(15,23,42,.05);
     }
 
     .stat-label {
@@ -442,9 +418,7 @@ ADMIN_HTML = r"""
 
     <div id="loginCard" class="card span-12">
       <h2>Acceso Administrador / Staff</h2>
-      <div class="muted">
-        Ingresa tu clave. El panel habilitará solo las acciones permitidas para tu rol.
-      </div>
+      <div class="muted">Ingresa tu clave para habilitar el panel.</div>
 
       <div class="form-grid" style="max-width:540px;">
         <div class="field">
@@ -454,8 +428,8 @@ ADMIN_HTML = r"""
       </div>
 
       <div class="actions">
-        <button class="btn-primary" onclick="validateAndSaveKey()">Entrar</button>
-        <button class="btn-secondary" onclick="clearKey(false)">Limpiar</button>
+        <button type="button" class="btn-primary" onclick="validateAndSaveKey()">Entrar</button>
+        <button type="button" class="btn-secondary" onclick="clearKey(false)">Limpiar</button>
       </div>
 
       <div class="small" id="roleBadge" style="margin-top:12px;">Sesión actual: —</div>
@@ -465,7 +439,7 @@ ADMIN_HTML = r"""
       <div class="card span-6">
         <h2>Gestión de Temporadas</h2>
         <div class="muted">
-          Crea temporadas operativas, cámbiales el estado y marca una como visible para alumnos.
+          Crea temporadas operativas. Para empezar usa estado <strong>VISIBLE</strong> y visible para alumnos en <strong>Sí</strong>.
         </div>
 
         <div class="form-grid">
@@ -485,8 +459,8 @@ ADMIN_HTML = r"""
           <div class="field">
             <label>Estado</label>
             <select id="eventStatus">
-              <option value="DRAFT">Draft</option>
               <option value="VISIBLE">Visible</option>
+              <option value="DRAFT">Draft</option>
               <option value="ONSITE">Onsite</option>
               <option value="CLOSED">Closed</option>
               <option value="ARCHIVED">Archived</option>
@@ -502,29 +476,29 @@ ADMIN_HTML = r"""
           </div>
 
           <div class="field">
-            <label>Abre catálogo (opcional)</label>
-            <input id="eventCatalogOpenAt" placeholder="YYYY-MM-DD HH:MM:SS">
+            <label>Abre catálogo</label>
+            <input id="eventCatalogOpenAt" type="datetime-local">
           </div>
 
           <div class="field">
-            <label>Inicio presencial (opcional)</label>
-            <input id="eventOnsiteStartAt" placeholder="YYYY-MM-DD HH:MM:SS">
+            <label>Inicio presencial</label>
+            <input id="eventOnsiteStartAt" type="datetime-local">
           </div>
 
           <div class="field">
-            <label>Fin presencial (opcional)</label>
-            <input id="eventOnsiteEndAt" placeholder="YYYY-MM-DD HH:MM:SS">
+            <label>Fin presencial</label>
+            <input id="eventOnsiteEndAt" type="datetime-local">
           </div>
 
           <div class="field">
-            <label>Cierre registro (opcional)</label>
-            <input id="eventRegistrationCloseAt" placeholder="YYYY-MM-DD HH:MM:SS">
+            <label>Cierre registro</label>
+            <input id="eventRegistrationCloseAt" type="datetime-local">
           </div>
         </div>
 
         <div class="actions">
-          <button class="btn-primary" onclick="createEvent()">Crear temporada</button>
-          <button class="btn-secondary" onclick="loadEvents()">Recargar</button>
+          <button type="button" class="btn-primary" onclick="createEvent()">Crear temporada</button>
+          <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar</button>
         </div>
 
         <div id="eventsList" class="list"></div>
@@ -532,9 +506,7 @@ ADMIN_HTML = r"""
 
       <div class="card span-6">
         <h2>Operar Temporada</h2>
-        <div class="muted">
-          Selecciona la temporada sobre la que trabajarás para ver dashboard, cargar proyectos e inspeccionar incidentes.
-        </div>
+        <div class="muted">Selecciona una temporada para trabajar sobre ella.</div>
 
         <div class="form-grid">
           <div class="field">
@@ -565,9 +537,9 @@ ADMIN_HTML = r"""
         </div>
 
         <div class="actions">
-          <button class="btn-primary" onclick="updateSelectedEvent()">Guardar cambios</button>
-          <button class="btn-secondary" onclick="setSelectedEventVisible()">Marcar visible</button>
-          <button class="btn-secondary" onclick="loadDashboard()">Cargar dashboard</button>
+          <button type="button" class="btn-primary" onclick="updateSelectedEvent()">Guardar cambios</button>
+          <button type="button" class="btn-secondary" onclick="setSelectedEventVisible()">Marcar visible</button>
+          <button type="button" class="btn-secondary" onclick="loadDashboard()">Cargar dashboard</button>
         </div>
 
         <div id="selectedEventInfo" class="list"></div>
@@ -575,18 +547,21 @@ ADMIN_HTML = r"""
 
       <div class="card span-12">
         <h2>Proyecto Maestro</h2>
-        <div class="muted">
-          Crea proyectos con su ficha completa. Después podrás asignarlos a temporadas.
-        </div>
+        <div class="muted">Crea proyectos con su ficha completa. Después podrás asignarlos a temporadas.</div>
 
         <div class="form-grid">
+          <div class="field">
+            <label>Nombre general / organización</label>
+            <input id="mp_general_name" placeholder="Ej: Adidas, Tigres, Nike">
+          </div>
+
           <div class="field">
             <label>Nombre del proyecto</label>
             <input id="mp_name" placeholder="Ej: Análisis del equipo para mejorar el rendimiento">
           </div>
 
           <div class="field">
-            <label>Socio / nombre general</label>
+            <label>Carrera preferida</label>
             <select id="mp_partner"></select>
           </div>
 
@@ -617,7 +592,7 @@ ADMIN_HTML = r"""
 
           <div class="field">
             <label>Responsables / líderes</label>
-            <input id="mp_team_owners" placeholder="Ej: Adidas / Equipo análisis">
+            <input id="mp_team_owners" placeholder="Ej: Equipo de análisis">
           </div>
 
           <div class="field">
@@ -667,21 +642,19 @@ ADMIN_HTML = r"""
         </div>
 
         <div class="actions">
-          <button class="btn-primary" onclick="createMasterProject()">Crear proyecto maestro</button>
-          <button class="btn-secondary" onclick="loadMasterProjects()">Recargar lista</button>
+          <button type="button" class="btn-primary" onclick="createMasterProject()">Crear proyecto maestro</button>
+          <button type="button" class="btn-secondary" onclick="loadMasterProjects()">Recargar lista</button>
         </div>
       </div>
 
       <div class="card span-12">
         <h2>Proyectos Maestros Existentes</h2>
-        <div class="muted">
-          Selecciona un proyecto por nombre y luego agrégalo a la temporada activa.
-        </div>
+        <div class="muted">Selecciona un proyecto por nombre y luego agrégalo a la temporada activa.</div>
 
         <div class="form-grid">
           <div class="field">
             <label>Buscar</label>
-            <input id="masterProjectsSearch" placeholder="Buscar por nombre, líder, objetivos..." oninput="loadMasterProjects()">
+            <input id="masterProjectsSearch" placeholder="Buscar por nombre, organización, líder..." oninput="loadMasterProjects()">
           </div>
         </div>
 
@@ -690,9 +663,7 @@ ADMIN_HTML = r"""
 
       <div class="card span-8">
         <h2>Proyectos en Temporada</h2>
-        <div class="muted">
-          Agrega proyectos existentes a la temporada seleccionada y define su cupo real por temporada.
-        </div>
+        <div class="muted">Agrega proyectos existentes a la temporada seleccionada y define su cupo real.</div>
 
         <div class="form-grid">
           <div class="field">
@@ -707,8 +678,8 @@ ADMIN_HTML = r"""
         </div>
 
         <div class="actions">
-          <button class="btn-primary" onclick="addProjectToEvent()">Agregar proyecto a temporada</button>
-          <button class="btn-secondary" onclick="loadEventProjects()">Recargar proyectos</button>
+          <button type="button" class="btn-primary" onclick="addProjectToEvent()">Agregar proyecto a temporada</button>
+          <button type="button" class="btn-secondary" onclick="loadEventProjects()">Recargar proyectos</button>
         </div>
 
         <div id="eventProjectsList" class="list"></div>
@@ -716,9 +687,7 @@ ADMIN_HTML = r"""
 
       <div class="card span-4">
         <h2>Vigencia global de tokens</h2>
-        <div class="muted">
-          Controla cuántas horas durarán los nuevos tokens de proyecto que se generen.
-        </div>
+        <div class="muted">Controla cuántas horas durarán los nuevos tokens de proyecto.</div>
 
         <div class="form-grid">
           <div class="field">
@@ -728,8 +697,8 @@ ADMIN_HTML = r"""
         </div>
 
         <div class="actions">
-          <button class="btn-primary" onclick="saveTokenTTL()">Guardar TTL</button>
-          <button class="btn-secondary" onclick="loadTokenTTL()">Recargar</button>
+          <button type="button" class="btn-primary" onclick="saveTokenTTL()">Guardar TTL</button>
+          <button type="button" class="btn-secondary" onclick="loadTokenTTL()">Recargar</button>
         </div>
 
         <div class="small" style="margin-top:10px;">
@@ -739,25 +708,18 @@ ADMIN_HTML = r"""
 
       <div class="card span-12">
         <h2>Dashboard de la Temporada</h2>
-        <div class="muted">
-          Monitorea solicitudes, validaciones, registros e incidentes para la temporada seleccionada.
-        </div>
-
+        <div class="muted">Monitorea solicitudes, validaciones, registros e incidentes.</div>
         <div id="dashboardSummary" class="stats-grid"></div>
       </div>
 
       <div class="card span-12">
         <h2>Resumen por Proyecto</h2>
-        <div class="muted">
-          Vista rápida de slots, tokens y registros activos por proyecto dentro de la temporada.
-        </div>
-
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Proyecto</th>
-                <th>Socio</th>
+                <th>Carrera preferida</th>
                 <th>Estado</th>
                 <th>Slots</th>
                 <th>Registrados</th>
@@ -776,9 +738,7 @@ ADMIN_HTML = r"""
 
       <div class="card span-6">
         <h2>Reportar Caso</h2>
-        <div class="muted">
-          Staff/Admin pueden registrar incidencias para que el flujo no dependa de correcciones improvisadas.
-        </div>
+        <div class="muted">Staff/Admin pueden registrar incidencias.</div>
 
         <div class="form-grid">
           <div class="field">
@@ -837,16 +797,13 @@ ADMIN_HTML = r"""
         </div>
 
         <div class="actions">
-          <button class="btn-primary" onclick="createIncident()">Reportar caso</button>
-          <button class="btn-secondary" onclick="loadIncidents()">Recargar incidentes</button>
+          <button type="button" class="btn-primary" onclick="createIncident()">Reportar caso</button>
+          <button type="button" class="btn-secondary" onclick="loadIncidents()">Recargar incidentes</button>
         </div>
       </div>
 
       <div class="card span-6">
         <h2>Incidentes</h2>
-        <div class="muted">
-          Revisa y da seguimiento a los casos abiertos o en proceso.
-        </div>
 
         <div class="form-grid">
           <div class="field">
@@ -892,13 +849,6 @@ ADMIN_HTML = r"""
       const el = document.getElementById('msg');
       el.textContent = text || '';
       el.className = 'msg ' + (ok ? 'ok' : 'err');
-    }
-
-    function clearMsg() {
-      const el = document.getElementById('msg');
-      el.textContent = '';
-      el.className = 'msg';
-      el.style.display = 'none';
     }
 
     function getKey() { return storage.getItem('ADMIN_API_KEY') || ''; }
@@ -972,6 +922,11 @@ ADMIN_HTML = r"""
       return String(v).toLowerCase() === 'true';
     }
 
+    function toSqlDateTime(value) {
+      if (!value) return null;
+      return value.replace('T', ' ') + ':00';
+    }
+
     function statusPill(status) {
       const map = {
         'DRAFT': ['pill-neutral', 'DRAFT'],
@@ -1036,28 +991,47 @@ ADMIN_HTML = r"""
 
     async function createEvent() {
       try {
+        showMsg('Creando temporada...');
+
+        const year = Number(document.getElementById('eventYear').value);
+        const season = document.getElementById('eventSeason').value;
+        const status = document.getElementById('eventStatus').value;
+        const isVisible = boolFromString(document.getElementById('eventVisible').value);
+
+        if (!year || year < 2020 || year > 2100) {
+          return showMsg('Año inválido', false);
+        }
+
         const payload = {
-          year: Number(document.getElementById('eventYear').value),
-          season: document.getElementById('eventSeason').value,
-          status: document.getElementById('eventStatus').value,
-          is_visible_to_students: boolFromString(document.getElementById('eventVisible').value),
-          catalog_open_at: document.getElementById('eventCatalogOpenAt').value.trim() || null,
-          onsite_start_at: document.getElementById('eventOnsiteStartAt').value.trim() || null,
-          onsite_end_at: document.getElementById('eventOnsiteEndAt').value.trim() || null,
-          registration_close_at: document.getElementById('eventRegistrationCloseAt').value.trim() || null
+          year: year,
+          season: season,
+          status: status,
+          is_visible_to_students: isVisible,
+          catalog_open_at: toSqlDateTime(document.getElementById('eventCatalogOpenAt').value),
+          onsite_start_at: toSqlDateTime(document.getElementById('eventOnsiteStartAt').value),
+          onsite_end_at: toSqlDateTime(document.getElementById('eventOnsiteEndAt').value),
+          registration_close_at: toSqlDateTime(document.getElementById('eventRegistrationCloseAt').value)
         };
 
+        console.log('createEvent payload:', payload);
+
         const data = await postJSON('/api/admin/events', payload);
-        showMsg(data.message || 'Temporada creada');
+
+        console.log('createEvent response:', data);
+        showMsg(data.message || 'Temporada creada correctamente');
         await loadEvents();
       } catch (e) {
-        showMsg(e.message, false);
+        console.error('createEvent error:', e);
+        showMsg(e.message || 'Error creando temporada', false);
       }
     }
 
     async function loadEvents() {
       try {
+        showMsg('Cargando temporadas...');
+
         const data = await getJSONAuth('/api/admin/events');
+        console.log('loadEvents response:', data);
 
         const list = document.getElementById('eventsList');
         const selector = document.getElementById('eventSelector');
@@ -1069,6 +1043,11 @@ ADMIN_HTML = r"""
           list.innerHTML = `<div class="item"><div class="small">No hay temporadas creadas todavía.</div></div>`;
           document.getElementById('selectedEventInfo').innerHTML = '';
           document.getElementById('incidentEventId').value = '';
+          document.getElementById('eventProjectsList').innerHTML = '';
+          document.getElementById('dashboardSummary').innerHTML = '';
+          document.getElementById('dashboardProjectsBody').innerHTML = '<tr><td colspan="9" class="small">No hay temporadas.</td></tr>';
+          document.getElementById('incidentsList').innerHTML = '';
+          showMsg('No hay temporadas creadas todavía');
           return;
         }
 
@@ -1086,25 +1065,6 @@ ADMIN_HTML = r"""
                 ${e.is_visible_to_students ? '<span class="pill pill-purple">VISIBLE ALUMNO</span>' : '<span class="pill pill-neutral">NO VISIBLE</span>'}
               </div>
             </div>
-
-            <div class="meta">
-              <div class="meta-box">
-                <span class="meta-label">Catálogo abre</span>
-                <div class="meta-value">${escapeHTML(e.catalog_open_at || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Inicio presencial</span>
-                <div class="meta-value">${escapeHTML(e.onsite_start_at || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Fin presencial</span>
-                <div class="meta-value">${escapeHTML(e.onsite_end_at || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Cierre registro</span>
-                <div class="meta-value">${escapeHTML(e.registration_close_at || '—')}</div>
-              </div>
-            </div>
           `;
           list.appendChild(div);
 
@@ -1114,15 +1074,17 @@ ADMIN_HTML = r"""
           selector.appendChild(opt);
         }
 
-        const selectedId = selector.value || data[0].id;
-        selector.value = String(selectedId);
+        selector.value = String(data[0].id);
 
         await loadSelectedEventInfo();
         await loadEventProjects();
         await loadDashboard();
         await loadIncidents();
+
+        showMsg('Temporadas cargadas correctamente');
       } catch (e) {
-        showMsg(e.message, false);
+        console.error('loadEvents error:', e);
+        showMsg(e.message || 'Error cargando temporadas', false);
       }
     }
 
@@ -1151,7 +1113,6 @@ ADMIN_HTML = r"""
             <div class="small">ID de temporada: ${e.id}</div>
           </div>
         `;
-
         document.getElementById('incidentEventId').value = e.id;
       } catch (e) {
         box.innerHTML = `<div class="item"><div class="small">${escapeHTML(e.message)}</div></div>`;
@@ -1197,8 +1158,7 @@ ADMIN_HTML = r"""
 
     async function loadAdminCatalogs() {
       try {
-        const data = await getJSON('/api/catalogs?temporada=PRIMAVERA').catch(() => null);
-        if (!data) return;
+        const data = await getJSONAuth('/api/admin/catalogs');
 
         fillAdminSelect('mp_partner', data.socio || [], 'name');
         fillAdminSelect('mp_modality', data.modalidad || [], 'description');
@@ -1225,6 +1185,7 @@ ADMIN_HTML = r"""
     async function createMasterProject() {
       try {
         const payload = {
+          general_name: document.getElementById('mp_general_name').value.trim(),
           name: document.getElementById('mp_name').value.trim(),
           id_partner: Number(document.getElementById('mp_partner').value),
           id_modality: Number(document.getElementById('mp_modality').value),
@@ -1266,7 +1227,7 @@ ADMIN_HTML = r"""
           for (const p of data) {
             const opt = document.createElement('option');
             opt.value = p.id;
-            opt.textContent = `${p.partner_name} | ${p.name}`;
+            opt.textContent = `${p.general_name || 'Sin nombre general'} | ${p.name}`;
             selector.appendChild(opt);
           }
         }
@@ -1282,7 +1243,7 @@ ADMIN_HTML = r"""
           <div class="item">
             <div class="item-head">
               <div>
-                <div class="item-title">${escapeHTML(p.partner_name)} | ${escapeHTML(p.name)}</div>
+                <div class="item-title">${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name)}</div>
                 <div class="small">Project ID: ${p.id}</div>
               </div>
               <div class="inline-row">
@@ -1294,6 +1255,10 @@ ADMIN_HTML = r"""
 
             <div class="meta">
               <div class="meta-box">
+                <span class="meta-label">Carrera preferida</span>
+                <div class="meta-value">${escapeHTML(p.partner_name || '—')}</div>
+              </div>
+              <div class="meta-box">
                 <span class="meta-label">Horario</span>
                 <div class="meta-value">${escapeHTML(p.schedule_description || '—')}</div>
               </div>
@@ -1302,17 +1267,13 @@ ADMIN_HTML = r"""
                 <div class="meta-value">${escapeHTML(p.duration || '—')}</div>
               </div>
               <div class="meta-box">
-                <span class="meta-label">Horas máx.</span>
-                <div class="meta-value">${escapeHTML(p.max_hours || '—')}</div>
-              </div>
-              <div class="meta-box">
                 <span class="meta-label">Clave</span>
                 <div class="meta-value">${escapeHTML(p.clave || '—')}</div>
               </div>
             </div>
 
             <div class="actions">
-              <button class="btn-secondary" onclick="selectMasterProject(${p.id})">Seleccionar para temporada</button>
+              <button type="button" class="btn-secondary" onclick="selectMasterProject(${p.id})">Seleccionar para temporada</button>
             </div>
           </div>
         `).join('');
@@ -1372,7 +1333,7 @@ ADMIN_HTML = r"""
             <div class="item-head">
               <div>
                 <div class="item-title">${escapeHTML(p.name)}</div>
-                <div class="small">Socio: ${escapeHTML(p.partner || '—')} · Project ID: ${p.project_id} · EventProject ID: ${p.id}</div>
+                <div class="small">Carrera preferida: ${escapeHTML(p.partner || '—')} · Project ID: ${p.project_id} · EventProject ID: ${p.id}</div>
               </div>
               <div>${statusPill(p.status)}</div>
             </div>
@@ -1389,9 +1350,9 @@ ADMIN_HTML = r"""
             </div>
 
             <div class="actions">
-              <button class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'ACTIVE')">Activar</button>
-              <button class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'HIDDEN')">Ocultar</button>
-              <button class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'CLOSED')">Cerrar</button>
+              <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'ACTIVE')">Activar</button>
+              <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'HIDDEN')">Ocultar</button>
+              <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'CLOSED')">Cerrar</button>
             </div>
           </div>
         `).join('');
@@ -1569,9 +1530,9 @@ ADMIN_HTML = r"""
             </div>
 
             <div class="actions">
-              <button class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'IN_PROGRESS')">Marcar en proceso</button>
-              <button class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'RESOLVED')">Resolver</button>
-              <button class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'DISMISSED')">Descartar</button>
+              <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'IN_PROGRESS')">Marcar en proceso</button>
+              <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'RESOLVED')">Resolver</button>
+              <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'DISMISSED')">Descartar</button>
             </div>
           </div>
         `).join('');
@@ -1582,9 +1543,7 @@ ADMIN_HTML = r"""
 
     async function updateIncidentStatus(incidentId, status) {
       try {
-        const data = await patchJSON(`/api/incidents/${incidentId}`, {
-          status: status
-        });
+        const data = await patchJSON(`/api/incidents/${incidentId}`, { status });
         showMsg(data.message || 'Caso actualizado');
         await loadIncidents();
         await loadDashboard();
