@@ -497,7 +497,7 @@ ADMIN_HTML = r"""
         </div>
 
         <div class="actions">
-          <button type="button" class="btn-primary" onclick="createEvent()">Crear temporada</button>
+          <button type="button" class="btn-primary" onclick="createAdminEvent()">Crear temporada</button>
           <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar</button>
         </div>
 
@@ -989,7 +989,7 @@ ADMIN_HTML = r"""
       ]);
     }
 
-    async function createEvent() {
+    async function createAdminEvent() {
       try {
         showMsg('Creando temporada...');
 
@@ -1013,15 +1013,24 @@ ADMIN_HTML = r"""
           registration_close_at: toSqlDateTime(document.getElementById('eventRegistrationCloseAt').value)
         };
 
-        console.log('createEvent payload:', payload);
+        console.log('createAdminEvent payload:', payload);
 
         const data = await postJSON('/api/admin/events', payload);
 
-        console.log('createEvent response:', data);
+        console.log('createAdminEvent response:', data);
         showMsg(data.message || 'Temporada creada correctamente');
         await loadEvents();
+
+        document.getElementById('eventYear').value = '';
+        document.getElementById('eventSeason').value = 'PRIMAVERA';
+        document.getElementById('eventStatus').value = 'VISIBLE';
+        document.getElementById('eventVisible').value = 'true';
+        document.getElementById('eventCatalogOpenAt').value = '';
+        document.getElementById('eventOnsiteStartAt').value = '';
+        document.getElementById('eventOnsiteEndAt').value = '';
+        document.getElementById('eventRegistrationCloseAt').value = '';
       } catch (e) {
-        console.error('createEvent error:', e);
+        console.error('createAdminEvent error:', e);
         showMsg(e.message || 'Error creando temporada', false);
       }
     }
