@@ -439,7 +439,7 @@ ADMIN_HTML = r"""
       <div class="card span-6">
         <h2>Gestión de Temporadas</h2>
         <div class="muted">
-          Crea temporadas operativas. Para empezar usa estado <strong>VISIBLE</strong> y visible para alumnos en <strong>Sí</strong>.
+          Para empezar usa <strong>VISIBLE</strong> y <strong>Sí</strong> en visible para alumnos.
         </div>
 
         <div class="form-grid">
@@ -547,7 +547,7 @@ ADMIN_HTML = r"""
 
       <div class="card span-12">
         <h2>Proyecto Maestro</h2>
-        <div class="muted">Crea proyectos con su ficha completa. Después podrás asignarlos a temporadas.</div>
+        <div class="muted">Crea proyectos con su ficha completa.</div>
 
         <div class="form-grid">
           <div class="field">
@@ -649,7 +649,7 @@ ADMIN_HTML = r"""
 
       <div class="card span-12">
         <h2>Proyectos Maestros Existentes</h2>
-        <div class="muted">Selecciona un proyecto por nombre y luego agrégalo a la temporada activa.</div>
+        <div class="muted">Selecciona un proyecto por nombre y agrégalo a la temporada activa.</div>
 
         <div class="form-grid">
           <div class="field">
@@ -708,7 +708,6 @@ ADMIN_HTML = r"""
 
       <div class="card span-12">
         <h2>Dashboard de la Temporada</h2>
-        <div class="muted">Monitorea solicitudes, validaciones, registros e incidentes.</div>
         <div id="dashboardSummary" class="stats-grid"></div>
       </div>
 
@@ -738,7 +737,6 @@ ADMIN_HTML = r"""
 
       <div class="card span-6">
         <h2>Reportar Caso</h2>
-        <div class="muted">Staff/Admin pueden registrar incidencias.</div>
 
         <div class="form-grid">
           <div class="field">
@@ -1013,11 +1011,8 @@ ADMIN_HTML = r"""
           registration_close_at: toSqlDateTime(document.getElementById('eventRegistrationCloseAt').value)
         };
 
-        console.log('createAdminEvent payload:', payload);
-
         const data = await postJSON('/api/admin/events', payload);
 
-        console.log('createAdminEvent response:', data);
         showMsg(data.message || 'Temporada creada correctamente');
         await loadEvents();
 
@@ -1030,17 +1025,13 @@ ADMIN_HTML = r"""
         document.getElementById('eventOnsiteEndAt').value = '';
         document.getElementById('eventRegistrationCloseAt').value = '';
       } catch (e) {
-        console.error('createAdminEvent error:', e);
         showMsg(e.message || 'Error creando temporada', false);
       }
     }
 
     async function loadEvents() {
       try {
-        showMsg('Cargando temporadas...');
-
         const data = await getJSONAuth('/api/admin/events');
-        console.log('loadEvents response:', data);
 
         const list = document.getElementById('eventsList');
         const selector = document.getElementById('eventSelector');
@@ -1092,7 +1083,6 @@ ADMIN_HTML = r"""
 
         showMsg('Temporadas cargadas correctamente');
       } catch (e) {
-        console.error('loadEvents error:', e);
         showMsg(e.message || 'Error cargando temporadas', false);
       }
     }
@@ -1168,7 +1158,6 @@ ADMIN_HTML = r"""
     async function loadAdminCatalogs() {
       try {
         const data = await getJSONAuth('/api/admin/catalogs');
-
         fillAdminSelect('mp_partner', data.socio || [], 'name');
         fillAdminSelect('mp_modality', data.modalidad || [], 'description');
         fillAdminSelect('mp_week_days', data.dias || [], 'description');

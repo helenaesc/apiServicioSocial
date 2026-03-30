@@ -4,6 +4,7 @@ INDEX_HTML = r"""
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <title>Registro de Proyectos</title>
   <style>
     :root {
@@ -618,10 +619,16 @@ INDEX_HTML = r"""
         </div>
 
         <div class="qr-box">
-          <div class="mini" style="margin-bottom:10px;"><strong>Código vigente del pase</strong></div>
-          <div id="qrPlaceholder" class="mono">Genera tu código</div>
+          <div class="mini" style="margin-bottom:10px;"><strong>QR vigente del pase</strong></div>
+
+          <div id="qrCanvasWrap" style="display:flex; justify-content:center; align-items:center; min-height:180px;">
+            <div id="qrCanvas"></div>
+          </div>
+
+          <div id="qrPlainToken" class="mono" style="margin-top:12px;">Genera tu código</div>
+
           <div class="mini" style="margin-top:12px; text-align:center;">
-            Este código cambia al refrescarse y deja de servir al expirar o cuando el staff lo usa.
+            Este QR cambia al refrescarse y deja de servir al expirar o cuando el staff lo usa.
           </div>
         </div>
       </div>
@@ -1208,6 +1215,23 @@ INDEX_HTML = r"""
         if (e.key === 'Enter') loadProjects();
       });
     });
+
+    function renderStudentQR(plainToken) {
+      const qrCanvas = document.getElementById('qrCanvas');
+      const qrPlainToken = document.getElementById('qrPlainToken');
+
+      qrCanvas.innerHTML = '';
+      qrPlainToken.textContent = plainToken || 'Sin código';
+
+      if (!plainToken) return;
+
+      new QRCode(qrCanvas, {
+        text: plainToken,
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
   </script>
 </body>
 </html>

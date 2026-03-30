@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, request
 from mysql.connector import Error
 from ..database import execute_tx, fetch_one
 import unicodedata
+import hashlib
+import json
 
 student_registration_bp = Blueprint("student_registration", __name__)
 
@@ -28,6 +30,35 @@ def _normalize_text(value: str) -> str:
     return value
 
 
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _build_acceptance_snapshot(
+    req_row: dict,
+    ep_row: dict,
+    token_row: dict,
+    accepted_full_name: str,
+    legal_text_version: str,
+) -> dict:
+    return {
+        "event_id": req_row["event_id"],
+        "request_id": req_row["request_id"],
+        "user_id": req_row["user_id"],
+        "enrolment_number": req_row["enrolment_number"],
+        "student_full_name_system": req_row["full_name"],
+        "accepted_full_name": accepted_full_name,
+        "event_project_id": ep_row["event_project_id"],
+        "project_id": ep_row["project_id"],
+        "project_name": ep_row["project_name"],
+        "general_name": ep_row["general_name"],
+        "partner_name": ep_row["partner_name"],
+        "token_id": token_row["id"],
+        "token_value": token_row["token_value"],
+        "legal_text_version": legal_text_version,
+    }
+
+
 @student_registration_bp.post("/api/student/registration/preview")
 def preview_registration():
     payload = request.get_json(silent=True) or {}
@@ -51,7 +82,6 @@ def preview_registration():
     except:
         return jsonify({"error": "project_id debe ser numérico"}), 400
 
-    # 1) solicitud del alumno en esa temporada
     request_sql = """
         SELECT
             ser.id AS request_id,
@@ -81,7 +111,6 @@ def preview_registration():
             "error": f"La solicitud no está habilitada para registro ({req_row['request_status']})"
         }), 409
 
-    # 2) proyecto dentro del evento/temporada
     event_project_sql = """
         SELECT
             ep.id AS event_project_id,
@@ -89,9 +118,12 @@ def preview_registration():
             ep.project_id,
             ep.slots_total,
             ep.status AS event_project_status,
-            p.name AS project_name
+            p.name AS project_name,
+            p.general_name,
+            pa.name AS partner_name
         FROM event_projects ep
         JOIN project p ON p.id = ep.project_id
+        LEFT JOIN partner pa ON pa.id = p.id_partner
         WHERE ep.event_id = %s
           AND ep.project_id = %s
         LIMIT 1
@@ -104,14 +136,15 @@ def preview_registration():
     if ep_row["event_project_status"] != "ACTIVE":
         return jsonify({"error": "El proyecto no está disponible para registro"}), 409
 
-    # 3) token
     token_sql = """
         SELECT
             pt.id,
             pt.token_value,
             pt.status,
             pt.expires_at,
-            pt.event_project_id
+            pt.event_project_id,
+            pt.reserved_by_request_id,
+            pt.reserved_until
         FROM project_tokens pt
         WHERE pt.token_value = %s
         LIMIT 1
@@ -124,12 +157,12 @@ def preview_registration():
     if int(tk_row["event_project_id"]) != int(ep_row["event_project_id"]):
         return jsonify({"error": "El token no corresponde al proyecto"}), 409
 
-    if tk_row["status"] != "AVAILABLE":
+    if tk_row["status"] not in ("AVAILABLE", "RESERVED"):
         return jsonify({"error": f"El token no está disponible ({tk_row['status']})"}), 409
 
-    if tk_row["expires_at"] is not None:
-        # dejamos que MySQL maneje esto luego en confirm también; aquí solo avisamos
-        pass
+    if tk_row["status"] == "RESERVED":
+        if tk_row["reserved_by_request_id"] != req_row["request_id"]:
+            return jsonify({"error": "El token está reservado por otra solicitud"}), 409
 
     return jsonify({
         "message": "Preview válido",
@@ -148,6 +181,8 @@ def preview_registration():
             "event_project_id": ep_row["event_project_id"],
             "project_id": ep_row["project_id"],
             "project_name": ep_row["project_name"],
+            "general_name": ep_row["general_name"],
+            "partner_name": ep_row["partner_name"],
             "slots_total": ep_row["slots_total"],
         },
         "token": {
@@ -169,6 +204,7 @@ def confirm_registration():
     token_value = (payload.get("token_value") or payload.get("token") or "").strip().upper()
     accepted_checkbox = payload.get("accepted_checkbox")
     accepted_full_name = (payload.get("accepted_full_name") or "").strip()
+    legal_text_version = (payload.get("legal_text_version") or "v1").strip()
 
     if not enrolment_number:
         return jsonify({"error": "Matrícula es obligatoria"}), 400
@@ -188,6 +224,14 @@ def confirm_registration():
     except:
         return jsonify({"error": "project_id debe ser numérico"}), 400
 
+    accepted_ip = (
+        request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        or request.headers.get("X-Real-IP", "").strip()
+        or (request.remote_addr or "").strip()
+        or None
+    )
+    accepted_user_agent = (request.headers.get("User-Agent") or "").strip() or None
+
     def tx(conn, cur):
         # 1) solicitud del alumno
         cur.execute(
@@ -196,7 +240,6 @@ def confirm_registration():
                 ser.id AS request_id,
                 ser.status AS request_status,
                 ser.event_id,
-                ser.registered_at,
                 u.id AS user_id,
                 CONCAT_WS(' ', u.first_name, u.second_name, u.p_last_name, u.m_last_name) AS full_name,
                 u.enrolment_number
@@ -222,7 +265,7 @@ def confirm_registration():
                 "status": 409
             }
 
-        # 2) evitar doble registro en la misma temporada
+        # 2) evitar doble registro
         cur.execute(
             """
             SELECT id
@@ -238,16 +281,19 @@ def confirm_registration():
         if cur.fetchone():
             return {"error": "El alumno ya tiene un registro activo en esta temporada", "status": 409}
 
-        # 3) proyecto en esa temporada
+        # 3) proyecto en temporada
         cur.execute(
             """
             SELECT
                 ep.id AS event_project_id,
                 ep.project_id,
                 ep.status AS event_project_status,
-                p.name AS project_name
+                p.name AS project_name,
+                p.general_name,
+                pa.name AS partner_name
             FROM event_projects ep
             JOIN project p ON p.id = ep.project_id
+            LEFT JOIN partner pa ON pa.id = p.id_partner
             WHERE ep.event_id = %s
               AND ep.project_id = %s
             LIMIT 1
@@ -271,7 +317,9 @@ def confirm_registration():
                 pt.token_value,
                 pt.status,
                 pt.expires_at,
-                pt.event_project_id
+                pt.event_project_id,
+                pt.reserved_by_request_id,
+                pt.reserved_until
             FROM project_tokens pt
             WHERE pt.token_value = %s
             LIMIT 1
@@ -287,41 +335,70 @@ def confirm_registration():
         if int(tk_row["event_project_id"]) != int(ep_row["event_project_id"]):
             return {"error": "El token no corresponde al proyecto", "status": 409}
 
-        if tk_row["status"] != "AVAILABLE":
+        # 5) expirar si corresponde
+        cur.execute(
+            """
+            UPDATE project_tokens
+            SET status = 'EXPIRED'
+            WHERE id = %s
+              AND status = 'AVAILABLE'
+              AND expires_at IS NOT NULL
+              AND expires_at <= NOW()
+            """,
+            [tk_row["id"]]
+        )
+
+        cur.execute(
+            """
+            SELECT
+                id,
+                token_value,
+                status,
+                reserved_by_request_id,
+                reserved_until
+            FROM project_tokens
+            WHERE id = %s
+            LIMIT 1
+            """,
+            [tk_row["id"]]
+        )
+        tk_row = cur.fetchone()
+
+        if tk_row["status"] == "EXPIRED":
+            return {"error": "El token expiró", "status": 409}
+
+        if tk_row["status"] == "USED":
+            return {"error": "El token ya fue utilizado", "status": 409}
+
+        if tk_row["status"] == "REVOKED":
+            return {"error": "El token fue revocado", "status": 409}
+
+        if tk_row["status"] == "RESERVED":
+            if tk_row["reserved_by_request_id"] != req_row["request_id"]:
+                return {"error": "El token está reservado por otra solicitud", "status": 409}
+
+        if tk_row["status"] not in ("AVAILABLE", "RESERVED"):
             return {"error": f"El token no está disponible ({tk_row['status']})", "status": 409}
 
-        if tk_row["expires_at"] is not None:
-            cur.execute(
-                """
-                UPDATE project_tokens
-                SET status = 'EXPIRED'
-                WHERE id = %s
-                  AND status = 'AVAILABLE'
-                  AND expires_at <= NOW()
-                """,
-                [tk_row["id"]]
-            )
-            cur.execute(
-                """
-                SELECT status
-                FROM project_tokens
-                WHERE id = %s
-                LIMIT 1
-                """,
-                [tk_row["id"]]
-            )
-            check_tk = cur.fetchone()
-            if not check_tk or check_tk["status"] != "AVAILABLE":
-                return {"error": "El token expiró", "status": 409}
-
-        # 5) validar nombre razonablemente
+        # 6) validar nombre razonablemente
         expected_name = _normalize_text(req_row["full_name"])
         provided_name = _normalize_text(accepted_full_name)
 
         if expected_name != provided_name:
             return {"error": "El nombre completo no coincide con el del alumno", "status": 409}
 
-        # 6) crear registration
+        # 7) construir snapshot + hash
+        snapshot = _build_acceptance_snapshot(
+            req_row=req_row,
+            ep_row=ep_row,
+            token_row=tk_row,
+            accepted_full_name=accepted_full_name,
+            legal_text_version=legal_text_version,
+        )
+        snapshot_json = json.dumps(snapshot, ensure_ascii=False, sort_keys=True)
+        acceptance_hash = _sha256_text(snapshot_json)
+
+        # 8) crear registration
         cur.execute(
             """
             INSERT INTO registrations
@@ -335,9 +412,18 @@ def confirm_registration():
                 accepted_full_name,
                 legal_text_version,
                 accepted_at,
+                acceptance_snapshot_json,
+                acceptance_hash,
+                accepted_ip,
+                accepted_user_agent,
                 status
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'v1', NOW(), 'ACTIVE')
+            VALUES (
+                %s, %s, %s, %s, %s,
+                %s, %s, %s, NOW(),
+                %s, %s, %s, %s,
+                'ACTIVE'
+            )
             """,
             [
                 req_row["event_id"],
@@ -347,23 +433,31 @@ def confirm_registration():
                 tk_row["id"],
                 True,
                 accepted_full_name,
+                legal_text_version,
+                snapshot_json,
+                acceptance_hash,
+                accepted_ip,
+                accepted_user_agent,
             ]
         )
         registration_id = cur.lastrowid
 
-        # 7) consumir token
+        # 9) consumir token
         cur.execute(
             """
             UPDATE project_tokens
             SET status = 'USED',
                 used_by_request_id = %s,
-                used_at = NOW()
+                used_at = NOW(),
+                reserved_by_request_id = NULL,
+                reserved_at = NULL,
+                reserved_until = NULL
             WHERE id = %s
             """,
             [req_row["request_id"], tk_row["id"]]
         )
 
-        # 8) cerrar solicitud como registrada
+        # 10) cerrar solicitud
         cur.execute(
             """
             UPDATE student_event_requests
@@ -383,8 +477,10 @@ def confirm_registration():
                 "event_id": req_row["event_id"],
                 "event_project_id": ep_row["event_project_id"],
                 "project_name": ep_row["project_name"],
+                "general_name": ep_row["general_name"],
                 "token_value": tk_row["token_value"],
                 "accepted_full_name": accepted_full_name,
+                "acceptance_hash": acceptance_hash,
             }
         }
 
