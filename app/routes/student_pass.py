@@ -7,8 +7,6 @@ from datetime import datetime, timedelta
 
 student_pass_bp = Blueprint("student_pass", __name__)
 
-PASS_TTL_MINUTES = 5
-
 
 def _normalize_season(raw: str | None) -> str | None:
     if not raw:
@@ -31,6 +29,15 @@ def _sha256(text: str) -> str:
 def _gen_pass_token(length=32) -> str:
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789abcdefghijklmnopqrstuvwxyz"
     return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def _get_pass_ttl_minutes(cur) -> int:
+    cur.execute("SELECT v FROM app_settings WHERE k='PASS_TTL_MINUTES' LIMIT 1")
+    row = cur.fetchone()
+    try:
+        return max(1, min(int(row["v"]), 15)) if row and row.get("v") else 5
+    except:
+        return 5
 
 
 def _expire_old_sessions(cur, request_id: int):
@@ -169,7 +176,6 @@ def refresh_student_pass():
         return jsonify({"error": "Temporada inválida o faltante"}), 400
 
     def tx(conn, cur):
-        # 1) encontrar solicitud
         cur.execute(
             """
             SELECT
@@ -205,13 +211,14 @@ def refresh_student_pass():
         if not row:
             return {"error": "No existe solicitud para esa temporada", "status": 404}
 
-        if row["request_status"] in ("CANCELLED", "CLOSED"):
-            return {"error": "La solicitud no está disponible", "status": 409}
+        if row["request_status"] in ("REGISTERED", "CANCELLED", "CLOSED"):
+            return {
+                "error": f"La solicitud ya no permite generar credencial ({row['request_status']})",
+                "status": 409
+            }
 
-        # 2) expirar sesiones viejas
         _expire_old_sessions(cur, row["request_id"])
 
-        # 3) buscar último refresh_count
         cur.execute(
             """
             SELECT refresh_count
@@ -225,13 +232,12 @@ def refresh_student_pass():
         prev = cur.fetchone()
         next_refresh_count = int(prev["refresh_count"] or 0) + 1 if prev else 1
 
-        # 4) revocar cualquier sesión activa aún viva
         _revoke_active_sessions(cur, row["request_id"])
 
-        # 5) generar nuevo token
         plain_token = _gen_pass_token(40)
         token_hash = _sha256(plain_token)
-        expires_at = datetime.now() + timedelta(minutes=PASS_TTL_MINUTES)
+        ttl_minutes = _get_pass_ttl_minutes(cur)
+        expires_at = datetime.now() + timedelta(minutes=ttl_minutes)
 
         cur.execute(
             """
@@ -273,7 +279,7 @@ def refresh_student_pass():
                 "plain_token": plain_token,
                 "expires_at": expires_at.isoformat(sep=" ", timespec="seconds"),
                 "refresh_count": next_refresh_count,
-                "ttl_minutes": PASS_TTL_MINUTES
+                "ttl_minutes": ttl_minutes
             }
         }
 

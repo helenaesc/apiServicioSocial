@@ -4,28 +4,32 @@ INDEX_HTML = r"""
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <title>Registro de Proyectos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --bg: #f4f7fb;
-      --panel: #ffffff;
+      --bg: #f8fafc;
+      --card: #ffffff;
       --text: #0f172a;
-      --muted: #64748b;
-      --line: #e2e8f0;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --accent: #0ea5e9;
-      --success-bg: #dcfce7;
-      --success-text: #166534;
-      --danger-bg: #fee2e2;
-      --danger-text: #991b1b;
+      --text-soft: #475569;
+      --muted: #94a3b8;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --brand-soft: #eff6ff;
+      --ok-bg: #dcfce7;
+      --ok-text: #166534;
+      --err-bg: #fee2e2;
+      --err-text: #991b1b;
       --warn-bg: #fff7ed;
       --warn-text: #9a3412;
-      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --purple-bg: #ede9fe;
+      --purple-text: #6d28d9;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
       --radius-xl: 22px;
-      --radius-lg: 18px;
-      --radius-md: 14px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
     }
 
     * { box-sizing: border-box; }
@@ -33,135 +37,145 @@ INDEX_HTML = r"""
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 28%),
-        radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 24%),
-        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
       color: var(--text);
       min-height: 100vh;
     }
 
     .hidden { display: none !important; }
 
-    .hero {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0ea5e9 100%);
-      color: white;
-      padding: 36px 20px 72px;
-    }
-
-    .hero-inner {
-      max-width: 1150px;
-      margin: 0 auto;
-    }
-
-    .eyebrow {
-      display: inline-flex;
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 26px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      font-size: .82rem;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.18);
-      padding: 8px 12px;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title-wrap strong {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .title-wrap span {
+      font-size: .92rem;
+      color: var(--text-soft);
+      font-weight: 500;
+    }
+
+    .top-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .top-links a {
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text-soft);
+      padding: 10px 12px;
       border-radius: 999px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
     }
 
-    h1 {
-      margin: 16px 0 10px;
-      font-size: clamp(2rem, 4vw, 3rem);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-    }
-
-    .hero p {
-      margin: 0;
-      max-width: 760px;
-      color: rgba(255,255,255,.88);
-      font-size: 1rem;
-      line-height: 1.6;
-    }
-
-    .screen, .container {
-      max-width: 1150px;
-      margin: -40px auto 32px;
-      padding: 0 16px 24px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,.7);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow);
-      padding: 24px;
-    }
-
-    .panel-header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .panel-header h2 {
-      margin: 0 0 8px;
-      font-size: 1.7rem;
-    }
-
-    .panel-header p {
-      margin: 0;
-      color: var(--muted);
+    .container {
+      max-width: 1450px;
+      margin: 28px auto;
+      padding: 0 18px 32px;
     }
 
     .msg {
-      margin-top: 12px;
-      min-height: 20px;
-      font-size: .93rem;
-      font-weight: 600;
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      font-size: .94rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
     }
 
-    .msg.ok { color: var(--success-text); }
-    .msg.error { color: var(--danger-text); }
+    .msg.ok {
+      display: block;
+      background: var(--ok-bg);
+      color: var(--ok-text);
+      border-color: #bbf7d0;
+    }
 
-    .season-grid {
+    .msg.err {
+      display: block;
+      background: var(--err-bg);
+      color: var(--err-text);
+      border-color: #fecaca;
+    }
+
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(12, 1fr);
       gap: 18px;
     }
 
-    .season-card {
-      border: 1px solid #e2e8f0;
-      background: white;
-      border-radius: var(--radius-lg);
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
       padding: 22px;
-      text-align: left;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(15, 23, 42, .05);
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
-    .season-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 18px 36px rgba(15, 23, 42, .11);
-      border-color: #cfe0f6;
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+
+    h2, h3 {
+      margin: 0 0 12px 0;
+      line-height: 1.2;
     }
 
-    .season-badge {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: .78rem;
+    h2 {
+      font-size: 1.2rem;
       font-weight: 800;
-      margin-bottom: 14px;
     }
 
-    .badge-spring { background: #dcfce7; color: #166534; }
-    .badge-winter { background: #dbeafe; color: #1d4ed8; }
+    h3 {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: .93rem;
+      line-height: 1.55;
+    }
+
+    .small {
+      font-size: .84rem;
+      color: var(--text-soft);
+    }
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 12px;
+      margin-top: 14px;
     }
 
     .field {
@@ -171,67 +185,73 @@ INDEX_HTML = r"""
     }
 
     .field label {
-      font-size: .82rem;
-      font-weight: 600;
-      color: #334155;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .03em;
     }
 
-    input, select, button, textarea {
+    input, select, textarea, button {
       width: 100%;
-      min-height: 46px;
-      border-radius: 14px;
-      font-size: .95rem;
-      transition: .2s ease;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.92);
+      min-height: 44px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-strong);
+      background: white;
       color: var(--text);
-      padding: 10px 14px;
+      font-size: .94rem;
+      padding: 10px 12px;
       outline: none;
     }
 
-    textarea { min-height: 100px; resize: vertical; }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
 
     input:focus, select:focus, textarea:focus {
-      border-color: rgba(37, 99, 235, .5);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
-      background: white;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
     }
 
     .actions {
       display: flex;
       gap: 10px;
-      align-items: end;
       flex-wrap: wrap;
       margin-top: 16px;
     }
 
-    button {
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
+    .actions > button {
+      width: auto;
+      min-width: 150px;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      background: linear-gradient(135deg, var(--brand) 0%, #0ea5e9 100%);
       color: white;
-      box-shadow: 0 10px 20px rgba(37, 99, 235, .20);
+      border: none;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(37,99,235,.18);
     }
-
-    .btn-primary:hover { background: var(--primary-dark); }
 
     .btn-secondary {
       background: #eef2f7;
       color: #334155;
       border: 1px solid #dbe3ee;
+      font-weight: 800;
+      cursor: pointer;
     }
 
     .btn-danger {
       background: #ef4444;
       color: white;
+      border: none;
+      font-weight: 800;
+      cursor: pointer;
     }
 
-    .status-pill {
+    .pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -242,384 +262,311 @@ INDEX_HTML = r"""
       white-space: nowrap;
     }
 
-    .status-requested { background: #f1f5f9; color: #334155; }
-    .status-validated { background: #dbeafe; color: #1d4ed8; }
-    .status-access-enabled { background: #dcfce7; color: #166534; }
-    .status-registered { background: #ede9fe; color: #6d28d9; }
-    .status-cancelled, .status-closed { background: #fee2e2; color: #991b1b; }
+    .pill-ok { background: var(--ok-bg); color: var(--ok-text); }
+    .pill-err { background: var(--err-bg); color: var(--err-text); }
+    .pill-warn { background: var(--warn-bg); color: var(--warn-text); }
+    .pill-info { background: var(--brand-soft); color: var(--brand); }
+    .pill-purple { background: var(--purple-bg); color: var(--purple-text); }
+    .pill-neutral { background: #f1f5f9; color: #334155; }
 
-    .card {
-      background: white;
-      border: 1px solid #e9eef5;
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 10px 22px rgba(15, 23, 42, .05);
-      position: relative;
-      overflow: hidden;
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
     }
 
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: 0 0 auto 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
+    .item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      padding: 16px;
     }
 
-    .card-head {
+    .item-head {
       display: flex;
       justify-content: space-between;
       gap: 12px;
       align-items: start;
-      margin-bottom: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
-    .title {
-      font-size: 1.08rem;
+    .item-title {
       font-weight: 800;
-      line-height: 1.3;
+      font-size: 1rem;
       color: var(--text);
-      margin: 0;
     }
 
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: .78rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status.available {
-      background: var(--success-bg);
-      color: var(--success-text);
-    }
-
-    .status.full {
-      background: var(--danger-bg);
-      color: var(--danger-text);
-    }
-
-    .meta-grid {
+    .meta {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 10px;
-      margin-bottom: 14px;
+      margin-top: 10px;
     }
 
-    .meta-item {
-      background: #f8fafc;
+    .meta-box {
       border: 1px solid #eef2f7;
+      background: #f8fafc;
       border-radius: 14px;
       padding: 10px 12px;
     }
 
     .meta-label {
       display: block;
-      font-size: .75rem;
-      color: var(--muted);
-      margin-bottom: 4px;
+      font-size: .74rem;
       text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 4px;
       letter-spacing: .03em;
-      font-weight: 700;
     }
 
     .meta-value {
-      font-size: .92rem;
-      color: #0f172a;
-      font-weight: 600;
-      line-height: 1.35;
-    }
-
-    .desc {
-      color: #334155;
-      font-size: .94rem;
-      line-height: 1.6;
-      margin-top: 12px;
-    }
-
-    .filters {
-      background: var(--panel);
-      border: 1px solid rgba(255,255,255,.7);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow);
-      padding: 18px;
-    }
-
-    .filters-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .filter-grid {
-      display: grid;
-      grid-template-columns: 1.4fr repeat(4, minmax(140px, 1fr)) auto;
-      gap: 12px;
-    }
-
-    .toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 20px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .season-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: white;
-      border: 1px solid #dbe3ee;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: .9rem;
+      color: var(--text);
       font-weight: 700;
-      color: #1e293b;
+      font-size: .92rem;
+      line-height: 1.4;
     }
 
-    .grid {
+    .project-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-      gap: 16px;
-    }
-
-    .empty, .loading {
-      background: white;
-      border: 1px solid #e9eef5;
-      border-radius: 18px;
-      padding: 24px;
-      text-align: center;
-      color: #475569;
-      box-shadow: 0 10px 22px rgba(15, 23, 42, .05);
-    }
-
-    .pass-box {
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 20px;
-    }
-
-    .qr-box {
-      border: 2px dashed #cbd5e1;
-      border-radius: 18px;
-      min-height: 260px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background: #f8fafc;
-      padding: 16px;
-    }
-
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      background: #0f172a;
-      color: #e2e8f0;
-      padding: 8px 10px;
-      border-radius: 10px;
-      word-break: break-word;
-      font-size: .9rem;
-    }
-
-    .mini {
-      font-size: .84rem;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, .45);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      z-index: 999;
-    }
-
-    .modal {
-      width: min(720px, 100%);
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 30px 60px rgba(0,0,0,.18);
-      padding: 22px;
-    }
-
-    .checkbox-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
       margin-top: 14px;
     }
 
-    .checkbox-row input[type="checkbox"] {
-      width: 18px;
-      min-height: 18px;
-      margin-top: 3px;
+    .project-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: white;
+      padding: 18px;
+      box-shadow: 0 6px 18px rgba(15,23,42,.05);
     }
 
-    @media (max-width: 980px) {
-      .filter-grid { grid-template-columns: 1fr 1fr; }
-      .pass-box { grid-template-columns: 1fr; }
+    .project-card h3 {
+      margin-bottom: 6px;
+    }
+
+    .project-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .project-actions button {
+      width: auto;
+      min-width: 140px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .92rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 14px;
+      padding: 10px 12px;
+      word-break: break-all;
+    }
+
+    .qr-box {
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+      background: #f8fafc;
+      padding: 18px;
+    }
+
+    .preview-box {
+      border: 1px solid #dbeafe;
+      border-radius: var(--radius-lg);
+      background: #f8fbff;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #dbeafe, transparent);
+      margin: 8px 0 18px;
+    }
+
+    @media (max-width: 1100px) {
+      .span-8, .span-6, .span-4 { grid-column: span 12; }
     }
 
     @media (max-width: 640px) {
-      .filter-grid { grid-template-columns: 1fr; }
-      .meta-grid { grid-template-columns: 1fr; }
-      .card-head { flex-direction: column; align-items: start; }
-      .actions { flex-direction: column; align-items: stretch; }
-      .actions button { width: 100%; }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .actions > button {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="eyebrow">Sistema de Registro</div>
-      <h1 id="heroTitle">Solicita tu pase</h1>
-      <p id="heroSubtitle">
-        Elige temporada, solicita tu pase, muestra tu credencial en el evento y cierra tu inscripción con el proyecto.
-      </p>
+  <header>
+    <div class="title-wrap">
+      <strong>Registro de Proyectos</strong>
+      <span>Consulta proyectos, solicita tu pase y completa tu inscripción</span>
     </div>
-  </section>
 
-  <!-- 1. Selección de temporada -->
-  <section id="seasonScreen" class="screen">
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Elige una temporada</h2>
-        <p>Selecciona la temporada en la que deseas consultar proyectos y solicitar tu pase.</p>
+    <div class="top-links">
+      <a href="/admin">Admin</a>
+      <a href="/health">Health</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="msg" class="msg"></div>
+
+    <div class="grid">
+      <div class="card span-12">
+        <h2>Temporada y catálogo</h2>
+        <div class="muted">
+          Primero elige una temporada para consultar el catálogo disponible. Desde aquí puedes explorar proyectos antes de solicitar tu pase.
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Temporada</label>
+            <select id="seasonSelector">
+              <option value="PRIMAVERA">Primavera</option>
+              <option value="INVIERNO">Invierno</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Buscar proyecto</label>
+            <input id="catalogSearch" placeholder="Nombre, comentarios, descripción, responsables">
+          </div>
+
+          <div class="field">
+            <label>Carrera preferida</label>
+            <select id="filterPartner">
+              <option value="">Todas</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Modalidad</label>
+            <select id="filterModality">
+              <option value="">Todas</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Días</label>
+            <select id="filterWeekDays">
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Horario</label>
+            <select id="filterSchedule">
+              <option value="">Todos</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-primary" onclick="loadCatalog()">Cargar catálogo</button>
+          <button type="button" class="btn-secondary" onclick="resetCatalogFilters()">Limpiar filtros</button>
+        </div>
+
+        <div id="catalogHeader" class="list"></div>
+        <div id="catalogList" class="project-grid"></div>
       </div>
 
-      <div class="season-grid">
-        <button class="season-card" onclick="selectSeason('PRIMAVERA')">
-          <span class="season-badge badge-spring">Primavera</span>
-          <h3>Primavera</h3>
-          <p>Consulta y participa en la temporada de primavera.</p>
-        </button>
-
-        <button class="season-card" onclick="selectSeason('INVIERNO')">
-          <span class="season-badge badge-winter">Invierno</span>
-          <h3>Invierno</h3>
-          <p>Consulta y participa en la temporada de invierno.</p>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. Solicitar pase -->
-  <section id="requestScreen" class="screen hidden">
-    <div class="panel">
-      <div class="panel-header">
+      <div class="card span-6">
         <h2>Solicitar pase</h2>
-        <p>Completa tus datos para generar tu folio y tu credencial digital.</p>
-      </div>
-
-      <div class="form-grid">
-        <div class="field">
-          <label for="full_name">Nombre completo</label>
-          <input id="full_name" placeholder="Ej: Juan Pérez López">
+        <div class="muted">
+          El pase no te registra. Solo genera tu solicitud y te permite presentarte al evento para validación presencial.
         </div>
 
-        <div class="field">
-          <label for="enrolment_number">Matrícula</label>
-          <input id="enrolment_number" placeholder="Ej: A01234567">
-        </div>
-
-        <div class="field">
-          <label for="email">Correo principal</label>
-          <input id="email" placeholder="correo@ejemplo.com">
-        </div>
-
-        <div class="field">
-          <label for="second_email">Segundo correo (opcional)</label>
-          <input id="second_email" placeholder="otrocorreo@ejemplo.com">
-        </div>
-
-        <div class="field">
-          <label for="phone_number">Teléfono (opcional)</label>
-          <input id="phone_number" placeholder="Teléfono">
-        </div>
-
-        <div class="field">
-          <label for="degree">Carrera (opcional)</label>
-          <input id="degree" placeholder="Ej: ITC">
-        </div>
-
-        <div class="field">
-          <label for="semester">Semestre (opcional)</label>
-          <input id="semester" type="number" min="1" max="20" placeholder="Semestre">
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn-primary" onclick="submitStudentRequest()">Solicitar pase</button>
-        <button class="btn-secondary" onclick="goBackToSeason()">Cambiar temporada</button>
-      </div>
-
-      <div id="requestMsg" class="msg"></div>
-    </div>
-  </section>
-
-  <!-- 3. Credencial viva -->
-  <section id="passScreen" class="screen hidden">
-    <div class="panel">
-      <div class="panel-header">
-        <h2>Mi credencial</h2>
-        <p>Muéstrala en la entrada. Cuando el staff te lo indique, refresca tu código y enseña tu matrícula física.</p>
-      </div>
-
-      <div class="pass-box">
-        <div>
-          <div class="meta-grid">
-            <div class="meta-item">
-              <span class="meta-label">Alumno</span>
-              <div id="passStudentName" class="meta-value">—</div>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Matrícula</span>
-              <div id="passEnrolment" class="meta-value">—</div>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Temporada</span>
-              <div id="passSeason" class="meta-value">—</div>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Folio</span>
-              <div id="passFolio" class="meta-value">—</div>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Estado</span>
-              <div id="passStatusWrap" class="meta-value">—</div>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Expira</span>
-              <div id="passExpiresAt" class="meta-value">—</div>
-            </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Nombre completo</label>
+            <input id="fullNameInput" placeholder="Nombre completo">
           </div>
 
-          <div class="actions">
-            <button class="btn-primary" onclick="refreshStudentPass()">Refrescar código</button>
-            <button id="goToCatalogBtn" class="btn-secondary hidden" onclick="openCatalog()">Entrar al catálogo</button>
-            <button class="btn-secondary" onclick="reloadStudentPass()">Actualizar estado</button>
+          <div class="field">
+            <label>Matrícula</label>
+            <input id="enrolmentInput" placeholder="Ej: A01234567">
           </div>
 
-          <div id="passMsg" class="msg"></div>
+          <div class="field">
+            <label>Correo principal</label>
+            <input id="emailInput" type="email" placeholder="correo@ejemplo.com">
+          </div>
+
+          <div class="field">
+            <label>Segundo correo</label>
+            <input id="secondEmailInput" type="email" placeholder="opcional">
+          </div>
+
+          <div class="field">
+            <label>Teléfono</label>
+            <input id="phoneInput" placeholder="10 dígitos o similar">
+          </div>
+
+          <div class="field">
+            <label>Carrera</label>
+            <input id="degreeInput" placeholder="Ej: LAF, LAE, NEG">
+          </div>
+
+          <div class="field">
+            <label>Semestre</label>
+            <input id="semesterInput" type="number" min="1" max="20" placeholder="Ej: 5">
+          </div>
         </div>
 
-        <div class="qr-box">
-          <div class="mini" style="margin-bottom:10px;"><strong>QR vigente del pase</strong></div>
+        <div class="actions">
+          <button type="button" class="btn-primary" onclick="createStudentRequest()">Solicitar pase</button>
+          <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Consultar mi solicitud</button>
+        </div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Mi solicitud</h2>
+        <div class="muted">
+          Aquí puedes consultar tu folio y el estado actual de tu solicitud para la temporada elegida.
+        </div>
+
+        <div id="requestInfo" class="list">
+          <div class="item">
+            <div class="small">Todavía no hay información cargada.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Credencial viva</h2>
+        <div class="muted">
+          Refresca tu credencial cuando el staff te lo pida. El QR cambia y el anterior deja de servir.
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-primary" onclick="refreshStudentPass()">Refrescar credencial</button>
+          <button type="button" class="btn-secondary" onclick="loadStudentPass()">Consultar estado del pase</button>
+        </div>
+
+        <div id="passInfo" class="list">
+          <div class="item">
+            <div class="small">Todavía no hay información del pase.</div>
+          </div>
+        </div>
+
+        <div class="qr-box" style="margin-top:16px;">
+          <div class="small" style="margin-bottom:10px;"><strong>QR vigente del pase</strong></div>
 
           <div id="qrCanvasWrap" style="display:flex; justify-content:center; align-items:center; min-height:180px;">
             <div id="qrCanvas"></div>
@@ -627,141 +574,75 @@ INDEX_HTML = r"""
 
           <div id="qrPlainToken" class="mono" style="margin-top:12px;">Genera tu código</div>
 
-          <div class="mini" style="margin-top:12px; text-align:center;">
+          <div class="small" style="margin-top:12px; text-align:center;">
             Este QR cambia al refrescarse y deja de servir al expirar o cuando el staff lo usa.
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- 4. Catálogo -->
-  <main id="catalogScreen" class="container hidden">
-    <section class="filters">
-      <div class="filters-top">
-        <div>
-          <div style="font-size:1rem;font-weight:700;color:var(--text);">Búsqueda y filtros</div>
-          <div style="color:var(--muted);font-size:.92rem;">Refina el catálogo con criterios específicos.</div>
-        </div>
-        <div id="seasonChip" class="season-chip hidden"></div>
-      </div>
-
-      <div class="filter-grid">
-        <div class="field">
-          <label for="q">Búsqueda</label>
-          <input id="q" placeholder="Buscar por proyecto o descripción">
+      <div class="card span-6">
+        <h2>Cierre de inscripción</h2>
+        <div class="muted">
+          Cuando el staff ya te haya habilitado acceso y tengas el token del proyecto, haz preview y luego confirma.
         </div>
 
-        <div class="field">
-          <label for="socio">Carrera</label>
-          <select id="socio"><option value="">Todos</option></select>
+        <div class="form-grid">
+          <div class="field">
+            <label>Proyecto seleccionado</label>
+            <input id="selectedProjectName" placeholder="Elige un proyecto del catálogo" readonly>
+          </div>
+
+          <div class="field">
+            <label>ID del proyecto</label>
+            <input id="selectedProjectId" placeholder="Se llena al elegir un proyecto" readonly>
+          </div>
+
+          <div class="field">
+            <label>Token del proyecto</label>
+            <input id="projectTokenInput" placeholder="Token que te entrega el proyecto">
+          </div>
+
+          <div class="field">
+            <label>Nombre completo para aceptación</label>
+            <input id="acceptanceFullNameInput" placeholder="Debe coincidir con tu nombre">
+          </div>
+
+          <div class="field">
+            <label>Versión legal</label>
+            <input id="legalVersionInput" value="v1">
+          </div>
         </div>
 
-        <div class="field">
-          <label for="modalidad">Modalidad</label>
-          <select id="modalidad"><option value="">Todas</option></select>
-        </div>
-
-        <div class="field">
-          <label for="dia">Día</label>
-          <select id="dia"><option value="">Todos</option></select>
-        </div>
-
-        <div class="field">
-          <label for="horario">Horario</label>
-          <select id="horario"><option value="">Todos</option></select>
+        <div class="preview-box">
+          <div class="small" style="margin-bottom:8px;"><strong>Confirmación legal</strong></div>
+          <label style="display:flex; gap:10px; align-items:flex-start; font-size:.92rem; color:var(--text);">
+            <input id="acceptanceCheckbox" type="checkbox" style="width:auto; min-height:auto; margin-top:3px;">
+            <span>
+              Confirmo que realicé esta inscripción de manera personal, que acepto el proyecto y que entiendo que el cierre queda auditado con token y registro digital.
+            </span>
+          </label>
         </div>
 
         <div class="actions">
-          <button class="btn-primary" onclick="loadProjects()">Buscar</button>
-          <button class="btn-secondary" onclick="clearFilters()">Limpiar</button>
-          <button class="btn-secondary" onclick="backToPass()">Volver a credencial</button>
-        </div>
-      </div>
-    </section>
-
-    <div class="toolbar">
-      <div>
-        <div id="resultsCount" style="font-weight:700;font-size:.96rem;">Cargando catálogo...</div>
-        <div style="color:var(--muted);font-size:.9rem;">Consulta disponibilidad y detalles del proyecto.</div>
-      </div>
-      <button class="btn-secondary" onclick="openCroquis()">Ver croquis</button>
-    </div>
-
-    <div id="results" class="loading">Cargando oferta...</div>
-  </main>
-
-  <!-- Modal de registro -->
-  <div id="registrationModalWrap" class="modal-backdrop hidden">
-    <div class="modal">
-      <div class="panel-header" style="text-align:left;margin-bottom:16px;">
-        <h2 style="margin:0 0 6px;">Cerrar inscripción</h2>
-        <p>Confirma tu registro con el token del proyecto y tu aceptación final.</p>
-      </div>
-
-      <div class="form-grid">
-        <div class="field">
-          <label>Proyecto</label>
-          <input id="regProjectName" readonly>
+          <button type="button" class="btn-secondary" onclick="previewRegistration()">Ver preview</button>
+          <button type="button" class="btn-primary" onclick="confirmRegistration()">Confirmar inscripción</button>
         </div>
 
-        <div class="field">
-          <label>Token del proyecto</label>
-          <input id="regTokenValue" placeholder="Ingresa el token que te dio el líder">
+        <div id="registrationPreview" class="list">
+          <div class="item">
+            <div class="small">Todavía no hay preview del cierre.</div>
+          </div>
         </div>
-
-        <div class="field">
-          <label>Nombre completo para confirmar</label>
-          <input id="regAcceptedFullName" placeholder="Escribe tu nombre completo">
-        </div>
-      </div>
-
-      <div class="checkbox-row">
-        <input type="checkbox" id="regAcceptedCheckbox">
-        <label for="regAcceptedCheckbox" style="margin:0; font-size:.92rem; color:#334155;">
-          Confirmo que este registro lo realizo por decisión propia, que el token fue entregado por el proyecto correcto y que acepto cerrar mi inscripción con este proyecto.
-        </label>
-      </div>
-
-      <div class="actions">
-        <button class="btn-secondary" onclick="previewRegistration()">Validar datos</button>
-        <button class="btn-primary" onclick="confirmRegistration()">Confirmar inscripción</button>
-        <button class="btn-secondary" onclick="closeRegistrationModal()">Cancelar</button>
-      </div>
-
-      <div id="registrationMsg" class="msg"></div>
-    </div>
-  </div>
-
-  <!-- Modal Croquis -->
-  <div id="croquisWrap" class="modal-backdrop hidden">
-    <div class="modal">
-      <div class="panel-header" style="text-align:left;margin-bottom:16px;">
-        <h2 style="margin:0 0 6px;">Croquis del evento</h2>
-        <p>Aquí puedes mostrar después la distribución física de proyectos, staff, entrada y zonas importantes.</p>
-      </div>
-
-      <div class="empty" style="margin:0;">
-        <strong>Croquis pendiente</strong>
-        <div class="mini" style="margin-top:8px;">
-          Recomendación: usarlo como complemento del catálogo, no como reemplazo.
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn-secondary" onclick="closeCroquis()">Cerrar</button>
       </div>
     </div>
   </div>
 
   <script>
-    let currentSeason = null;
+    let currentCatalog = [];
     let currentRequest = null;
-    let currentStudent = null;
-    let currentEvent = null;
     let currentPass = null;
-    let currentProjects = [];
-    let selectedProject = null;
+    let currentPreview = null;
+    let currentSelectedProject = null;
 
     function escapeHTML(value) {
       return String(value ?? '')
@@ -772,208 +653,43 @@ INDEX_HTML = r"""
         .replace(/'/g, '&#39;');
     }
 
+    function showMsg(text, ok=true) {
+      const el = document.getElementById('msg');
+      el.textContent = text || '';
+      el.className = 'msg ' + (ok ? 'ok' : 'err');
+    }
+
+    function getSeason() {
+      return document.getElementById('seasonSelector').value;
+    }
+
+    function getEnrolment() {
+      return (document.getElementById('enrolmentInput').value || '').trim().toLowerCase();
+    }
+
     async function getJSON(url) {
-      const response = await fetch(url);
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || ('Error ' + response.status));
+      const r = await fetch(url);
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
       return data;
     }
 
-    async function postJSON(url, bodyObj) {
-      const response = await fetch(url, {
+    async function postJSON(url, body) {
+      const r = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyObj)
+        body: JSON.stringify(body)
       });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || ('Error ' + response.status));
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
       return data;
     }
 
-    function showMsg(id, text, ok=true) {
+    function fillSelect(id, items, labelKey='description') {
       const el = document.getElementById(id);
-      el.textContent = text || '';
-      el.className = 'msg ' + (ok ? 'ok' : 'error');
-    }
+      if (!el) return;
 
-    function clearMsg(id) {
-      const el = document.getElementById(id);
-      el.textContent = '';
-      el.className = 'msg';
-    }
-
-    function seasonLabel(season) {
-      if (season === 'PRIMAVERA') return 'Primavera';
-      if (season === 'INVIERNO') return 'Invierno';
-      return season || '';
-    }
-
-    function requestStatusPill(status) {
-      const map = {
-        'REQUESTED': ['status-requested', 'Solicitado'],
-        'VALIDATED': ['status-validated', 'Validado'],
-        'ACCESS_ENABLED': ['status-access-enabled', 'Acceso habilitado'],
-        'REGISTERED': ['status-registered', 'Registrado'],
-        'CANCELLED': ['status-cancelled', 'Cancelado'],
-        'CLOSED': ['status-closed', 'Cerrado'],
-      };
-      const cfg = map[status] || ['status-requested', status || '—'];
-      return `<span class="status-pill ${cfg[0]}">${cfg[1]}</span>`;
-    }
-
-    function hideAllMainScreens() {
-      document.getElementById('seasonScreen').classList.add('hidden');
-      document.getElementById('requestScreen').classList.add('hidden');
-      document.getElementById('passScreen').classList.add('hidden');
-      document.getElementById('catalogScreen').classList.add('hidden');
-    }
-
-    function selectSeason(season) {
-      currentSeason = season;
-      hideAllMainScreens();
-      document.getElementById('requestScreen').classList.remove('hidden');
-      document.getElementById('heroTitle').textContent = `Solicitar pase · ${seasonLabel(season)}`;
-      document.getElementById('heroSubtitle').textContent = 'Completa tus datos para generar tu credencial digital.';
-      clearMsg('requestMsg');
-    }
-
-    function goBackToSeason() {
-      currentSeason = null;
-      hideAllMainScreens();
-      document.getElementById('seasonScreen').classList.remove('hidden');
-      document.getElementById('heroTitle').textContent = 'Solicita tu pase';
-      document.getElementById('heroSubtitle').textContent = 'Elige temporada, solicita tu pase, muestra tu credencial en el evento y cierra tu inscripción con el proyecto.';
-    }
-
-    async function submitStudentRequest() {
-      clearMsg('requestMsg');
-
-      if (!currentSeason) {
-        showMsg('requestMsg', 'Primero selecciona una temporada.', false);
-        return;
-      }
-
-      const payload = {
-        full_name: document.getElementById('full_name').value.trim(),
-        enrolment_number: document.getElementById('enrolment_number').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        second_email: document.getElementById('second_email').value.trim(),
-        phone_number: document.getElementById('phone_number').value.trim(),
-        degree: document.getElementById('degree').value.trim(),
-        semester: document.getElementById('semester').value.trim(),
-        season: currentSeason
-      };
-
-      try {
-        const data = await postJSON('/api/student/requests', payload);
-
-        currentRequest = data.request || null;
-        currentStudent = data.user || null;
-        currentEvent = data.event || null;
-
-        showMsg('requestMsg', data.message || 'Solicitud procesada correctamente.');
-        openPassScreen();
-        await refreshStudentPass();
-      } catch (e) {
-        showMsg('requestMsg', e.message, false);
-      }
-    }
-
-    function openPassScreen() {
-      hideAllMainScreens();
-      document.getElementById('passScreen').classList.remove('hidden');
-      document.getElementById('heroTitle').textContent = 'Mi credencial';
-      document.getElementById('heroSubtitle').textContent = 'Muéstrala en la entrada y refresca tu código cuando staff te lo indique.';
-      renderPassInfo();
-    }
-
-    function renderPassInfo() {
-      if (!currentStudent || !currentRequest || !currentEvent) return;
-
-      document.getElementById('passStudentName').textContent = currentStudent.full_name || '—';
-      document.getElementById('passEnrolment').textContent = currentStudent.enrolment_number || '—';
-      document.getElementById('passSeason').textContent = currentEvent.display_name || seasonLabel(currentSeason);
-      document.getElementById('passFolio').textContent = currentRequest.folio || '—';
-      document.getElementById('passStatusWrap').innerHTML = requestStatusPill(currentRequest.status);
-
-      const expiresText = currentPass?.pass_session?.expires_at || currentPass?.active_session?.expires_at || '—';
-      document.getElementById('passExpiresAt').textContent = expiresText;
-
-      const btn = document.getElementById('goToCatalogBtn');
-      const canEnterCatalog = currentRequest.status === 'ACCESS_ENABLED' || currentRequest.status === 'REGISTERED';
-      btn.classList.toggle('hidden', !canEnterCatalog);
-    }
-
-    async function loadStudentPass() {
-      if (!currentStudent?.enrolment_number || !currentSeason) return;
-
-      const data = await getJSON(
-        `/api/student/pass?enrolment_number=${encodeURIComponent(currentStudent.enrolment_number)}&season=${encodeURIComponent(currentSeason)}`
-      );
-
-      currentRequest = data.request || currentRequest;
-      currentEvent = data.event || currentEvent;
-      currentStudent = data.student || currentStudent;
-      currentPass = data;
-
-      renderPassInfo();
-      clearMsg('passMsg');
-    }
-
-    async function reloadStudentPass() {
-      try {
-        await loadStudentPass();
-        showMsg('passMsg', 'Estado actualizado.');
-      } catch (e) {
-        showMsg('passMsg', e.message, false);
-      }
-    }
-
-    async function refreshStudentPass() {
-      clearMsg('passMsg');
-
-      if (!currentStudent?.enrolment_number || !currentSeason) {
-        showMsg('passMsg', 'Faltan datos para generar credencial.', false);
-        return;
-      }
-
-      try {
-        const data = await postJSON('/api/student/pass/refresh', {
-          enrolment_number: currentStudent.enrolment_number,
-          season: currentSeason
-        });
-
-        currentPass = data;
-        currentRequest = data.request || currentRequest;
-        currentEvent = data.event || currentEvent;
-        currentStudent = data.student || currentStudent;
-
-        renderPassInfo();
-
-        // Temporalmente mostramos el token plano.
-        // Luego aquí mismo se puede convertir a QR visual.
-        const plainToken = data.pass_session?.plain_token || 'Sin código';
-        document.getElementById('qrPlaceholder').textContent = plainToken;
-
-        showMsg('passMsg', 'Código actualizado. Muéstralo al staff.');
-      } catch (e) {
-        showMsg('passMsg', e.message, false);
-      }
-    }
-
-    async function loadCatalogs() {
-      if (!currentSeason) return;
-
-      const data = await getJSON('/api/catalogs?temporada=' + encodeURIComponent(currentSeason));
-      fillSelect('socio', data.socio || [], 'name');
-      fillSelect('modalidad', data.modalidad || [], 'description');
-      fillSelect('dia', data.dias || [], 'description');
-      fillSelect('horario', data.horario || [], 'description');
-    }
-
-    function fillSelect(id, items, labelKey = 'description') {
-      const el = document.getElementById(id);
-      const first = '<option value="">Todos</option>';
+      const first = el.querySelector('option') ? el.querySelector('option').outerHTML : '<option value="">Todos</option>';
       el.innerHTML = first;
 
       for (const item of items || []) {
@@ -984,237 +700,268 @@ INDEX_HTML = r"""
       }
     }
 
-    function openCatalog() {
-      hideAllMainScreens();
-      document.getElementById('catalogScreen').classList.remove('hidden');
-      document.getElementById('heroTitle').textContent = 'Catálogo de proyectos';
-      document.getElementById('heroSubtitle').textContent = 'Consulta proyectos disponibles y cierra tu inscripción con un token válido.';
-      document.getElementById('seasonChip').textContent = currentEvent?.display_name || seasonLabel(currentSeason);
-      document.getElementById('seasonChip').classList.remove('hidden');
-      loadCatalogs().then(loadProjects).catch(err => {
-        document.getElementById('results').className = '';
-        document.getElementById('results').innerHTML = `<div class="empty"><strong>Error</strong><div class="mini" style="margin-top:8px;">${escapeHTML(err.message)}</div></div>`;
-      });
-    }
+    function renderCatalogHeader(projects) {
+      const season = getSeason();
+      const el = document.getElementById('catalogHeader');
 
-    function backToPass() {
-      openPassScreen();
-    }
-
-    function card(p) {
-      const disponible = Number(p.cupos_disponibles) > 0;
-      const statusClass = disponible ? 'available' : 'full';
-      const statusText = disponible ? 'Disponible' : 'Sin cupo';
-
-      return `
-        <article class="card">
-          <div class="card-head">
-            <h3 class="title">${escapeHTML(p.name)}</h3>
-            <span class="status ${statusClass}">${statusText}</span>
-          </div>
-
-          <div class="meta-grid">
-            <div class="meta-item">
-              <span class="meta-label">Socio</span>
-              <div class="meta-value">${escapeHTML(p.socio)}</div>
+      el.innerHTML = `
+        <div class="item">
+          <div class="item-head">
+            <div>
+              <div class="item-title">Catálogo de ${escapeHTML(season)}</div>
+              <div class="small">Total de proyectos mostrados: ${projects.length}</div>
             </div>
-
-            <div class="meta-item">
-              <span class="meta-label">Modalidad</span>
-              <div class="meta-value">${escapeHTML(p.modalidad)}</div>
-            </div>
-
-            <div class="meta-item">
-              <span class="meta-label">Día</span>
-              <div class="meta-value">${escapeHTML(p.dia)}</div>
-            </div>
-
-            <div class="meta-item">
-              <span class="meta-label">Horario</span>
-              <div class="meta-value">${escapeHTML(p.horario)}</div>
-            </div>
-
-            <div class="meta-item">
-              <span class="meta-label">Cupos</span>
-              <div class="meta-value">${escapeHTML(p.cupos)}</div>
-            </div>
-
-            <div class="meta-item">
-              <span class="meta-label">Disponibilidad</span>
-              <div class="meta-value">
-                Inscritos: ${escapeHTML(p.inscritos)} · Disponibles: ${escapeHTML(p.cupos_disponibles)}
-              </div>
+            <div class="inline-row">
+              <span class="pill pill-info">${escapeHTML(season)}</span>
             </div>
           </div>
-
-          ${p.descripcion_horario ? `<div class="desc"><strong>Horario:</strong> ${escapeHTML(p.descripcion_horario)}</div>` : ''}
-          ${p.objectives ? `<div class="desc"><strong>Objetivos:</strong> ${escapeHTML(p.objectives)}</div>` : ''}
-          ${p.activities ? `<div class="desc"><strong>Actividades:</strong> ${escapeHTML(p.activities)}</div>` : ''}
-
-          <div class="actions">
-            <button class="btn-primary" ${!disponible ? 'disabled' : ''} onclick="openRegistrationModal(${Number(p.id)})">
-              Registrarme
-            </button>
-            <button class="btn-secondary" onclick="viewProjectDetail(${Number(p.id)})">Ver detalle</button>
-          </div>
-        </article>
+        </div>
       `;
     }
 
-    async function loadProjects() {
-      if (!currentSeason) return;
+    function renderCatalog(projects) {
+      const list = document.getElementById('catalogList');
 
-      const root = document.getElementById('results');
-      const resultsCount = document.getElementById('resultsCount');
-
-      root.className = 'loading';
-      root.innerHTML = 'Cargando oferta...';
-
-      const params = new URLSearchParams();
-      params.set('temporada', currentSeason);
-
-      for (const id of ['q', 'socio', 'modalidad', 'dia', 'horario']) {
-        const el = document.getElementById(id);
-        const value = el.value.trim();
-        if (value) params.set(id, value);
-      }
-
-      const data = await getJSON('/api/projects?' + params.toString());
-      const items = data.items || [];
-      currentProjects = items;
-
-      if (data.event?.display_name) {
-        resultsCount.textContent = `${items.length} proyecto${items.length === 1 ? '' : 's'} encontrado${items.length === 1 ? '' : 's'} en ${data.event.display_name}`;
-      } else {
-        resultsCount.textContent = `${items.length} proyecto${items.length === 1 ? '' : 's'} encontrado${items.length === 1 ? '' : 's'} en ${seasonLabel(currentSeason)}`;
-      }
-
-      if (!items.length) {
-        root.className = '';
-        root.innerHTML = `
-          <div class="empty">
-            <strong>No se encontraron proyectos con esos filtros.</strong>
-            <div class="mini" style="margin-top:8px;">Prueba limpiando filtros o usando una búsqueda más general.</div>
+      if (!projects || !projects.length) {
+        list.innerHTML = `
+          <div class="item">
+            <div class="small">No hay proyectos para mostrar con esos filtros.</div>
           </div>
         `;
         return;
       }
 
-      root.className = '';
-      root.innerHTML = `<div class="grid">${items.map(card).join('')}</div>`;
+      list.innerHTML = projects.map(p => `
+        <div class="project-card">
+          <div class="item-head">
+            <div>
+              <h3>${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name || 'Sin nombre')}</h3>
+              <div class="small">Carrera preferida: ${escapeHTML(p.socio || p.partner_name || '—')}</div>
+            </div>
+            <div class="inline-row">
+              <span class="pill pill-info">${escapeHTML(p.modalidad || '—')}</span>
+              <span class="pill pill-neutral">${escapeHTML(p.dia || '—')}</span>
+              <span class="pill pill-neutral">${escapeHTML(p.horario || '—')}</span>
+            </div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-box">
+              <span class="meta-label">Cupos disponibles</span>
+              <div class="meta-value">${escapeHTML(p.cupos_disponibles ?? p.cupos ?? '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Horario</span>
+              <div class="meta-value">${escapeHTML(p.descripcion_horario || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Duración</span>
+              <div class="meta-value">${escapeHTML(p.duration || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Lugar</span>
+              <div class="meta-value">${escapeHTML(p.location || '—')}</div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="small"><strong>Objetivos:</strong> ${escapeHTML(p.objectives || '—')}</div>
+          <div class="small" style="margin-top:8px;"><strong>Actividades:</strong> ${escapeHTML(p.activities || '—')}</div>
+          <div class="small" style="margin-top:8px;"><strong>Competencias:</strong> ${escapeHTML(p.competencies || '—')}</div>
+          <div class="small" style="margin-top:8px;"><strong>Comentarios:</strong> ${escapeHTML(p.comments || '—')}</div>
+
+          <div class="project-actions">
+            <button type="button" class="btn-primary" onclick="selectProject(${Number(p.id)})">Elegir proyecto</button>
+          </div>
+        </div>
+      `).join('');
     }
 
-    function clearFilters() {
-      ['q', 'socio', 'modalidad', 'dia', 'horario'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      loadProjects();
+    function selectProject(projectId) {
+      const project = currentCatalog.find(p => Number(p.id) === Number(projectId));
+      if (!project) return;
+
+      currentSelectedProject = project;
+
+      document.getElementById('selectedProjectId').value = String(project.id);
+      document.getElementById('selectedProjectName').value = `${project.general_name || 'Sin nombre general'} | ${project.name || 'Sin nombre'}`;
+
+      showMsg('Proyecto seleccionado para cierre de inscripción');
     }
 
-    function openRegistrationModal(projectId) {
-      selectedProject = currentProjects.find(p => Number(p.id) === Number(projectId)) || null;
-      if (!selectedProject) return;
-
-      document.getElementById('regProjectName').value = selectedProject.name || '';
-      document.getElementById('regTokenValue').value = '';
-      document.getElementById('regAcceptedCheckbox').checked = false;
-      document.getElementById('regAcceptedFullName').value = currentStudent?.full_name || '';
-      clearMsg('registrationMsg');
-
-      document.getElementById('registrationModalWrap').classList.remove('hidden');
+    function resetCatalogFilters() {
+      document.getElementById('catalogSearch').value = '';
+      document.getElementById('filterPartner').value = '';
+      document.getElementById('filterModality').value = '';
+      document.getElementById('filterWeekDays').value = '';
+      document.getElementById('filterSchedule').value = '';
+      loadCatalog();
     }
 
-    function closeRegistrationModal() {
-      document.getElementById('registrationModalWrap').classList.add('hidden');
-      selectedProject = null;
-      clearMsg('registrationMsg');
-    }
-
-    async function previewRegistration() {
-      if (!selectedProject) return;
-
-      clearMsg('registrationMsg');
-
+    async function loadCatalogsForSeason() {
       try {
-        const data = await postJSON('/api/student/registration/preview', {
-          enrolment_number: currentStudent?.enrolment_number,
-          season: currentSeason,
-          project_id: selectedProject.id,
-          token_value: document.getElementById('regTokenValue').value.trim()
-        });
+        const season = getSeason();
+        const data = await getJSON(`/api/catalogs?temporada=${encodeURIComponent(season)}`);
 
-        showMsg('registrationMsg', data.message || 'Validación correcta.');
+        fillSelect('filterPartner', data.socio || [], 'name');
+        fillSelect('filterModality', data.modalidad || [], 'description');
+        fillSelect('filterWeekDays', data.dias || [], 'description');
+        fillSelect('filterSchedule', data.horario || [], 'description');
       } catch (e) {
-        showMsg('registrationMsg', e.message, false);
+        showMsg(e.message, false);
       }
     }
 
-    async function confirmRegistration() {
-      if (!selectedProject) return;
-
-      clearMsg('registrationMsg');
-
+    async function loadCatalog() {
       try {
-        const data = await postJSON('/api/student/registration/confirm', {
-          enrolment_number: currentStudent?.enrolment_number,
-          season: currentSeason,
-          project_id: selectedProject.id,
-          token_value: document.getElementById('regTokenValue').value.trim(),
-          accepted_checkbox: document.getElementById('regAcceptedCheckbox').checked,
-          accepted_full_name: document.getElementById('regAcceptedFullName').value.trim()
-        });
+        const season = getSeason();
+        const q = (document.getElementById('catalogSearch').value || '').trim();
+        const socio = document.getElementById('filterPartner').value;
+        const modalidad = document.getElementById('filterModality').value;
+        const dia = document.getElementById('filterWeekDays').value;
+        const horario = document.getElementById('filterSchedule').value;
 
-        showMsg('registrationMsg', data.message || 'Registro completado.');
-        await loadStudentPass();
-        await loadProjects();
+        const params = new URLSearchParams();
+        params.set('temporada', season);
+        if (q) params.set('q', q);
+        if (socio) params.set('socio', socio);
+        if (modalidad) params.set('modalidad', modalidad);
+        if (dia) params.set('dia', dia);
+        if (horario) params.set('horario', horario);
 
-        setTimeout(() => {
-          closeRegistrationModal();
-          openPassScreen();
-        }, 1200);
+        const projects = await getJSON(`/api/projects?${params.toString()}`);
+        currentCatalog = projects || [];
+
+        renderCatalogHeader(currentCatalog);
+        renderCatalog(currentCatalog);
+
+        showMsg('Catálogo cargado correctamente');
       } catch (e) {
-        showMsg('registrationMsg', e.message, false);
+        currentCatalog = [];
+        renderCatalogHeader([]);
+        renderCatalog([]);
+        showMsg(e.message, false);
       }
     }
 
-    async function viewProjectDetail(projectId) {
-      try {
-        const data = await getJSON(`/api/projects/${projectId}?temporada=${encodeURIComponent(currentSeason)}`);
-        const item = data.item || null;
-        if (!item) return;
+    function renderRequestInfo(data) {
+      const box = document.getElementById('requestInfo');
 
-        alert(
-          `Proyecto: ${item.name}\n\n` +
-          `Socio: ${item.socio}\n` +
-          `Modalidad: ${item.modalidad}\n` +
-          `Día: ${item.dia}\n` +
-          `Horario: ${item.horario}\n` +
-          `Duración: ${item.duration || '—'}\n` +
-          `Lugar: ${item.location || '—'}\n` +
-          `Horas máximas: ${item.max_hours || '—'}\n` +
-          `Población: ${item.audience || '—'}\n` +
-          `Competencias: ${item.competencies || '—'}\n` +
-          `Clave externa: ${item.clave || '—'}\n` +
-          `Comentarios: ${item.comments || '—'}`
-        );
+      if (!data) {
+        box.innerHTML = `
+          <div class="item"><div class="small">Todavía no hay información cargada.</div></div>
+        `;
+        return;
+      }
+
+      const request = data.request || data;
+      const event = data.event || {};
+      const user = data.user || {
+        email: data.email,
+        secondary_email: data.secondary_email,
+        phone_number: data.phone_number,
+        enrolment_number: data.enrolment_number,
+        degree: data.degree,
+        semester: data.semester
+      };
+
+      box.innerHTML = `
+        <div class="item">
+          <div class="item-head">
+            <div>
+              <div class="item-title">Folio ${escapeHTML(request.folio || '—')}</div>
+              <div class="small">Estado actual de tu solicitud</div>
+            </div>
+            <div class="inline-row">
+              ${renderRequestStatus(request.status)}
+            </div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-box">
+              <span class="meta-label">Temporada</span>
+              <div class="meta-value">${escapeHTML(event.display_name || getSeason())}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Correo principal</span>
+              <div class="meta-value">${escapeHTML(user.email || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Segundo correo</span>
+              <div class="meta-value">${escapeHTML(user.second_email || user.secondary_email || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Matrícula</span>
+              <div class="meta-value">${escapeHTML(user.enrolment_number || getEnrolment() || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Carrera</span>
+              <div class="meta-value">${escapeHTML(user.degree || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Semestre</span>
+              <div class="meta-value">${escapeHTML(user.semester || '—')}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRequestStatus(status) {
+      const value = String(status || '').toUpperCase();
+      const map = {
+        REQUESTED: ['pill-info', 'REQUESTED'],
+        VALIDATED: ['pill-purple', 'VALIDATED'],
+        ACCESS_ENABLED: ['pill-ok', 'ACCESS_ENABLED'],
+        REGISTERED: ['pill-ok', 'REGISTERED'],
+        CANCELLED: ['pill-err', 'CANCELLED'],
+        CLOSED: ['pill-warn', 'CLOSED']
+      };
+      const cfg = map[value] || ['pill-neutral', value || '—'];
+      return `<span class="pill ${cfg[0]}">${cfg[1]}</span>`;
+    }
+
+    async function createStudentRequest() {
+      try {
+        const payload = {
+          full_name: document.getElementById('fullNameInput').value.trim(),
+          enrolment_number: document.getElementById('enrolmentInput').value.trim(),
+          email: document.getElementById('emailInput').value.trim(),
+          second_email: document.getElementById('secondEmailInput').value.trim(),
+          phone_number: document.getElementById('phoneInput').value.trim(),
+          degree: document.getElementById('degreeInput').value.trim(),
+          semester: document.getElementById('semesterInput').value.trim(),
+          season: getSeason()
+        };
+
+        const data = await postJSON('/api/student/requests', payload);
+        currentRequest = data;
+        renderRequestInfo(data);
+
+        showMsg(data.message || 'Solicitud procesada correctamente');
       } catch (e) {
-        alert('Error: ' + e.message);
+        showMsg(e.message, false);
       }
     }
 
-    function openCroquis() {
-      document.getElementById('croquisWrap').classList.remove('hidden');
-    }
+    async function loadStudentRequest() {
+      try {
+        const enrolment = getEnrolment();
+        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
 
-    function closeCroquis() {
-      document.getElementById('croquisWrap').classList.add('hidden');
-    }
+        const season = getSeason();
+        const data = await getJSON(`/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`);
+        currentRequest = data;
+        renderRequestInfo(data);
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('q').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') loadProjects();
-      });
-    });
+        showMsg('Solicitud cargada correctamente');
+      } catch (e) {
+        currentRequest = null;
+        renderRequestInfo(null);
+        showMsg(e.message, false);
+      }
+    }
 
     function renderStudentQR(plainToken) {
       const qrCanvas = document.getElementById('qrCanvas');
@@ -1232,6 +979,248 @@ INDEX_HTML = r"""
         correctLevel: QRCode.CorrectLevel.M
       });
     }
+
+    function renderPassInfo(data) {
+      const box = document.getElementById('passInfo');
+
+      if (!data) {
+        box.innerHTML = `<div class="item"><div class="small">Todavía no hay información del pase.</div></div>`;
+        renderStudentQR('');
+        return;
+      }
+
+      const request = data.request || {};
+      const event = data.event || {};
+      const student = data.student || {};
+      const session = data.pass_session || data.active_session || null;
+
+      box.innerHTML = `
+        <div class="item">
+          <div class="item-head">
+            <div>
+              <div class="item-title">${escapeHTML(student.full_name || 'Alumno')}</div>
+              <div class="small">Matrícula: ${escapeHTML(student.enrolment_number || '—')}</div>
+            </div>
+            <div class="inline-row">
+              ${renderRequestStatus(request.status)}
+            </div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-box">
+              <span class="meta-label">Folio</span>
+              <div class="meta-value">${escapeHTML(request.folio || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Temporada</span>
+              <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Sesión activa</span>
+              <div class="meta-value">${session ? escapeHTML(session.status || 'ACTIVE') : 'Sin sesión activa'}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Expira</span>
+              <div class="meta-value">${session ? escapeHTML(session.expires_at || '—') : '—'}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Refresh count</span>
+              <div class="meta-value">${session ? escapeHTML(session.refresh_count || 0) : 0}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const currentToken =
+        data.pass_session?.plain_token ||
+        data.active_session?.plain_token ||
+        '';
+
+      renderStudentQR(currentToken);
+    }
+
+    async function loadStudentPass() {
+      try {
+        const enrolment = getEnrolment();
+        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
+
+        const season = getSeason();
+        const data = await getJSON(`/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`);
+        currentPass = data;
+        renderPassInfo(data);
+
+        showMsg('Estado del pase cargado correctamente');
+      } catch (e) {
+        currentPass = null;
+        renderPassInfo(null);
+        showMsg(e.message, false);
+      }
+    }
+
+    async function refreshStudentPass() {
+      try {
+        const enrolment = getEnrolment();
+        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
+
+        const payload = {
+          enrolment_number: enrolment,
+          season: getSeason()
+        };
+
+        const data = await postJSON('/api/student/pass/refresh', payload);
+        currentPass = data;
+        renderPassInfo(data);
+
+        const plainToken = data.pass_session?.plain_token || '';
+        renderStudentQR(plainToken);
+
+        showMsg(data.message || 'Credencial actualizada');
+      } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
+    function renderPreview(data) {
+      const box = document.getElementById('registrationPreview');
+
+      if (!data) {
+        box.innerHTML = `<div class="item"><div class="small">Todavía no hay preview del cierre.</div></div>`;
+        return;
+      }
+
+      const student = data.student || {};
+      const event = data.event || {};
+      const project = data.project || {};
+      const token = data.token || {};
+
+      box.innerHTML = `
+        <div class="item">
+          <div class="item-head">
+            <div>
+              <div class="item-title">Preview válido</div>
+              <div class="small">Revisa bien antes de confirmar</div>
+            </div>
+            <div class="inline-row">
+              <span class="pill pill-ok">PREVIEW OK</span>
+            </div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-box">
+              <span class="meta-label">Alumno</span>
+              <div class="meta-value">${escapeHTML(student.full_name || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Temporada</span>
+              <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Proyecto</span>
+              <div class="meta-value">${escapeHTML(project.general_name || '—')} | ${escapeHTML(project.project_name || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Carrera preferida</span>
+              <div class="meta-value">${escapeHTML(project.partner_name || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Token</span>
+              <div class="meta-value">${escapeHTML(token.token_value || '—')}</div>
+            </div>
+            <div class="meta-box">
+              <span class="meta-label">Token expira</span>
+              <div class="meta-value">${escapeHTML(token.expires_at || '—')}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function previewRegistration() {
+      try {
+        const enrolment = getEnrolment();
+        const projectId = document.getElementById('selectedProjectId').value.trim();
+        const tokenValue = document.getElementById('projectTokenInput').value.trim();
+
+        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
+        if (!projectId) return showMsg('Primero elige un proyecto', false);
+        if (!tokenValue) return showMsg('Falta el token del proyecto', false);
+
+        const payload = {
+          enrolment_number: enrolment,
+          season: getSeason(),
+          project_id: Number(projectId),
+          token_value: tokenValue
+        };
+
+        const data = await postJSON('/api/student/registration/preview', payload);
+        currentPreview = data;
+        renderPreview(data);
+
+        showMsg(data.message || 'Preview válido');
+      } catch (e) {
+        currentPreview = null;
+        renderPreview(null);
+        showMsg(e.message, false);
+      }
+    }
+
+    async function confirmRegistration() {
+      try {
+        const enrolment = getEnrolment();
+        const projectId = document.getElementById('selectedProjectId').value.trim();
+        const tokenValue = document.getElementById('projectTokenInput').value.trim();
+        const acceptedFullName = document.getElementById('acceptanceFullNameInput').value.trim();
+        const acceptedCheckbox = document.getElementById('acceptanceCheckbox').checked;
+        const legalVersion = document.getElementById('legalVersionInput').value.trim() || 'v1';
+
+        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
+        if (!projectId) return showMsg('Primero elige un proyecto', false);
+        if (!tokenValue) return showMsg('Falta el token del proyecto', false);
+        if (!acceptedFullName) return showMsg('Debes escribir tu nombre completo', false);
+        if (!acceptedCheckbox) return showMsg('Debes aceptar la confirmación legal', false);
+
+        const payload = {
+          enrolment_number: enrolment,
+          season: getSeason(),
+          project_id: Number(projectId),
+          token_value: tokenValue,
+          accepted_checkbox: acceptedCheckbox,
+          accepted_full_name: acceptedFullName,
+          legal_text_version: legalVersion
+        };
+
+        const data = await postJSON('/api/student/registration/confirm', payload);
+
+        currentPreview = null;
+        renderPreview({
+          student: { full_name: acceptedFullName },
+          event: { display_name: getSeason() },
+          project: {
+            general_name: data.registration?.general_name || currentSelectedProject?.general_name || '—',
+            project_name: data.registration?.project_name || currentSelectedProject?.name || '—'
+          },
+          token: { token_value: data.registration?.token_value || tokenValue }
+        });
+
+        showMsg(data.message || 'Registro completado');
+      } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('seasonSelector').addEventListener('change', async () => {
+        await loadCatalogsForSeason();
+        await loadCatalog();
+      });
+
+      document.getElementById('catalogSearch').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loadCatalog();
+      });
+
+      await loadCatalogsForSeason();
+      await loadCatalog();
+    });
   </script>
 </body>
 </html>

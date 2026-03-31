@@ -57,7 +57,6 @@ def _split_full_name(full_name: str):
     if len(parts) == 3:
         return parts[0], None, parts[1], parts[2]
 
-    # 4 o más
     first_name = parts[0]
     second_name = parts[1]
     p_last_name = parts[2]
@@ -116,21 +115,22 @@ def create_student_request():
     else:
         semester = None
 
+    if second_email and second_email == email:
+        second_email = None
+
     first_name, second_name, p_last_name, m_last_name = _split_full_name(full_name)
 
     def tx(conn, cur):
-        # 1) evento visible
         event_row = _get_visible_event_by_season(cur, season)
         if not event_row:
             return {"error": "No hay temporada visible para estudiantes", "status": 404}
 
         event_id = event_row["id"]
 
-        # 2) buscar alumno por matrícula
         cur.execute(
             """
             SELECT id, first_name, second_name, p_last_name, m_last_name,
-                   email, enrolment_number, phone_number, degree, semester
+                   email, secondary_email, enrolment_number, phone_number, degree, semester
             FROM users
             WHERE enrolment_number = %s
             LIMIT 1
@@ -141,7 +141,23 @@ def create_student_request():
         user = cur.fetchone()
 
         if user:
-            # actualizar datos útiles
+            cur.execute(
+                """
+                SELECT id
+                FROM users
+                WHERE email = %s
+                  AND id <> %s
+                LIMIT 1
+                """,
+                [email, user["id"]]
+            )
+            email_conflict = cur.fetchone()
+            if email_conflict:
+                return {
+                    "error": "Ese correo ya está ligado a otro alumno. Solicita apoyo a ADMIN.",
+                    "status": 409
+                }
+
             cur.execute(
                 """
                 UPDATE users
@@ -158,12 +174,11 @@ def create_student_request():
                 """,
                 [
                     first_name, second_name, p_last_name, m_last_name,
-                    email, second_email ,phone_number, degree, semester, user["id"]
+                    email, second_email, phone_number, degree, semester, user["id"]
                 ]
             )
             user_id = user["id"]
         else:
-            # validar correo duplicado con otro usuario
             cur.execute(
                 "SELECT id FROM users WHERE email = %s LIMIT 1",
                 [email]
@@ -191,13 +206,12 @@ def create_student_request():
                 """,
                 [
                     first_name, second_name, p_last_name, m_last_name,
-                    email, second_email , enrolment_number, phone_number,
+                    email, second_email, enrolment_number, phone_number,
                     password_hash, salt, degree, semester
                 ]
             )
             user_id = cur.lastrowid
 
-        # 3) una solicitud por alumno por temporada
         cur.execute(
             """
             SELECT id, folio, status, requested_at, validated_at, access_enabled_at, registered_at
@@ -244,7 +258,6 @@ def create_student_request():
                 }
             }
 
-        # 4) generar folio único
         folio = None
         for _ in range(20):
             candidate = _build_folio()
@@ -259,7 +272,6 @@ def create_student_request():
         if not folio:
             return {"error": "No se pudo generar un folio único", "status": 500}
 
-        # 5) crear solicitud
         cur.execute(
             """
             INSERT INTO student_event_requests
@@ -347,6 +359,7 @@ def get_student_request():
             u.p_last_name,
             u.m_last_name,
             u.email,
+            u.secondary_email,
             u.phone_number,
             u.enrolment_number,
             u.degree,
