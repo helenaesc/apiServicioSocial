@@ -91,6 +91,7 @@ def list_projects():
     sql = f"""
         SELECT
             p.id,
+            p.general_name,
             ep.id AS event_project_id,
             ev.id AS event_id,
             ev.display_name AS temporada,
@@ -186,6 +187,7 @@ def get_project(project_id: int):
     sql = """
         SELECT
             p.id,
+            p.general_name,
             ep.id AS event_project_id,
             ev.id AS event_id,
             ev.display_name AS temporada,

@@ -22,6 +22,7 @@ from .routes.admin_master_projects import admin_master_projects_bp
 from .routes.admin_catalogs import admin_catalogs_bp
 from .routes.admin_project_tokens import admin_project_tokens_bp
 from .routes.admin_project_import_export import admin_project_import_export_bp
+from .routes.admin_registration import admin_registrations_bp
 
 def create_app():
     app = Flask(__name__)
@@ -50,6 +51,7 @@ def create_app():
     app.register_blueprint(admin_incidents_bp)
     app.register_blueprint(admin_project_tokens_bp)
     app.register_blueprint(admin_project_import_export_bp)
+    app.register_blueprint(admin_registrations_bp)
 
 
     return app

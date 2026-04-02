@@ -4,33 +4,51 @@ ADMIN_HTML = r"""
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Panel Admin | Registro de Proyectos</title>
+  <title>🌐  Panel Administrativo</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --text-soft: #475569;
-      --muted: #94a3b8;
-      --border: #e2e8f0;
-      --border-strong: #cbd5e1;
-      --brand: #2563eb;
-      --brand-dark: #1d4ed8;
-      --brand-soft: #eff6ff;
+      --bg: #eef3fb;
+      --bg-2: #f8fbff;
+
+      --panel: #ffffff;
+      --panel-soft: #f6f9ff;
+
+      --sidebar-bg: #1f2a44;
+      --sidebar-bg-2: #263553;
+
+      --text: #1b2435;
+      --text-soft: #607089;
+      --muted: #93a1b7;
+
+      --line: #dbe4f2;
+      --line-strong: #c7d4e8;
+
+      --brand: #4f7cff;
+      --brand-2: #72a7ff;
+      --accent: #ff5d73;
+      --accent-soft: #fff1f3;
+
       --ok-bg: #dcfce7;
       --ok-text: #166534;
+
+      --warn-bg: #fef3c7;
+      --warn-text: #92400e;
+
       --err-bg: #fee2e2;
       --err-text: #991b1b;
-      --warn-bg: #fff7ed;
-      --warn-text: #9a3412;
+
       --purple-bg: #ede9fe;
       --purple-text: #6d28d9;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-      --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
-      --radius-xl: 22px;
-      --radius-lg: 16px;
-      --radius-md: 12px;
+
+      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 14px 28px rgba(35, 60, 120, 0.10);
+
+      --r-sm: 10px;
+      --r-md: 14px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+      --r-pill: 999px;
     }
 
     * { box-sizing: border-box; }
@@ -38,136 +56,310 @@ ADMIN_HTML = r"""
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
       color: var(--text);
+      background:
+        radial-gradient(circle at top left, #ffffff 0%, #eef4ff 28%, #eaf1fb 100%);
       min-height: 100vh;
     }
 
     .hidden { display: none !important; }
 
-    header {
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      padding: 18px 26px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
+    .app-shell {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-2) 100%);
+      color: #e2e8f0;
+      padding: 18px 16px;
       position: sticky;
       top: 0;
-      z-index: 50;
-      box-shadow: var(--shadow-sm);
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid rgba(255,255,255,0.05);
     }
 
-    .title-wrap {
+    .sidebar-shell {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 14px;
     }
 
-    .title-wrap strong {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--text);
-    }
-
-    .title-wrap span {
-      font-size: .92rem;
-      color: var(--text-soft);
-      font-weight: 500;
-    }
-
-    .top-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .top-links a, .top-links button {
-      text-decoration: none;
-      border: 1px solid var(--border);
-      background: white;
-      color: var(--text-soft);
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-size: .9rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .top-links a:hover, .top-links button:hover {
-      border-color: var(--brand);
-      color: var(--brand);
-    }
-
-    .container {
-      max-width: 1500px;
-      margin: 28px auto;
-      padding: 0 18px 32px;
-    }
-
-    .msg {
-      display: none;
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: var(--radius-md);
-      font-size: .94rem;
-      font-weight: 700;
-      border: 1px solid transparent;
+    .brand-box {
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 14px;
       box-shadow: var(--shadow-sm);
     }
 
-    .msg.ok {
-      display: block;
-      background: var(--ok-bg);
-      color: var(--ok-text);
-      border-color: #bbf7d0;
+    .brand-box::before {
+      content: "";
+      position: absolute;
+      top: -18px;
+      right: -12px;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(79,124,255,0.28) 0%, rgba(79,124,255,0) 72%);
+      pointer-events: none;
     }
 
-    .msg.err {
-      display: block;
-      background: var(--err-bg);
-      color: var(--err-text);
-      border-color: #fecaca;
+    .brand-box::after {
+      content: "";
+      position: absolute;
+      top: 22px;
+      right: 26px;
+      width: 56px;
+      height: 56px;
+      background: radial-gradient(circle, rgba(255,93,115,0.20) 0%, rgba(255,93,115,0) 72%);
+      pointer-events: none;
     }
 
-    .grid {
+    .brand-title {
+      position: relative;
+      z-index: 1;
+      font-size: 1.06rem;
+      font-weight: 900;
+      color: #f8fafc;
+      margin-bottom: 4px;
+    }
+
+    .brand-subtitle {
+      position: relative;
+      z-index: 1;
+      color: #cbd5e1;
+      font-size: .88rem;
+      line-height: 1.4;
+    }
+
+    .role-box {
+      position: relative;
+      z-index: 1;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: var(--r-md);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: .9rem;
+      color: #e2e8f0;
+      font-weight: 700;
+    }
+
+    .nav-section-title {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #94a3b8;
+      font-weight: 900;
+      margin: 10px 8px 6px;
+    }
+
+    .nav-list {
       display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 18px;
+      gap: 8px;
+    }
+
+    .nav-item {
+      border: none;
+      background: transparent;
+      color: #e2e8f0;
+      padding: 12px 14px;
+      border-radius: var(--r-md);
+      text-align: left;
+      font-size: .94rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .18s ease;
+      border-left: 4px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.08);
+      transform: translateX(2px);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(79,124,255,0.18) 0%, rgba(255,255,255,0.05) 100%);
+      border-left: 4px solid var(--brand-2);
+      color: #ffffff;
+    }
+
+    .sidebar-actions {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .sidebar-actions a,
+    .sidebar-actions button {
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+      padding: 11px 12px;
+      border-radius: var(--r-md);
+      font-size: .9rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .sidebar-actions a:hover,
+    .sidebar-actions button:hover {
+      background: rgba(255,255,255,0.10);
+    }
+
+    .main {
+      padding: 24px;
+    }
+
+    .topbar {
+      margin-bottom: 18px;
+    }
+
+    .screen-header {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      padding: 20px 22px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .screen-header::before {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 180px;
+      height: 180px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(79,124,255,0.18) 0%, rgba(79,124,255,0.00) 72%);
+      pointer-events: none;
+    }
+
+    .screen-header__content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .screen-kicker {
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .screen-title strong {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .screen-title span {
+      color: var(--text-soft);
+      font-size: .95rem;
+    }
+
+    .screen-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .login-card,
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-md);
+      padding: 22px;
     }
 
     .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-sm);
-      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 78px;
+      height: 78px;
+      background: linear-gradient(135deg, rgba(79,124,255,0.10) 0%, rgba(79,124,255,0.00) 72%);
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+      pointer-events: none;
+    }
+
+    .login-wrap {
+      max-width: 760px;
+      margin: 40px auto;
+    }
+
+    .module {
+      display: none;
+    }
+
+    .module.active {
+      display: block;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
     }
 
     .span-12 { grid-column: span 12; }
     .span-8 { grid-column: span 8; }
     .span-6 { grid-column: span 6; }
     .span-4 { grid-column: span 4; }
-    .span-3 { grid-column: span 3; }
 
     h2, h3 {
-      margin: 0 0 12px 0;
+      margin: 0;
       line-height: 1.2;
     }
 
     h2 {
-      font-size: 1.2rem;
-      font-weight: 800;
+      font-size: 1.14rem;
+      font-weight: 900;
     }
 
     h3 {
       font-size: 1rem;
-      font-weight: 800;
+      font-weight: 900;
+    }
+
+    .module-card-title {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
     .muted {
+      position: relative;
+      z-index: 1;
       color: var(--text-soft);
       font-size: .93rem;
       line-height: 1.55;
@@ -178,59 +370,34 @@ ADMIN_HTML = r"""
       color: var(--text-soft);
     }
 
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: .92rem;
-      background: #0f172a;
-      color: #e2e8f0;
-      border-radius: 14px;
-      padding: 10px 12px;
-      word-break: break-all;
-    }
-
-    .section-title {
-      display: flex;
-      justify-content: space-between;
+    .screen-chip,
+    .chip {
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: var(--r-pill);
+      font-size: .8rem;
+      font-weight: 900;
+      white-space: nowrap;
     }
 
-    .section-title .left {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .section-anchor {
-      scroll-margin-top: 90px;
-    }
-
-    .quick-nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .quick-nav button {
-      width: auto;
-      min-height: auto;
-      padding: 9px 12px;
-      border-radius: 999px;
-      font-size: .85rem;
-      font-weight: 800;
-      border: 1px solid var(--border);
-      background: white;
-      cursor: pointer;
-    }
-
-    .quick-nav button:hover {
-      border-color: var(--brand);
+    .screen-chip,
+    .chip-primary {
+      background: #eff6ff;
       color: var(--brand);
+      border: 1px solid #d8e5ff;
+    }
+
+    .chip-dark {
+      background: #1f2a44;
+      color: #eaf1ff;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .form-grid {
+      position: relative;
+      z-index: 1;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 12px;
@@ -244,18 +411,18 @@ ADMIN_HTML = r"""
     }
 
     .field label {
-      font-size: .8rem;
-      font-weight: 700;
+      font-size: .78rem;
+      font-weight: 900;
       color: var(--text-soft);
       text-transform: uppercase;
-      letter-spacing: .03em;
+      letter-spacing: .04em;
     }
 
     input, select, textarea, button {
       width: 100%;
       min-height: 44px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-strong);
+      border-radius: var(--r-md);
+      border: 1px solid var(--line-strong);
       background: white;
       color: var(--text);
       font-size: .94rem;
@@ -270,11 +437,13 @@ ADMIN_HTML = r"""
     }
 
     input:focus, select:focus, textarea:focus {
-      border-color: var(--brand);
-      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+      border-color: var(--brand-2);
+      box-shadow: 0 0 0 3px rgba(79,124,255,0.10);
     }
 
     .actions {
+      position: relative;
+      z-index: 1;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -286,62 +455,138 @@ ADMIN_HTML = r"""
       min-width: 150px;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--brand) 0%, #0ea5e9 100%);
-      color: white;
-      border: none;
-      font-weight: 800;
-      box-shadow: 0 10px 20px rgba(37,99,235,.18);
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger {
+      min-height: 44px;
+      border-radius: var(--r-md);
+      padding: 10px 14px;
+      font-size: .94rem;
+      font-weight: 900;
       cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
     }
 
-    .btn-primary:hover { background: var(--brand-dark); }
+    .btn:hover,
+    .btn-primary:hover,
+    .btn-secondary:hover,
+    .btn-danger:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #ff7b8d 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 10px 18px rgba(230,57,70,0.18);
+    }
 
     .btn-secondary {
-      background: #eef2f7;
+      background: #f8fafc;
       color: #334155;
-      border: 1px solid #dbe3ee;
-      font-weight: 800;
-      cursor: pointer;
+      border: 1px solid var(--line);
     }
 
     .btn-danger {
       background: #ef4444;
       color: white;
       border: none;
-      font-weight: 800;
-      cursor: pointer;
     }
 
-    .pill {
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0.85; }
+      60% { transform: scale(1.02); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .msg {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: var(--r-md);
+      font-size: .94rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .msg.ok {
+      display: block;
+      background: var(--ok-bg);
+      color: var(--ok-text);
+      border-color: #bbf7d0;
+      animation: popIn .28s ease;
+    }
+
+    .msg.err {
+      display: block;
+      background: var(--err-bg);
+      color: var(--err-text);
+      border-color: #fecaca;
+      animation: popIn .28s ease;
+    }
+
+    .pill,
+    .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: .78rem;
-      font-weight: 800;
+      padding: 7px 11px;
+      border-radius: var(--r-pill);
+      font-size: .76rem;
+      font-weight: 900;
       white-space: nowrap;
     }
 
-    .pill-ok { background: var(--ok-bg); color: var(--ok-text); }
-    .pill-err { background: var(--err-bg); color: var(--err-text); }
-    .pill-warn { background: var(--warn-bg); color: var(--warn-text); }
-    .pill-info { background: var(--brand-soft); color: var(--brand); }
-    .pill-purple { background: var(--purple-bg); color: var(--purple-text); }
-    .pill-neutral { background: #f1f5f9; color: #334155; }
+    .pill-ok,
+    .status-badge--ok {
+      background: var(--ok-bg);
+      color: var(--ok-text);
+    }
+
+    .pill-err,
+    .status-badge--err {
+      background: var(--err-bg);
+      color: var(--err-text);
+    }
+
+    .pill-warn,
+    .status-badge--warn {
+      background: var(--warn-bg);
+      color: var(--warn-text);
+    }
+
+    .pill-info,
+    .status-badge--info {
+      background: #eff6ff;
+      color: var(--brand-2);
+    }
+
+    .pill-purple {
+      background: var(--purple-bg);
+      color: var(--purple-text);
+    }
+
+    .pill-neutral {
+      background: #f1f5f9;
+      color: #334155;
+    }
 
     .list {
+      position: relative;
+      z-index: 1;
       display: grid;
       gap: 12px;
       margin-top: 14px;
     }
 
     .item {
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
       background: #fff;
       padding: 16px;
+      box-shadow: var(--shadow-sm);
     }
 
     .item-head {
@@ -354,7 +599,7 @@ ADMIN_HTML = r"""
     }
 
     .item-title {
-      font-weight: 800;
+      font-weight: 900;
       font-size: 1rem;
       color: var(--text);
     }
@@ -369,28 +614,30 @@ ADMIN_HTML = r"""
     .meta-box {
       border: 1px solid #eef2f7;
       background: #f8fafc;
-      border-radius: 14px;
+      border-radius: var(--r-md);
       padding: 10px 12px;
     }
 
     .meta-label {
       display: block;
-      font-size: .74rem;
+      font-size: .72rem;
       text-transform: uppercase;
       color: var(--muted);
-      font-weight: 800;
+      font-weight: 900;
       margin-bottom: 4px;
-      letter-spacing: .03em;
+      letter-spacing: .04em;
     }
 
     .meta-value {
       color: var(--text);
-      font-weight: 700;
+      font-weight: 800;
       font-size: .92rem;
       line-height: 1.4;
     }
 
     .stats-grid {
+      position: relative;
+      z-index: 1;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 12px;
@@ -398,18 +645,18 @@ ADMIN_HTML = r"""
     }
 
     .stat-card {
-      border: 1px solid #e9eef5;
-      border-radius: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
       background: white;
       padding: 16px;
-      box-shadow: 0 6px 18px rgba(15,23,42,.05);
+      box-shadow: var(--shadow-sm);
     }
 
     .stat-label {
       color: var(--muted);
       font-size: .8rem;
       text-transform: uppercase;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: .04em;
       margin-bottom: 8px;
     }
@@ -420,28 +667,53 @@ ADMIN_HTML = r"""
       color: var(--text);
     }
 
-    .inline-row {
+    .table-shell {
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      background: white;
+      box-shadow: var(--shadow-sm);
+      margin-top: 14px;
+    }
+
+    .table-topbar {
       display: flex;
+      justify-content: space-between;
       gap: 10px;
       align-items: center;
       flex-wrap: wrap;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-title {
+      font-size: .95rem;
+      font-weight: 900;
+      color: var(--text);
     }
 
     .table-wrap {
       overflow-x: auto;
-      margin-top: 14px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 920px;
+      min-width: 1040px;
+      background: white;
+    }
+
+    thead th {
+      background: #f8fafc;
     }
 
     th, td {
       text-align: left;
       padding: 12px 10px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--line);
       vertical-align: top;
     }
 
@@ -450,7 +722,7 @@ ADMIN_HTML = r"""
       text-transform: uppercase;
       letter-spacing: .04em;
       color: var(--text-soft);
-      font-weight: 800;
+      font-weight: 900;
     }
 
     td {
@@ -458,26 +730,99 @@ ADMIN_HTML = r"""
       color: var(--text);
     }
 
-    .subgrid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 18px;
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .92rem;
+      background: #16233c;
+      color: #e8eef8;
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      word-break: break-all;
+    }
+
+    .mono-soft {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .88rem;
+      color: #21304b;
+      background: #eef4ff;
+      border: 1px solid #dbe7ff;
+      padding: 5px 8px;
+      border-radius: 10px;
+    }
+
+    .xp-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 180px;
+    }
+
+    .xp-text {
+      font-size: .78rem;
+      font-weight: 900;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .xp-bar-bg {
+      width: 100%;
+      height: 12px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+      transition: width .35s ease;
+    }
+
+    .xp-bar-fill.level-up {
+      background: linear-gradient(90deg, #4ade80 0%, #16a34a 100%);
+    }
+
+    #staffScanner {
+      width: 100%;
+      max-width: 420px;
+      margin-top: 18px;
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow-sm);
     }
 
     @media (max-width: 1200px) {
-      .span-8, .span-6, .span-4, .span-3 { grid-column: span 12; }
-      .subgrid { grid-template-columns: 1fr; }
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .span-8, .span-6, .span-4 {
+        grid-column: span 12;
+      }
     }
 
     @media (max-width: 640px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
+      .main {
+        padding: 18px;
       }
+
       .actions {
         flex-direction: column;
         align-items: stretch;
       }
+
       .actions > button {
         width: 100%;
       }
@@ -485,26 +830,13 @@ ADMIN_HTML = r"""
   </style>
 </head>
 <body>
-  <header>
-    <div class="title-wrap">
-      <strong>Panel Administrativo</strong>
-      <span>Control integral del evento, proyectos, tokens, check-in y seguimiento</span>
-    </div>
-
-    <div class="top-links">
-      <a href="/">Vista Alumno</a>
-      <a href="/health">Health</a>
-      <button type="button" onclick="logout()">Cerrar sesión</button>
-    </div>
-  </header>
-
-  <div class="container">
+  <div id="loginWrap" class="login-wrap">
     <div id="msg" class="msg"></div>
 
-    <div id="loginCard" class="card span-12">
+    <div id="loginCard" class="login-card">
       <h2>Acceso Administrador / Staff</h2>
       <div class="muted">
-        Ingresa tu clave para habilitar el panel. El sistema mostrará acciones según el rol.
+        Ingresa tu clave para abrir el panel. Staff verá solo herramientas operativas.
       </div>
 
       <div class="form-grid" style="max-width:540px;">
@@ -521,88 +853,147 @@ ADMIN_HTML = r"""
 
       <div class="small" id="roleBadge" style="margin-top:12px;">Sesión actual: —</div>
     </div>
+  </div>
 
-    <div id="mainDashboard" class="grid hidden">
-      <div class="card span-12">
-        <div class="section-title">
-          <div class="left">
-            <h2>Mapa rápido del panel</h2>
-            <div class="muted">
-              Navega por módulos para que el panel no se sienta amontonado.
-            </div>
+  <div id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="sidebar-shell">
+        <div class="brand-box">
+          <div class="brand-title">🌐 Panel Administrativo</div>
+          <div class="brand-subtitle">
+            Navegación modular del evento con control visual y operativo.
+          </div>
+
+          <div class="role-box" id="sidebarRoleBox">
+            Rol actual: —
           </div>
         </div>
 
-        <div class="quick-nav">
-          <button type="button" onclick="scrollToSection('dashboardSection')">Dashboard</button>
-          <button type="button" onclick="scrollToSection('eventsSection')">Temporadas</button>
-          <button type="button" onclick="scrollToSection('masterProjectsSection')">Proyectos maestros</button>
-          <button type="button" onclick="scrollToSection('eventProjectsSection')">Proyectos en temporada</button>
-          <button type="button" onclick="scrollToSection('tokensSection')">Tokens</button>
-          <button type="button" onclick="scrollToSection('checkinSection')">Check-in staff</button>
-          <button type="button" onclick="scrollToSection('incidentsSection')">Incidentes</button>
+        <div id="adminNavWrap">
+          <div class="nav-section-title">Admin</div>
+          <div class="nav-list">
+            <button class="nav-item active" data-module="summaryModule" onclick="showModule('summaryModule', this)">📊 Dashboard</button>
+            <button class="nav-item" data-module="eventsModule" onclick="showModule('eventsModule', this)">📅 Temporadas</button>
+            <button class="nav-item" data-module="masterProjectsModule" onclick="showModule('masterProjectsModule', this)">📖 Proyectos Base</button>
+            <button class="nav-item" data-module="eventProjectsModule" onclick="showModule('eventProjectsModule', this)">🚀 Proyecto Activo (Temporada)</button>
+            <button class="nav-item" data-module="tokensModule" onclick="showModule('tokensModule', this)">🔴 Generar Tokens</button>
+            <button class="nav-item" data-module="registrationsModule" onclick="showModule('registrationsModule', this)">👥 Inscritos</button>
+            <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">⚠ Reportes (Incidentes)</button>
+            <button class="nav-item" data-module="importExportModule" onclick="showModule('importExportModule', this)">📦 Carga Masiva (Import / Export)</button>
+          </div>
+        </div>
+
+        <div id="staffNavWrap" class="hidden">
+          <div class="nav-section-title">Staff</div>
+          <div class="nav-list">
+            <button class="nav-item active" data-module="checkinModule" onclick="showModule('checkinModule', this)">📷 Check-in</button>
+            <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">⚠ Reportes Rocket (Incidentes)</button>
+          </div>
+        </div>
+
+        <div class="nav-section-title">Operación</div>
+        <div class="nav-list">
+          <button class="nav-item" data-module="checkinModule" onclick="showModule('checkinModule', this)">🪪 Escanear QR</button>
+        </div>
+
+        <div class="sidebar-actions">
+          <a href="/">Vista Alumno</a>
+          <a href="/health">Health</a>
+          <button type="button" onclick="logout()">Cerrar sesión</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="msgApp" class="msg"></div>
+
+      <div class="topbar">
+        <div class="screen-header">
+          <div class="screen-header__content">
+            <div class="screen-title">
+              <div class="screen-kicker">Terminal activa</div>
+              <strong id="moduleTitle">📊 Centro de Mando</strong>
+              <span id="moduleSubtitle">Vista general del evento y sus números clave.</span>
+            </div>
+
+            <div class="screen-badges">
+              <span class="chip chip-primary">Panel modular</span>
+              <span class="chip chip-dark">Operación viva</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="card span-12 section-anchor" id="dashboardSection">
-        <div class="section-title">
-          <div class="left">
-            <h2>Dashboard</h2>
+      <div class="module active" id="summaryModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Centro de Mando</h2>
+              <span class="screen-chip">Pantalla activa</span>
+            </div>
             <div class="muted">
-              Vista ejecutiva del evento y de los proyectos cargados en la temporada seleccionada.
+              Vista ejecutiva de la temporada seleccionada.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Temporada para dashboard</label>
+                <select id="dashboardEventSelector"></select>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="loadDashboard()">Cargar dashboard</button>
+              <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar temporadas</button>
+            </div>
+
+            <div id="dashboardSummary" class="stats-grid"></div>
+
+            <div class="table-shell">
+              <div class="table-topbar">
+                <div class="table-title">Resumen por proyecto</div>
+                <div>
+                  <span class="chip chip-primary">Dashboard vivo</span>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Proyecto</th>
+                      <th>Carrera preferida</th>
+                      <th>Estado</th>
+                      <th>Slots</th>
+                      <th>Registrados</th>
+                      <th>Progreso</th>
+                      <th>Disponibles</th>
+                      <th>Tokens usados</th>
+                      <th>Revocados</th>
+                      <th>Expirados</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboardProjectsBody">
+                    <tr><td colspan="10" class="small">Selecciona una temporada y carga dashboard.</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label>Temporada para dashboard</label>
-            <select id="dashboardEventSelector"></select>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-primary" onclick="loadDashboard()">Cargar dashboard</button>
-          <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar temporadas</button>
-        </div>
-
-        <div id="dashboardSummary" class="stats-grid"></div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Proyecto</th>
-                <th>Carrera preferida</th>
-                <th>Estado</th>
-                <th>Slots</th>
-                <th>Registrados</th>
-                <th>Disponibles</th>
-                <th>Tokens usados</th>
-                <th>Revocados</th>
-                <th>Expirados</th>
-              </tr>
-            </thead>
-            <tbody id="dashboardProjectsBody">
-              <tr><td colspan="9" class="small">Selecciona una temporada y carga dashboard.</td></tr>
-            </tbody>
-          </table>
         </div>
       </div>
 
-      <div class="card span-12 section-anchor" id="eventsSection">
-        <div class="section-title">
-          <div class="left">
-            <h2>Temporadas</h2>
-            <div class="muted">
-              Crea temporadas, cambia estado y decide cuál queda visible para estudiantes.
+      <div class="module" id="eventsModule">
+        <div class="module-grid">
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>Temporadas</h2>
+              <span class="screen-chip">Configuración</span>
             </div>
-          </div>
-        </div>
+            <div class="muted">
+              Crea la temporada visible para los alumnos y define sus tiempos.
+            </div>
 
-        <div class="subgrid">
-          <div>
-            <h3>Crear temporada</h3>
             <div class="form-grid">
               <div class="field">
                 <label>Año</label>
@@ -663,8 +1054,15 @@ ADMIN_HTML = r"""
             </div>
           </div>
 
-          <div>
-            <h3>Operar temporada</h3>
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>Operar temporada</h2>
+              <span class="screen-chip">Control</span>
+            </div>
+            <div class="muted">
+              Cambia estado o visibilidad de una temporada ya existente.
+            </div>
+
             <div class="form-grid">
               <div class="field">
                 <label>Temporada seleccionada</label>
@@ -700,24 +1098,27 @@ ADMIN_HTML = r"""
 
             <div id="selectedEventInfo" class="list"></div>
           </div>
-        </div>
 
-        <div id="eventsList" class="list"></div>
-      </div>
-
-      <div class="card span-12 section-anchor" id="masterProjectsSection">
-        <div class="section-title">
-          <div class="left">
-            <h2>Proyectos maestros</h2>
-            <div class="muted">
-              Crea la ficha completa del proyecto base y luego asígnalo a una temporada.
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Temporadas existentes</h2>
+              <span class="screen-chip">Historial</span>
             </div>
+            <div id="eventsList" class="list"></div>
           </div>
         </div>
+      </div>
 
-        <div class="subgrid">
-          <div>
-            <h3>Crear proyecto maestro</h3>
+      <div class="module" id="masterProjectsModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Proyectos Base</h2>
+              <span class="screen-chip">Catálogo base</span>
+            </div>
+            <div class="muted">
+              Esta es la ficha base del proyecto. Aquí no lo activas todavía en una temporada.
+            </div>
 
             <div class="form-grid">
               <div class="field">
@@ -812,91 +1213,77 @@ ADMIN_HTML = r"""
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-primary" onclick="createMasterProject()">Crear proyecto maestro</button>
+              <button type="button" class="btn-primary" onclick="createMasterProject()">Crear proyecto base</button>
               <button type="button" class="btn-secondary" onclick="loadMasterProjects()">Recargar lista</button>
             </div>
           </div>
 
-          <div>
-            <h3>Import / Export</h3>
-            <div class="muted">
-              Importa proyectos maestros desde Excel o exporta el catálogo base actual.
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Catálogo de proyectos base</h2>
+              <span class="screen-chip">Consulta</span>
             </div>
 
             <div class="form-grid">
               <div class="field">
-                <label>Archivo Excel (.xlsx)</label>
-                <input id="importProjectsFile" type="file" accept=".xlsx">
+                <label>Buscar proyecto base</label>
+                <input id="masterProjectsSearch" placeholder="Buscar por nombre, organización, líder..." oninput="loadMasterProjects()">
+              </div>
+            </div>
+
+            <div id="masterProjectsList" class="list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module" id="eventProjectsModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Proyecto Activo (Temporada)</h2>
+              <span class="screen-chip">Activación</span>
+            </div>
+            <div class="muted">
+              Aquí tomas un proyecto base y lo activas dentro de una temporada específica.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Temporada</label>
+                <select id="eventProjectEventSelector"></select>
+              </div>
+
+              <div class="field">
+                <label>Proyecto base</label>
+                <select id="projectSelector"></select>
+              </div>
+
+              <div class="field">
+                <label>Slots / cupo total</label>
+                <input id="slotsInput" type="number" min="0" placeholder="Ej: 10">
               </div>
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-primary" onclick="importProjects()">Importar proyectos</button>
-              <button type="button" class="btn-secondary" onclick="exportProjects()">Exportar proyectos</button>
+              <button type="button" class="btn-primary" onclick="addProjectToEvent()">Activar proyecto</button>
+              <button type="button" class="btn-secondary" onclick="loadEventProjects()">Recargar proyectos</button>
             </div>
 
-            <div id="importProjectsResult" class="list"></div>
+            <div id="eventProjectsList" class="list"></div>
           </div>
         </div>
-
-        <div class="form-grid" style="margin-top:18px;">
-          <div class="field">
-            <label>Buscar proyecto maestro</label>
-            <input id="masterProjectsSearch" placeholder="Buscar por nombre, organización, líder..." oninput="loadMasterProjects()">
-          </div>
-        </div>
-
-        <div id="masterProjectsList" class="list"></div>
       </div>
 
-      <div class="card span-12 section-anchor" id="eventProjectsSection">
-        <div class="section-title">
-          <div class="left">
-            <h2>Proyectos en temporada</h2>
-            <div class="muted">
-              Vincula proyectos maestros a una temporada y define su cupo real para ese evento.
+      <div class="module" id="tokensModule">
+        <div class="module-grid">
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>🔴 Generar Tokens</h2>
+              <span class="screen-chip">Generación</span>
             </div>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label>Temporada</label>
-            <select id="eventProjectEventSelector"></select>
-          </div>
-
-          <div class="field">
-            <label>Proyecto maestro</label>
-            <select id="projectSelector"></select>
-          </div>
-
-          <div class="field">
-            <label>Slots / cupo total</label>
-            <input id="slotsInput" type="number" min="0" placeholder="Ej: 10">
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-primary" onclick="addProjectToEvent()">Agregar proyecto a temporada</button>
-          <button type="button" class="btn-secondary" onclick="loadEventProjects()">Recargar proyectos</button>
-        </div>
-
-        <div id="eventProjectsList" class="list"></div>
-      </div>
-
-      <div class="card span-12 section-anchor" id="tokensSection">
-        <div class="section-title">
-          <div class="left">
-            <h2>Tokens de inscripción</h2>
             <div class="muted">
-              Genera, lista y revoca tokens de los proyectos en temporada.
+              Crea tokens de inscripción para un proyecto ya activo en temporada.
             </div>
-          </div>
-        </div>
-
-        <div class="subgrid">
-          <div>
-            <h3>Configuración y generación</h3>
 
             <div class="form-grid">
               <div class="field">
@@ -911,7 +1298,7 @@ ADMIN_HTML = r"""
 
               <div class="field">
                 <label>Longitud del token</label>
-                <input id="tokensLength" type="number" min="6" max="20" value="10">
+                <input id="tokensLength" type="number" min="6" max="20" value="8">
               </div>
 
               <div class="field">
@@ -933,13 +1320,19 @@ ADMIN_HTML = r"""
             <div id="tokensGenerationResult" class="list"></div>
           </div>
 
-          <div>
-            <h3>Revocar token</h3>
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>Revocar token</h2>
+              <span class="screen-chip">Control</span>
+            </div>
+            <div class="muted">
+              Revoca un token específico cuando haya error, conflicto o corrección operativa.
+            </div>
 
             <div class="form-grid">
               <div class="field">
                 <label>Token</label>
-                <input id="revokeTokenValue" placeholder="Ej: ABCDE23456">
+                <input id="revokeTokenValue" placeholder="Ej: A7K9P3Q2">
               </div>
 
               <div class="field">
@@ -952,96 +1345,165 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-danger" onclick="revokeProjectToken()">Revocar token</button>
             </div>
           </div>
-        </div>
 
-        <div class="form-grid" style="margin-top:18px;">
-          <div class="field">
-            <label>Filtrar estado de tokens</label>
-            <select id="tokensStatusFilter" onchange="loadProjectTokens()">
-              <option value="ALL">Todos</option>
-              <option value="AVAILABLE">Available</option>
-              <option value="RESERVED">Reserved</option>
-              <option value="USED">Used</option>
-              <option value="REVOKED">Revoked</option>
-              <option value="EXPIRED">Expired</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="tokensSummary" class="stats-grid"></div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Token</th>
-                <th>Estado</th>
-                <th>Reservado por request</th>
-                <th>Reserved until</th>
-                <th>Usado por request</th>
-                <th>Usado</th>
-                <th>Revocado</th>
-                <th>Expira</th>
-                <th>Creado</th>
-              </tr>
-            </thead>
-            <tbody id="tokensTableBody">
-              <tr><td colspan="9" class="small">Selecciona un proyecto en temporada y carga tokens.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card span-12 section-anchor" id="checkinSection">
-        <div class="section-title">
-          <div class="left">
-            <h2>Check-in Staff / Lector QR</h2>
-            <div class="muted">
-              Escanea el QR, revisa los datos del alumno y habilita acceso validando matrícula física.
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Listado de tokens</h2>
+              <span class="screen-chip">Seguimiento</span>
             </div>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label>QR escaneado</label>
-            <input id="staffScannedToken" placeholder="Aquí aparece el token escaneado o puedes pegarlo manualmente">
-          </div>
-
-          <div class="field">
-            <label>Matrícula física presentada</label>
-            <input id="staffPhysicalEnrolment" placeholder="Ej: A01234567">
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-primary" onclick="startQrScanner()">Abrir cámara</button>
-          <button type="button" class="btn-secondary" onclick="stopQrScanner()">Detener cámara</button>
-          <button type="button" class="btn-secondary" onclick="scanStaffQr()">Verificar QR</button>
-          <button type="button" class="btn-primary" onclick="grantStaffAccess()">Dar acceso</button>
-        </div>
-
-        <div id="staffScanner" style="width:100%; max-width:420px; margin-top:18px;"></div>
-        <div id="staffCheckinInfo" class="list"></div>
-      </div>
-
-      <div class="card span-12 section-anchor" id="incidentsSection">
-        <div class="section-title">
-          <div class="left">
-            <h2>Incidentes</h2>
-            <div class="muted">
-              Reporta y da seguimiento a casos operativos, errores, conflictos o excepciones.
-            </div>
-          </div>
-        </div>
-
-        <div class="subgrid">
-          <div>
-            <h3>Reportar caso</h3>
 
             <div class="form-grid">
               <div class="field">
-                <label>Temporada / Event ID</label>
+                <label>Filtrar estado de tokens</label>
+                <select id="tokensStatusFilter" onchange="loadProjectTokens()">
+                  <option value="ALL">Todos</option>
+                  <option value="AVAILABLE">Available</option>
+                  <option value="RESERVED">Reserved</option>
+                  <option value="USED">Used</option>
+                  <option value="REVOKED">Revoked</option>
+                  <option value="EXPIRED">Expired</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="tokensSummary" class="stats-grid"></div>
+
+            <div class="table-shell">
+              <div class="table-topbar">
+                <div class="table-title">Tokens del proyecto</div>
+                <div>
+                  <span class="chip chip-primary">Estado operativo</span>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Token</th>
+                      <th>Estado</th>
+                      <th>Reservado por request</th>
+                      <th>Reserved until</th>
+                      <th>Usado por request</th>
+                      <th>Usado</th>
+                      <th>Revocado</th>
+                      <th>Expira</th>
+                      <th>Creado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tokensTableBody">
+                    <tr><td colspan="9" class="small">Selecciona un proyecto en temporada y carga tokens.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module" id="registrationsModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>👥 Inscritos</h2>
+              <span class="screen-chip">Resultado final</span>
+            </div>
+            <div class="muted">
+              Aquí ves claramente quién cerró contrato, en qué proyecto y cuándo.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Temporada</label>
+                <select id="registrationsEventSelector"></select>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="loadRegistrations()">Cargar inscripciones</button>
+            </div>
+
+            <div class="table-shell">
+              <div class="table-topbar">
+                <div class="table-title">Inscripciones cerradas</div>
+                <div>
+                  <span class="chip chip-primary">Seguimiento final</span>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Alumno</th>
+                      <th>Matrícula</th>
+                      <th>Proyecto</th>
+                      <th>Organización</th>
+                      <th>Token</th>
+                      <th>Fecha de cierre</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="registrationsTableBody">
+                    <tr><td colspan="7" class="small">Selecciona una temporada para consultar inscripciones.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module" id="checkinModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>📷 Check-in</h2>
+              <span class="screen-chip">Modo misión</span>
+            </div>
+            <div class="muted">
+              Escanea QR, valida matrícula y habilita acceso.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>QR escaneado</label>
+                <input id="staffScannedToken" placeholder="Aquí aparece el token escaneado o puedes pegarlo manualmente">
+              </div>
+
+              <div class="field">
+                <label>Matrícula física presentada</label>
+                <input id="staffPhysicalEnrolment" placeholder="Ej: A01234567">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="startQrScanner()">Abrir cámara</button>
+              <button type="button" class="btn-secondary" onclick="stopQrScanner()">Detener cámara</button>
+              <button type="button" class="btn-secondary" onclick="scanStaffQr()">Verificar QR</button>
+              <button type="button" class="btn-primary" onclick="grantStaffAccess()">Dar acceso</button>
+            </div>
+
+            <div id="staffScanner"></div>
+            <div id="staffCheckinInfo" class="list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module" id="incidentsModule">
+        <div class="module-grid">
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>⚠ Reportes Rocket (Incidentes)</h2>
+              <span class="screen-chip">Reporte</span>
+            </div>
+            <div class="muted">
+              Usa esta sección para reportar conflictos, errores o casos especiales.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Event ID</label>
                 <input id="incidentEventId" placeholder="Se llena con la temporada seleccionada">
               </div>
 
@@ -1100,8 +1562,14 @@ ADMIN_HTML = r"""
             </div>
           </div>
 
-          <div>
-            <h3>Consultar incidentes</h3>
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>Listado de incidentes</h2>
+              <span class="screen-chip">Seguimiento</span>
+            </div>
+            <div class="muted">
+              Consulta y cambia el estado de los incidentes reportados.
+            </div>
 
             <div class="form-grid">
               <div class="field">
@@ -1134,7 +1602,35 @@ ADMIN_HTML = r"""
           </div>
         </div>
       </div>
-    </div>
+
+      <div class="module" id="importExportModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>📦 Carga Masiva (Import / Export)</h2>
+              <span class="screen-chip">Excel</span>
+            </div>
+            <div class="muted">
+              Usa esta sección para cargas masivas y exportación del catálogo base.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Archivo Excel (.xlsx)</label>
+                <input id="importProjectsFile" type="file" accept=".xlsx">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="importProjects()">Importar proyectos</button>
+              <button type="button" class="btn-secondary" onclick="exportProjects()">Exportar proyectos</button>
+            </div>
+
+            <div id="importProjectsResult" class="list"></div>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 
   <script>
@@ -1145,6 +1641,45 @@ ADMIN_HTML = r"""
     let masterProjectsCache = [];
     let eventProjectsCache = [];
 
+    const MODULE_META = {
+      summaryModule: {
+        title: '📊 Centro de Mando',
+        subtitle: 'Vista general del evento y sus números clave.'
+      },
+      eventsModule: {
+        title: '📅 Temporadas',
+        subtitle: 'Crear, abrir, cerrar y mostrar temporadas.'
+      },
+      masterProjectsModule: {
+        title: '📖 Proyectos Base',
+        subtitle: 'Catálogo base de fichas maestras.'
+      },
+      eventProjectsModule: {
+        title: '🚀 Proyecto Activo (Temporada)',
+        subtitle: 'Toma un proyecto base y actívalo en una temporada.'
+      },
+      tokensModule: {
+        title: '🔴 Generar Tokens',
+        subtitle: 'Genera, consulta y revoca tokens de inscripción.'
+      },
+      registrationsModule: {
+        title: '👥 Inscritos',
+        subtitle: 'Consulta cierres de inscripción por proyecto y alumno.'
+      },
+      checkinModule: {
+        title: '📷 Check-in',
+        subtitle: 'Escanea QR y habilita acceso.'
+      },
+      incidentsModule: {
+        title: '⚠ Reportes (Incidentes)',
+        subtitle: 'Seguimiento de problemas y casos especiales.'
+      },
+      importExportModule: {
+        title: '📦 Carga Masiva (Import / Export)',
+        subtitle: 'Carga y descarga proyectos base desde Excel.'
+      }
+    };
+
     function escapeHTML(value) {
       return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -1154,19 +1689,60 @@ ADMIN_HTML = r"""
         .replace(/'/g, '&#39;');
     }
 
-    function showMsg(text, ok=true) {
-      const el = document.getElementById('msg');
-      el.textContent = text || '';
-      el.className = 'msg ' + (ok ? 'ok' : 'err');
+    function showMsg(text, ok = true) {
+      const el = document.getElementById('msgApp');
+      const elLogin = document.getElementById('msg');
+      const target = document.getElementById('appShell').classList.contains('hidden') ? elLogin : el;
+
+      target.textContent = text || '';
+      target.className = 'msg ' + (ok ? 'ok' : 'err');
     }
 
-    function getKey() { return storage.getItem('ADMIN_API_KEY') || ''; }
-    function getRole() { return storage.getItem('ADMIN_ROLE') || ''; }
+    function getKey() {
+      return storage.getItem('ADMIN_API_KEY') || '';
+    }
+
+    function getRole() {
+      return storage.getItem('ADMIN_ROLE') || '';
+    }
+
+    function showModule(moduleId, btn = null) {
+      document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+      const moduleEl = document.getElementById(moduleId);
+      if (moduleEl) moduleEl.classList.add('active');
+
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll(`.nav-item[data-module="${moduleId}"]`).forEach(x => x.classList.add('active'));
+
+      const meta = MODULE_META[moduleId];
+      document.getElementById('moduleTitle').textContent = meta?.title || 'Panel';
+      document.getElementById('moduleSubtitle').textContent = meta?.subtitle || '';
+    }
 
     function applyRoleUI(role) {
-      document.getElementById('roleBadge').textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: —';
-      document.getElementById('loginCard').classList.toggle('hidden', !!role);
-      document.getElementById('mainDashboard').classList.toggle('hidden', !role);
+      const loginWrap = document.getElementById('loginWrap');
+      const appShell = document.getElementById('appShell');
+      const roleBadge = document.getElementById('roleBadge');
+      const sidebarRoleBox = document.getElementById('sidebarRoleBox');
+
+      roleBadge.textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: —';
+      sidebarRoleBox.textContent = role ? `Rol actual: ${role}` : 'Rol actual: —';
+
+      loginWrap.classList.toggle('hidden', !!role);
+      appShell.classList.toggle('hidden', !role);
+
+      const adminNavWrap = document.getElementById('adminNavWrap');
+      const staffNavWrap = document.getElementById('staffNavWrap');
+
+      if (role === 'ADMIN') {
+        adminNavWrap.classList.remove('hidden');
+        staffNavWrap.classList.add('hidden');
+        showModule('summaryModule');
+      } else if (role === 'STAFF') {
+        adminNavWrap.classList.add('hidden');
+        staffNavWrap.classList.remove('hidden');
+        showModule('checkinModule');
+      }
     }
 
     function boolFromString(v) {
@@ -1176,11 +1752,6 @@ ADMIN_HTML = r"""
     function toSqlDateTime(value) {
       if (!value) return null;
       return value.replace('T', ' ') + ':00';
-    }
-
-    function scrollToSection(id) {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     async function getJSON(url) {
@@ -1243,23 +1814,23 @@ ADMIN_HTML = r"""
 
     function statusPill(status) {
       const map = {
-        'DRAFT': ['pill-neutral', 'DRAFT'],
-        'VISIBLE': ['pill-info', 'VISIBLE'],
-        'ONSITE': ['pill-ok', 'ONSITE'],
-        'CLOSED': ['pill-warn', 'CLOSED'],
-        'ARCHIVED': ['pill-err', 'ARCHIVED'],
-        'ACTIVE': ['pill-ok', 'ACTIVE'],
-        'HIDDEN': ['pill-warn', 'HIDDEN'],
-        'OPEN': ['pill-err', 'OPEN'],
-        'IN_PROGRESS': ['pill-warn', 'IN_PROGRESS'],
-        'RESOLVED': ['pill-ok', 'RESOLVED'],
-        'DISMISSED': ['pill-neutral', 'DISMISSED']
+        'DRAFT': ['status-badge status-badge--info', 'DRAFT'],
+        'VISIBLE': ['status-badge status-badge--info', 'VISIBLE'],
+        'ONSITE': ['status-badge status-badge--ok', 'ONSITE'],
+        'CLOSED': ['status-badge status-badge--warn', 'CLOSED'],
+        'ARCHIVED': ['status-badge status-badge--err', 'ARCHIVED'],
+        'ACTIVE': ['status-badge status-badge--ok', 'ACTIVE'],
+        'HIDDEN': ['status-badge status-badge--warn', 'HIDDEN'],
+        'OPEN': ['status-badge status-badge--err', 'OPEN'],
+        'IN_PROGRESS': ['status-badge status-badge--warn', 'IN_PROGRESS'],
+        'RESOLVED': ['status-badge status-badge--ok', 'RESOLVED'],
+        'DISMISSED': ['status-badge status-badge--info', 'DISMISSED']
       };
-      const cfg = map[status] || ['pill-neutral', status || '—'];
-      return `<span class="pill ${cfg[0]}">${cfg[1]}</span>`;
+      const cfg = map[status] || ['status-badge status-badge--info', status || '—'];
+      return `<span class="${cfg[0]}">${cfg[1]}</span>`;
     }
 
-    function fillSelect(id, items, placeholderText='Selecciona', labelFn=null) {
+    function fillSelect(id, items, placeholderText = 'Selecciona', labelFn = null) {
       const el = document.getElementById(id);
       if (!el) return;
       el.innerHTML = `<option value="">${placeholderText}</option>`;
@@ -1271,7 +1842,7 @@ ADMIN_HTML = r"""
       }
     }
 
-    function fillSelectNoBlank(id, items, labelFn=null) {
+    function fillSelectNoBlank(id, items, labelFn = null) {
       const el = document.getElementById(id);
       if (!el) return;
       el.innerHTML = '';
@@ -1281,6 +1852,27 @@ ADMIN_HTML = r"""
         opt.textContent = labelFn ? labelFn(item) : (item.name || item.description || item.display_name || item.id);
         el.appendChild(opt);
       }
+    }
+
+    function renderXPBar(registrados, slotsTotales) {
+      const usados = Number(registrados || 0);
+      const total = Number(slotsTotales || 0);
+
+      const porcentaje = total > 0 ? Math.round((usados / total) * 100) : 0;
+      const porcentajeSeguro = Math.min(porcentaje, 100);
+      const levelUpClass = porcentaje >= 100 ? 'level-up' : '';
+
+      return `
+        <div class="xp-wrapper">
+          <div class="xp-text">
+            <span>Nivel actual</span>
+            <span>${porcentaje}%</span>
+          </div>
+          <div class="xp-bar-bg">
+            <div class="xp-bar-fill ${levelUpClass}" style="width:${porcentajeSeguro}%"></div>
+          </div>
+        </div>
+      `;
     }
 
     async function validateAndSaveKey() {
@@ -1306,7 +1898,7 @@ ADMIN_HTML = r"""
       }
     }
 
-    function clearKey(show=true) {
+    function clearKey(show = true) {
       storage.removeItem('ADMIN_API_KEY');
       storage.removeItem('ADMIN_ROLE');
       document.getElementById('adminKey').value = '';
@@ -1362,17 +1954,12 @@ ADMIN_HTML = r"""
         const data = await getJSONAuth('/api/admin/events');
         allEvents = data || [];
 
-        const eventsList = document.getElementById('eventsList');
-        const eventSelector = document.getElementById('eventSelector');
-        const dashboardSelector = document.getElementById('dashboardEventSelector');
-        const eventProjectSelector = document.getElementById('eventProjectEventSelector');
-
-        eventsList.innerHTML = '';
-
         fillSelectNoBlank('eventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
         fillSelectNoBlank('dashboardEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
         fillSelectNoBlank('eventProjectEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+        fillSelectNoBlank('registrationsEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
 
+        const eventsList = document.getElementById('eventsList');
         if (!allEvents.length) {
           eventsList.innerHTML = `<div class="item"><div class="small">No hay temporadas creadas todavía.</div></div>`;
           document.getElementById('selectedEventInfo').innerHTML = '';
@@ -1393,29 +1980,13 @@ ADMIN_HTML = r"""
             </div>
 
             <div class="meta">
-              <div class="meta-box">
-                <span class="meta-label">Catálogo abre</span>
-                <div class="meta-value">${escapeHTML(e.catalog_open_at || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Inicio presencial</span>
-                <div class="meta-value">${escapeHTML(e.onsite_start_at || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Fin presencial</span>
-                <div class="meta-value">${escapeHTML(e.onsite_end_at || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Cierre registro</span>
-                <div class="meta-value">${escapeHTML(e.registration_close_at || '—')}</div>
-              </div>
+              <div class="meta-box"><span class="meta-label">Catálogo abre</span><div class="meta-value">${escapeHTML(e.catalog_open_at || '—')}</div></div>
+              <div class="meta-box"><span class="meta-label">Inicio presencial</span><div class="meta-value">${escapeHTML(e.onsite_start_at || '—')}</div></div>
+              <div class="meta-box"><span class="meta-label">Fin presencial</span><div class="meta-value">${escapeHTML(e.onsite_end_at || '—')}</div></div>
+              <div class="meta-box"><span class="meta-label">Cierre registro</span><div class="meta-value">${escapeHTML(e.registration_close_at || '—')}</div></div>
             </div>
           </div>
         `).join('');
-
-        if (eventSelector.options.length) eventSelector.selectedIndex = 0;
-        if (dashboardSelector.options.length) dashboardSelector.selectedIndex = 0;
-        if (eventProjectSelector.options.length) eventProjectSelector.selectedIndex = 0;
 
         await loadSelectedEventInfo();
         await loadEventProjects();
@@ -1530,7 +2101,7 @@ ADMIN_HTML = r"""
         };
 
         const data = await postJSON('/api/admin/projects', payload);
-        showMsg(data.message || 'Proyecto maestro creado');
+        showMsg(data.message || 'Proyecto base creado');
         await loadMasterProjects();
       } catch (e) {
         showMsg(e.message, false);
@@ -1544,12 +2115,11 @@ ADMIN_HTML = r"""
         const data = await getJSONAuth('/api/admin/projects' + query);
 
         masterProjectsCache = data || [];
-
-        fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto', p => `${p.general_name || 'Sin nombre general'} | ${p.name}`);
+        fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto base', p => `${p.general_name || 'Sin nombre general'} | ${p.name}`);
 
         const list = document.getElementById('masterProjectsList');
         if (!masterProjectsCache.length) {
-          list.innerHTML = `<div class="item"><div class="small">No hay proyectos maestros.</div></div>`;
+          list.innerHTML = `<div class="item"><div class="small">No hay proyectos base.</div></div>`;
           return;
         }
 
@@ -1568,22 +2138,10 @@ ADMIN_HTML = r"""
             </div>
 
             <div class="meta">
-              <div class="meta-box">
-                <span class="meta-label">Carrera preferida</span>
-                <div class="meta-value">${escapeHTML(p.partner_name || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Horario</span>
-                <div class="meta-value">${escapeHTML(p.schedule_description || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Duración</span>
-                <div class="meta-value">${escapeHTML(p.duration || '—')}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Clave</span>
-                <div class="meta-value">${escapeHTML(p.clave || '—')}</div>
-              </div>
+              <div class="meta-box"><span class="meta-label">Carrera preferida</span><div class="meta-value">${escapeHTML(p.partner_name || '—')}</div></div>
+              <div class="meta-box"><span class="meta-label">Horario</span><div class="meta-value">${escapeHTML(p.schedule_description || '—')}</div></div>
+              <div class="meta-box"><span class="meta-label">Duración</span><div class="meta-value">${escapeHTML(p.duration || '—')}</div></div>
+              <div class="meta-box"><span class="meta-label">Clave</span><div class="meta-value">${escapeHTML(p.clave || '—')}</div></div>
             </div>
           </div>
         `).join('');
@@ -1592,52 +2150,13 @@ ADMIN_HTML = r"""
       }
     }
 
-    async function importProjects() {
-      try {
-        const fileInput = document.getElementById('importProjectsFile');
-        const file = fileInput.files?.[0];
-        if (!file) return showMsg('Selecciona un archivo Excel', false);
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const r = await fetch('/api/admin/projects/import', {
-          method: 'POST',
-          headers: { 'X-ADMIN-KEY': getKey() },
-          body: formData
-        });
-
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
-
-        document.getElementById('importProjectsResult').innerHTML = `
-          <div class="item">
-            <div class="item-title">${escapeHTML(data.message || 'Importación completada')}</div>
-            <div class="small">Insertados: ${data.inserted || 0} · Fallidos: ${data.failed || 0}</div>
-            ${(data.errors && data.errors.length)
-              ? `<div class="list" style="margin-top:10px;">${data.errors.map(e => `<div class="item"><div class="small">Fila ${e.row}: ${escapeHTML(e.error)}</div></div>`).join('')}</div>`
-              : '<div class="small" style="margin-top:10px;">Sin errores.</div>'}
-          </div>
-        `;
-
-        showMsg(data.message || 'Importación completada');
-        await loadMasterProjects();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
-
-    function exportProjects() {
-      window.open('/api/admin/projects/export', '_blank');
-    }
-
     async function addProjectToEvent() {
       const eventId = document.getElementById('eventProjectEventSelector').value;
       const projectId = document.getElementById('projectSelector').value;
       const slots = Number(document.getElementById('slotsInput').value);
 
       if (!eventId) return showMsg('Selecciona una temporada', false);
-      if (!projectId) return showMsg('Selecciona un proyecto maestro', false);
+      if (!projectId) return showMsg('Selecciona un proyecto base', false);
       if (Number.isNaN(slots) || slots < 0) return showMsg('Slots inválidos', false);
 
       try {
@@ -1645,7 +2164,7 @@ ADMIN_HTML = r"""
           project_id: Number(projectId),
           slots_total: slots
         });
-        showMsg(data.message || 'Proyecto agregado a la temporada');
+        showMsg(data.message || 'Proyecto activado en temporada');
         await loadEventProjects();
         await loadDashboard();
       } catch (e) {
@@ -1669,7 +2188,7 @@ ADMIN_HTML = r"""
         fillSelect('tokensEventProjectSelector', eventProjectsCache, 'Selecciona proyecto en temporada', p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`);
 
         if (!eventProjectsCache.length) {
-          container.innerHTML = `<div class="item"><div class="small">No hay proyectos cargados en esta temporada.</div></div>`;
+          container.innerHTML = `<div class="item"><div class="small">No hay proyectos activos en esta temporada.</div></div>`;
           return;
         }
 
@@ -1684,14 +2203,8 @@ ADMIN_HTML = r"""
             </div>
 
             <div class="meta">
-              <div class="meta-box">
-                <span class="meta-label">Slots total</span>
-                <div class="meta-value">${p.slots_total}</div>
-              </div>
-              <div class="meta-box">
-                <span class="meta-label">Estado</span>
-                <div class="meta-value">${p.status}</div>
-              </div>
+              <div class="meta-box"><span class="meta-label">Slots total</span><div class="meta-value">${p.slots_total}</div></div>
+              <div class="meta-box"><span class="meta-label">Estado</span><div class="meta-value">${p.status}</div></div>
             </div>
 
             <div class="actions">
@@ -1754,10 +2267,7 @@ ADMIN_HTML = r"""
 
         if (!eventProjectId) return showMsg('Selecciona un proyecto en temporada', false);
 
-        const data = await postJSON(`/api/admin/event-projects/${eventProjectId}/tokens`, {
-          count,
-          length
-        });
+        const data = await postJSON(`/api/admin/event-projects/${eventProjectId}/tokens`, { count, length });
 
         document.getElementById('tokensGenerationResult').innerHTML = `
           <div class="item">
@@ -1853,22 +2363,60 @@ ADMIN_HTML = r"""
 
         const body = document.getElementById('dashboardProjectsBody');
         const items = projects || [];
+
         body.innerHTML = items.length
           ? items.map(p => `
               <tr>
                 <td><strong>${escapeHTML(p.project_name)}</strong></td>
                 <td>${escapeHTML(p.partner_name || '—')}</td>
-                <td>${escapeHTML(p.event_project_status)}</td>
+                <td>${statusPill(p.event_project_status)}</td>
                 <td>${p.slots_total}</td>
                 <td>${p.registered_count}</td>
+                <td>${renderXPBar(p.registered_count, p.slots_total)}</td>
                 <td>${p.cupos_disponibles}</td>
                 <td>${p.tokens_used}</td>
                 <td>${p.tokens_revoked}</td>
                 <td>${p.tokens_expired}</td>
               </tr>
             `).join('')
-          : `<tr><td colspan="9" class="small">No hay proyectos cargados en esta temporada.</td></tr>`;
+          : `<tr><td colspan="10" class="small">No hay proyectos cargados en esta temporada.</td></tr>`;
       } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
+    async function loadRegistrations() {
+      const eventId = document.getElementById('registrationsEventSelector').value;
+      const body = document.getElementById('registrationsTableBody');
+
+      if (!eventId) {
+        body.innerHTML = `<tr><td colspan="7" class="small">Selecciona una temporada.</td></tr>`;
+        return;
+      }
+
+      try {
+        const rows = await getJSONAuth(`/api/admin/registrations?event_id=${encodeURIComponent(eventId)}`);
+
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="7" class="small">No hay inscripciones cerradas en esta temporada.</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = rows.map(r => `
+          <tr>
+            <td><strong>${escapeHTML(r.student_name || '—')}</strong></td>
+            <td><span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span></td>
+            <td>${escapeHTML(r.project_name || '—')}</td>
+            <td>${escapeHTML(r.general_name || '—')}</td>
+            <td class="mono">${escapeHTML(r.token_value || '—')}</td>
+            <td>${escapeHTML(r.accepted_at || '—')}</td>
+            <td>${statusPill(r.registration_status || 'ACTIVE')}</td>
+          </tr>
+        `).join('');
+
+        showMsg('Inscripciones cerradas cargadas correctamente');
+      } catch (e) {
+        body.innerHTML = `<tr><td colspan="7" class="small">${escapeHTML(e.message)}</td></tr>`;
         showMsg(e.message, false);
       }
     }
@@ -1883,15 +2431,12 @@ ADMIN_HTML = r"""
 
         await staffQrScanner.start(
           { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 220, height: 220 }
-          },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
           async (decodedText) => {
             document.getElementById('staffScannedToken').value = decodedText;
             await scanStaffQr();
           },
-          (errorMessage) => {}
+          () => {}
         );
 
         showMsg('Cámara activa para escaneo QR');
@@ -1998,7 +2543,11 @@ ADMIN_HTML = r"""
     }
 
     async function loadIncidents() {
-      const eventId = document.getElementById('eventSelector').value || document.getElementById('dashboardEventSelector').value;
+      const eventId =
+        document.getElementById('eventSelector').value ||
+        document.getElementById('dashboardEventSelector').value ||
+        document.getElementById('eventProjectEventSelector').value;
+
       const list = document.getElementById('incidentsList');
 
       if (!eventId) {
@@ -2031,7 +2580,7 @@ ADMIN_HTML = r"""
               </div>
               <div class="inline-row">
                 ${statusPill(i.status)}
-                <span class="pill ${i.severity === 'HIGH' ? 'pill-err' : i.severity === 'MEDIUM' ? 'pill-warn' : 'pill-ok'}">${i.severity}</span>
+                <span class="status-badge ${i.severity === 'HIGH' ? 'status-badge--err' : i.severity === 'MEDIUM' ? 'status-badge--warn' : 'status-badge--ok'}">${i.severity}</span>
               </div>
             </div>
 
@@ -2066,6 +2615,68 @@ ADMIN_HTML = r"""
       }
     }
 
+    async function importProjects() {
+      try {
+        const fileInput = document.getElementById('importProjectsFile');
+        const file = fileInput.files?.[0];
+        if (!file) return showMsg('Selecciona un archivo Excel', false);
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const r = await fetch('/api/admin/projects/import', {
+          method: 'POST',
+          headers: { 'X-ADMIN-KEY': getKey() },
+          body: formData
+        });
+
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+
+        document.getElementById('importProjectsResult').innerHTML = `
+          <div class="item">
+            <div class="item-title">${escapeHTML(data.message || 'Importación completada')}</div>
+            <div class="small">Insertados: ${data.inserted || 0} · Fallidos: ${data.failed || 0}</div>
+            ${(data.errors && data.errors.length)
+              ? `<div class="list" style="margin-top:10px;">${data.errors.map(e => `<div class="item"><div class="small">Fila ${e.row}: ${escapeHTML(e.error)}</div></div>`).join('')}</div>`
+              : '<div class="small" style="margin-top:10px;">Sin errores.</div>'}
+          </div>
+        `;
+
+        showMsg(data.message || 'Importación completada');
+        await loadMasterProjects();
+      } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
+    async function exportProjects() {
+      try {
+        const r = await fetch('/api/admin/projects/export', {
+          headers: { 'X-ADMIN-KEY': getKey() }
+        });
+
+        if (!r.ok) {
+          const data = await r.json().catch(() => ({}));
+          throw new Error(data.error || ('Error ' + r.status));
+        }
+
+        const blob = await r.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'projects_export.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        showMsg('Exportación iniciada correctamente');
+      } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (getKey()) {
         applyRoleUI(getRole());
@@ -2093,6 +2704,10 @@ ADMIN_HTML = r"""
 
       document.getElementById('tokensEventProjectSelector').addEventListener('change', async () => {
         await loadProjectTokens();
+      });
+
+      document.getElementById('registrationsEventSelector').addEventListener('change', async () => {
+        await loadRegistrations();
       });
     });
   </script>
