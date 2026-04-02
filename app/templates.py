@@ -1139,6 +1139,14 @@ INDEX_HTML = r"""
         .replace(/'/g, '&#39;');
     }
 
+    function debounce(fn, delay) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+      };
+    }
+
     function showMsg(text, ok = true) {
       const el = document.getElementById('msg');
       el.textContent = text || '';
@@ -1288,6 +1296,23 @@ INDEX_HTML = r"""
       `).join('');
     }
 
+    function renderSkeleton() {
+      const list = document.getElementById('catalogList');
+
+      list.innerHTML = Array(6).fill(`
+        <div class="tcg-card">
+          <div class="tcg-card__content">
+            <div style="height:16px;width:60%;background:#eef2f7;border-radius:6px;margin-bottom:8px;"></div>
+            <div style="height:12px;width:40%;background:#eef2f7;border-radius:6px;margin-bottom:12px;"></div>
+            <div style="height:100px;background:#eef2f7;border-radius:12px;margin-bottom:12px;"></div>
+            <div style="height:12px;width:80%;background:#eef2f7;border-radius:6px;margin-bottom:6px;"></div>
+            <div style="height:12px;width:70%;background:#eef2f7;border-radius:6px;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+
     function renderSelectedProjectBanner() {
       const banner = document.getElementById('selectedProjectBanner');
       const text = document.getElementById('selectedProjectBannerText');
@@ -1345,8 +1370,17 @@ INDEX_HTML = r"""
       }
     }
 
+    let lastRequestId = 0;
+
     async function loadCatalog() {
+      const requestId = ++lastRequestId;
+
       try {
+        renderSkeleton();
+
+        // ⚡ pequeño delay para UX más suave (opcional pero pro)
+        await new Promise(r => setTimeout(r, 200));
+
         const season = getSeason();
         const q = (document.getElementById('catalogSearch').value || '').trim();
         const socio = document.getElementById('filterPartner').value;
@@ -1363,6 +1397,10 @@ INDEX_HTML = r"""
         if (horario) params.set('horario', horario);
 
         const data = await getJSON(`/api/projects?${params.toString()}`);
+
+        // 🚫 Evita respuestas viejas (race condition fix)
+        if (requestId !== lastRequestId) return;
+
         currentCatalog = data.items || [];
 
         renderCatalogHeader(currentCatalog, data.event || null);
@@ -1370,13 +1408,34 @@ INDEX_HTML = r"""
         renderSelectedProjectBanner();
 
         showMsg('Catálogo cargado correctamente');
+
       } catch (e) {
+        // 🚫 Evita errores de requests viejos
+        if (requestId !== lastRequestId) return;
+
         currentCatalog = [];
         renderCatalogHeader([], null);
+
+        // 💀 Error específico de temporada
+        if (e.message && e.message.toLowerCase().includes('temporada')) {
+          document.getElementById('catalogList').innerHTML = `
+            <div class="item" style="border-color:#fecaca;background:#fee2e2;">
+              <div class="item-title" style="color:#991b1b;">
+                No hay proyectos disponibles
+              <div>
+              <div class="small" style="color:#7f1d1d;">
+                Aún no se ha habilitado una temporada para estudiantes.
+              <div>
+            </div>
+          `;
+          return;
+        }
+
         renderCatalog([]);
         showMsg(e.message, false);
       }
     }
+
 
     function renderRequestStatus(status) {
       const value = String(status || '').toUpperCase();
@@ -1790,20 +1849,62 @@ INDEX_HTML = r"""
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
+      const debouncedLoad = debounce(loadCatalog, 400);
+
       document.getElementById('seasonSelector').addEventListener('change', async () => {
         await loadCatalogsForSeason();
         await loadCatalog();
       });
 
-      document.getElementById('catalogSearch').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') loadCatalog();
-      });
+      document.getElementById('catalogSearch').addEventListener('input', debouncedLoad);
+
+      document.getElementById('filterPartner').addEventListener('change', loadCatalog);
+      document.getElementById('filterModality').addEventListener('change', loadCatalog);
+      document.getElementById('filterWeekDays').addEventListener('change', loadCatalog);
+      document.getElementById('filterSchedule').addEventListener('change', loadCatalog);
 
       await loadCatalogsForSeason();
       await loadCatalog();
       renderSelectedProjectBanner();
       setCurrentStep(1);
     });
+
+
+  // Auto-recarga en filtros (incluye temporada)
+  ['filterPartner','filterModality','filterWeekDays','filterSchedule','seasonSelector']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', async () => {
+          // Solo temporada necesita recargar catálogos
+          if (id === 'seasonSelector') {
+            await loadCatalogsForSeason();
+          }
+          await loadCatalog();
+        });
+      }
+    });
+
+  // Enter para buscar
+  document.getElementById('catalogSearch').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') loadCatalog();
+  });
+
+  // Carga inicial
+  await loadCatalogsForSeason();
+  await loadCatalog();
+
+  renderSelectedProjectBanner();
+  setCurrentStep(1);
+
+  // Auto refresh del QR (opcional)
+  setInterval(() => {
+    if (currentPass) {
+      refreshStudentPass();
+    }
+  }, 60000); // cada 60s
+});
+
   </script>
 </body>
 </html>
