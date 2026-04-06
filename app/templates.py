@@ -1215,48 +1215,86 @@ INDEX_HTML = r"""
     }
 
     function getSeason() {
-      return document.getElementById('seasonSelector').value;
+      const el = document.getElementById('seasonSelector');
+      return el ? el.value : 'PRIMAVERA';
     }
 
     function getEnrolment() {
-      return (document.getElementById('enrolmentInput').value || '').trim().toLowerCase();
+      return (document.getElementById('enrolmentInput')?.value || '').trim().toLowerCase();
     }
 
     async function getJSON(url) {
+      console.log('[GET]', url);
       const r = await fetch(url);
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+      console.log('[GET RESPONSE]', url, r.status, data);
+      if (!r.ok) throw new Error(data.error || data.message || ('Error ' + r.status));
       return data;
     }
 
     async function postJSON(url, body) {
+      console.log('[POST]', url, body);
       const r = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+      console.log('[POST RESPONSE]', url, r.status, data);
+      if (!r.ok) throw new Error(data.error || data.message || ('Error ' + r.status));
       return data;
+    }
+
+    async function tryGet(urls) {
+      let lastError = null;
+
+      for (const url of urls) {
+        try {
+          return await getJSON(url);
+        } catch (e) {
+          console.warn('Falló GET:', url, e.message);
+          lastError = e;
+        }
+      }
+
+      throw lastError || new Error('No se pudo completar la consulta');
+    }
+
+    async function tryPost(candidates) {
+      let lastError = null;
+
+      for (const item of candidates) {
+        try {
+          return await postJSON(item.url, item.body);
+        } catch (e) {
+          console.warn('Falló POST:', item.url, e.message);
+          lastError = e;
+        }
+      }
+
+      throw lastError || new Error('No se pudo completar la operación');
     }
 
     function fillSelect(id, items, labelKey = 'description') {
       const el = document.getElementById(id);
       if (!el) return;
 
-      const baseOption = el.querySelector('option') ? el.querySelector('option').outerHTML : '<option value="">Todas</option>';
-      el.innerHTML = baseOption;
+      const firstOption = el.querySelector('option')
+        ? el.querySelector('option').outerHTML
+        : '<option value="">Todas</option>';
+
+      el.innerHTML = firstOption;
 
       for (const item of (items || [])) {
         const opt = document.createElement('option');
         opt.value = item.id ?? item.value ?? item.name ?? '';
-        opt.textContent = 
-        item[labelKey]??
-        item.description??
-        item.name??
-        item.label??
-        item.value??
-        'Opción';
+        opt.textContent =
+          item[labelKey] ??
+          item.description ??
+          item.name ??
+          item.label ??
+          item.value ??
+          'Opción';
         el.appendChild(opt);
       }
     }
@@ -1274,22 +1312,20 @@ INDEX_HTML = r"""
       const route = document.getElementById('heroRouteStatus');
       const project = document.getElementById('heroProjectStatus');
 
-      if (currentRegistration) {
-        route.textContent = 'Inscripción completada';
-      } else if (currentPreview) {
-        route.textContent = 'Preview listo para confirmar';
-      } else if (currentPass && (currentPass.pass_session || currentPass.active_session)) {
-        route.textContent = 'Pase activo para validación';
-      } else if (currentRequest) {
-        route.textContent = 'Solicitud creada';
-      } else {
-        route.textContent = 'Explorando catálogo';
+      if (route) {
+        if (currentRegistration) route.textContent = 'Inscripción completada';
+        else if (currentPreview) route.textContent = 'Preview listo para confirmar';
+        else if (currentPass && (currentPass.pass_session || currentPass.active_session)) route.textContent = 'Pase activo para validación';
+        else if (currentRequest) route.textContent = 'Solicitud creada';
+        else route.textContent = 'Explorando catálogo';
       }
 
-      if (currentSelectedProject) {
-        project.textContent = ${currentSelectedProject.general_name || 'Proyecto'} | ${currentSelectedProject.name || 'Sin nombre'};
-      } else {
-        project.textContent = 'Sin proyecto seleccionado';
+      if (project) {
+        if (currentSelectedProject) {
+          project.textContent = `${currentSelectedProject.general_name || currentSelectedProject.organization || 'Proyecto'} | ${currentSelectedProject.name || currentSelectedProject.project_name || 'Sin nombre'}`;
+        } else {
+          project.textContent = 'Sin proyecto seleccionado';
+        }
       }
     }
 
@@ -1315,6 +1351,8 @@ INDEX_HTML = r"""
       const banner = document.getElementById('selectedProjectBanner');
       const text = document.getElementById('selectedProjectBannerText');
 
+      if (!banner || !text) return;
+
       if (!currentSelectedProject) {
         banner.classList.add('hidden');
         text.textContent = 'Aún no seleccionas proyecto.';
@@ -1324,11 +1362,12 @@ INDEX_HTML = r"""
 
       banner.classList.remove('hidden');
       text.innerHTML = `
-        <strong>${escapeHTML(currentSelectedProject.general_name || 'Proyecto')}</strong> |
-        ${escapeHTML(currentSelectedProject.name || 'Sin nombre')}
-        · ${escapeHTML(currentSelectedProject.modalidad || '—')}
-        · ${escapeHTML(currentSelectedProject.horario || '—')}
+        <strong>${escapeHTML(currentSelectedProject.general_name || currentSelectedProject.organization || 'Proyecto')}</strong> |
+        ${escapeHTML(currentSelectedProject.name || currentSelectedProject.project_name || 'Sin nombre')}
+        · ${escapeHTML(currentSelectedProject.modalidad || currentSelectedProject.modality || currentSelectedProject.modality_name || '—')}
+        · ${escapeHTML(currentSelectedProject.horario || currentSelectedProject.schedule || currentSelectedProject.schedule_name || '—')}
       `;
+
       updateHeroState();
     }
 
@@ -1336,18 +1375,23 @@ INDEX_HTML = r"""
       const season = eventInfo?.season || getSeason();
       const displayName = eventInfo?.display_name || season;
 
-      document.getElementById('catalogCountLabel').textContent = Catálogo de ${displayName};
-      document.getElementById('catalogSeasonChip').textContent = season;
-      document.getElementById('catalogProjectsChip').textContent = ${projects.length} proyectos;
+      const countLabel = document.getElementById('catalogCountLabel');
+      const seasonChip = document.getElementById('catalogSeasonChip');
+      const projectsChip = document.getElementById('catalogProjectsChip');
+
+      if (countLabel) countLabel.textContent = `Catálogo de ${displayName}`;
+      if (seasonChip) seasonChip.textContent = season;
+      if (projectsChip) projectsChip.textContent = `${projects.length} proyectos`;
     }
 
     function renderCatalog(projects) {
       const list = document.getElementById('catalogList');
+      if (!list) return;
 
       if (!projects || !projects.length) {
         list.innerHTML = renderEmptyState(
           'No hay proyectos para mostrar',
-          'Prueba otros filtros o revisa si la temporada ya tiene proyectos activos.'
+          'Prueba otros filtros o revisa si la temporada ya tiene proyectos activos y visibles para alumno.'
         );
         return;
       }
@@ -1366,59 +1410,64 @@ INDEX_HTML = r"""
         const location = p.location ?? '—';
         const competencies = p.competencies ?? '—';
 
+        const isSelected =
+          currentSelectedProject &&
+          Number(currentSelectedProject.id ?? currentSelectedProject.project_id) === Number(projectId);
+
         return `
-        <article class="project-card ${currentSelectedProject && Number(currentSelectedProject.id ?? currentSelectedProject.project_id) === Number(p.id) ? 'selected' : ''}">
-          <div class="project-head">
-            <div>
-              <div class="project-org">${escapeHTML(p.general_name || 'Proyecto')}</div>
-              <div class="project-title">${escapeHTML(p.name || 'Sin nombre')}</div>
-              <div class="project-subtitle">Carrera preferida: ${escapeHTML(p.socio || 'Sin preferencia')}</div>
+          <article class="project-card ${isSelected ? 'selected' : ''}">
+            <div class="project-head">
+              <div>
+                <div class="project-org">${escapeHTML(generalName)}</div>
+                <div class="project-title">${escapeHTML(projectName)}</div>
+                <div class="project-subtitle">Carrera preferida: ${escapeHTML(partnerName)}</div>
+              </div>
+
+              <div class="project-rank">
+                CARD<br>#${idx + 1}
+              </div>
             </div>
 
-            <div class="project-rank">
-              CARD<br>#${idx + 1}
-            </div>
-          </div>
-
-          <div class="project-hero">
-            <div class="project-hero-text">
-              ${escapeHTML(String(objetivos).slice(0, 155))}
-            </div>
-          </div>
-
-          <div class="project-stats">
-            <div class="project-stat">
-              <span class="project-stat-label">Modalidad</span>
-              <div class="project-stat-value">${escapeHTML(modalidad)}</div>
+            <div class="project-hero">
+              <div class="project-hero-text">
+                ${escapeHTML(String(objetivos).slice(0, 155))}
+              </div>
             </div>
 
-            <div class="project-stat">
-              <span class="project-stat-label">Días</span>
-              <div class="project-stat-value">${escapeHTML(dias)}</div>
+            <div class="project-stats">
+              <div class="project-stat">
+                <span class="project-stat-label">Modalidad</span>
+                <div class="project-stat-value">${escapeHTML(modalidad)}</div>
+              </div>
+
+              <div class="project-stat">
+                <span class="project-stat-label">Días</span>
+                <div class="project-stat-value">${escapeHTML(dias)}</div>
+              </div>
+
+              <div class="project-stat">
+                <span class="project-stat-label">Horario</span>
+                <div class="project-stat-value">${escapeHTML(horario)}</div>
+              </div>
+
+              <div class="project-stat">
+                <span class="project-stat-label">Cupos</span>
+                <div class="project-stat-value">${escapeHTML(cupos)}</div>
+              </div>
             </div>
 
-            <div class="project-stat">
-              <span class="project-stat-label">Horario</span>
-              <div class="project-stat-value">${escapeHTML(horario)}</div>
+            <div class="project-extra">
+              <div class="project-extra-row"><strong>Duración:</strong> ${escapeHTML(duracion)}</div>
+              <div class="project-extra-row"><strong>Lugar:</strong> ${escapeHTML(location)}</div>
+              <div class="project-extra-row"><strong>Competencias:</strong> ${escapeHTML(competencies)}</div>
             </div>
 
-            <div class="project-stat">
-              <span class="project-stat-label">Cupos</span>
-              <div class="project-stat-value">${escapeHTML(cupos)}</div>
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="selectProject(${Number(projectId)})">Elegir proyecto</button>
             </div>
-          </div>
-
-          <div class="project-extra">
-            <div class="project-extra-row"><strong>Duración:</strong> ${escapeHTML(duracion)}</div>
-            <div class="project-extra-row"><strong>Lugar:</strong> ${escapeHTML(location)}</div>
-            <div class="project-extra-row"><strong>Competencias:</strong> ${escapeHTML(competencies)}</div>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn-primary" onclick="selectProject(${Number(projectId)})">Elegir proyecto</button>
-          </div>
-        </article>
-      `).join('');
+          </article>
+        `;
+      }).join('');
     }
 
     function selectProject(projectId) {
@@ -1441,37 +1490,26 @@ INDEX_HTML = r"""
       try {
         const season = getSeason();
 
-        let data = null;
-
-        try{
-          data = await getJSON(`/api/catalogs?temporada=${encodeURIComponent(season)}`);
-        } catch (_) {}
-
-        if (!data) {
-          try {
-            data = await getJSON(`/api/catalogs?season=${encodeURIComponent(season)}`);
-          } catch (_) {}
-        }
-
-        if (!data) {
-          data = await getJSON(`/api/catalogs`);
-        }
+        const data = await tryGet([
+          `/api/catalogs?temporada=${encodeURIComponent(season)}`,
+          `/api/catalogs?season=${encodeURIComponent(season)}`,
+          `/api/catalogs`
+        ]);
 
         const partners =
           data.socio ||
           data.partner ||
           data.partners ||
           data.carreras ||
-          data.carrera ||
           [];
 
-        const modalidades =
+        const modalities =
           data.modalidad ||
           data.modality ||
-          data.modalidades ||
+          data.modalities ||
           [];
 
-        const weekDays =     
+        const weekDays =
           data.dias ||
           data.week_days ||
           data.weekDays ||
@@ -1482,12 +1520,13 @@ INDEX_HTML = r"""
           data.horario ||
           data.schedule ||
           data.schedules ||
-          [];  
+          [];
 
         fillSelect('filterPartner', partners, 'name');
         fillSelect('filterModality', modalities, 'description');
         fillSelect('filterWeekDays', weekDays, 'description');
         fillSelect('filterSchedule', schedules, 'description');
+
       } catch (e) {
         showMsg('No se pudieron cargar los catálogos: ' + e.message, false);
       }
@@ -1502,33 +1541,54 @@ INDEX_HTML = r"""
         const dia = document.getElementById('filterWeekDays').value;
         const horario = document.getElementById('filterSchedule').value;
 
-        let data = null;
-
-      try {  
         const params1 = new URLSearchParams();
         params1.set('temporada', season);
         if (q) params1.set('q', q);
         if (socio) params1.set('socio', socio);
         if (modalidad) params1.set('modalidad', modalidad);
         if (dia) params1.set('dia', dia);
-        if (horario) params.set('horario', horario);
+        if (horario) params1.set('horario', horario);
 
-        data = await getJSON(/api/projects?${params1.toString()});
-      } catch (_) {}
+        const params2 = new URLSearchParams();
+        params2.set('season', season);
+        if (q) params2.set('q', q);
+        if (socio) params2.set('partner', socio);
+        if (modalidad) params2.set('modality', modalidad);
+        if (dia) params2.set('week_days', dia);
+        if (horario) params2.set('schedule', horario);
 
-        const data = await getJSON(/api/projects?${params.toString()});
-        currentCatalog = data.items || [];
+        const data = await tryGet([
+          `/api/projects?${params1.toString()}`,
+          `/api/projects?${params2.toString()}`,
+          `/api/projects`
+        ]);
 
-        renderCatalogHeader(currentCatalog, data.event || null);
+        currentCatalog =
+          data.items ||
+          data.projects ||
+          data.rows ||
+          (Array.isArray(data) ? data : []);
+
+        const eventInfo =
+          data.event ||
+          data.current_event ||
+          null;
+
+        renderCatalogHeader(currentCatalog, eventInfo);
         renderCatalog(currentCatalog);
         renderSelectedProjectBanner();
 
-        showMsg('Catálogo cargado correctamente');
+        if (!currentCatalog.length) {
+          showMsg('No hay proyectos visibles para alumno en esta temporada', false);
+        } else {
+          showMsg('Catálogo cargado correctamente');
+        }
+
       } catch (e) {
         currentCatalog = [];
         renderCatalogHeader([], null);
         renderCatalog([]);
-        showMsg(e.message, false);
+        showMsg('No se pudo cargar el catálogo: ' + e.message, false);
       }
     }
 
@@ -1550,11 +1610,13 @@ INDEX_HTML = r"""
         CLOSED: ['chip chip-orange', 'CLOSED']
       };
       const cfg = map[value] || ['chip chip-neutral', value || '—'];
-      return <span class="${cfg[0]}">${cfg[1]}</span>;
+      return `<span class="${cfg[0]}">${cfg[1]}</span>`;
     }
 
     function renderRequestInfo(data) {
       const box = document.getElementById('requestInfo');
+
+      if (!box) return;
 
       if (!data) {
         box.innerHTML = renderEmptyState(
@@ -1633,17 +1695,28 @@ INDEX_HTML = r"""
           phone_number: document.getElementById('phoneInput').value.trim(),
           degree: document.getElementById('degreeInput').value.trim(),
           semester: document.getElementById('semesterInput').value.trim(),
-          season: getSeason()
+          season: getSeason(),
+          temporada: getSeason()
         };
 
-        const data = await postJSON('/api/student/requests', payload);
+        if (!payload.full_name || !payload.enrolment_number || !payload.email || !payload.phone_number || !payload.degree || !payload.semester) {
+          return showMsg('Faltan campos obligatorios para solicitar pase', false);
+        }
+
+        const data = await tryPost([
+          { url: '/api/student/requests', body: payload },
+          { url: '/api/student/request', body: payload },
+          { url: '/api/student_requests', body: payload }
+        ]);
+
         currentRequest = data;
         renderRequestInfo(data);
         setCurrentStep(3);
         updateHeroState();
         showMsg(data.message || 'Solicitud procesada correctamente');
       } catch (e) {
-        showMsg(e.message, false);
+        console.error('Error al solicitar pase:', e);
+        showMsg('No se pudo solicitar el pase: ' + e.message, false);
       }
     }
 
@@ -1653,7 +1726,12 @@ INDEX_HTML = r"""
         if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
 
         const season = getSeason();
-        const data = await getJSON(/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)});
+        const data = await tryGet([
+          `/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`,
+          `/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&temporada=${encodeURIComponent(season)}`,
+          `/api/student/request?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`
+        ]);
+
         currentRequest = data;
         renderRequestInfo(data);
         updateHeroState();
@@ -1668,6 +1746,8 @@ INDEX_HTML = r"""
     function renderStudentQR(plainToken) {
       const qrCanvas = document.getElementById('qrCanvas');
       const qrPlainToken = document.getElementById('qrPlainToken');
+
+      if (!qrCanvas || !qrPlainToken) return;
 
       qrCanvas.innerHTML = '';
       qrPlainToken.textContent = plainToken || 'Genera tu código';
@@ -1685,6 +1765,8 @@ INDEX_HTML = r"""
     function renderPassInfo(data) {
       const box = document.getElementById('passInfo');
       const statusBadge = document.getElementById('qrStatusBadge');
+
+      if (!box || !statusBadge) return;
 
       if (!data) {
         box.innerHTML = renderEmptyState(
@@ -1765,7 +1847,11 @@ INDEX_HTML = r"""
         if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
 
         const season = getSeason();
-        const data = await getJSON(/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)});
+        const data = await tryGet([
+          `/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`,
+          `/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&temporada=${encodeURIComponent(season)}`
+        ]);
+
         currentPass = data;
         renderPassInfo(data);
         setCurrentStep(3);
@@ -1785,10 +1871,15 @@ INDEX_HTML = r"""
 
         const payload = {
           enrolment_number: enrolment,
-          season: getSeason()
+          season: getSeason(),
+          temporada: getSeason()
         };
 
-        const data = await postJSON('/api/student/pass/refresh', payload);
+        const data = await tryPost([
+          { url: '/api/student/pass/refresh', body: payload },
+          { url: '/api/student_pass/refresh', body: payload }
+        ]);
+
         currentPass = data;
         renderPassInfo(data);
         setCurrentStep(3);
@@ -1801,6 +1892,7 @@ INDEX_HTML = r"""
 
     function renderPreview(data) {
       const box = document.getElementById('registrationPreview');
+      if (!box) return;
 
       if (!data) {
         box.innerHTML = renderEmptyState(
@@ -1863,6 +1955,8 @@ INDEX_HTML = r"""
     function renderRegistrationSuccess(data) {
       const box = document.getElementById('registrationSuccessBox');
       const btn = document.getElementById('confirmRegistrationBtn');
+
+      if (!box || !btn) return;
 
       if (!data) {
         box.classList.add('hidden');
@@ -1929,11 +2023,16 @@ INDEX_HTML = r"""
         const payload = {
           enrolment_number: enrolment,
           season: getSeason(),
+          temporada: getSeason(),
           project_id: Number(projectId),
           token_value: tokenValue
         };
 
-        const data = await postJSON('/api/student/registration/preview', payload);
+        const data = await tryPost([
+          { url: '/api/student/registration/preview', body: payload },
+          { url: '/api/student_registration/preview', body: payload }
+        ]);
+
         currentPreview = data;
         renderPreview(data);
         setCurrentStep(4);
@@ -1964,6 +2063,7 @@ INDEX_HTML = r"""
         const payload = {
           enrolment_number: enrolment,
           season: getSeason(),
+          temporada: getSeason(),
           project_id: Number(projectId),
           token_value: tokenValue,
           accepted_checkbox: acceptedCheckbox,
@@ -1971,7 +2071,10 @@ INDEX_HTML = r"""
           legal_text_version: legalVersion
         };
 
-        const data = await postJSON('/api/student/registration/confirm', payload);
+        const data = await tryPost([
+          { url: '/api/student/registration/confirm', body: payload },
+          { url: '/api/student_registration/confirm', body: payload }
+        ]);
 
         currentRegistration = {
           project_name: data.registration?.project_name || currentSelectedProject?.name || '—',
@@ -1991,26 +2094,32 @@ INDEX_HTML = r"""
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('seasonSelector').addEventListener('change', async () => {
+      try {
+        document.getElementById('seasonSelector')?.addEventListener('change', async () => {
+          await loadCatalogsForSeason();
+          await loadCatalog();
+        });
+
+        document.getElementById('catalogSearch')?.addEventListener('input', scheduleCatalogSearch);
+        document.getElementById('filterPartner')?.addEventListener('change', loadCatalog);
+        document.getElementById('filterModality')?.addEventListener('change', loadCatalog);
+        document.getElementById('filterWeekDays')?.addEventListener('change', loadCatalog);
+        document.getElementById('filterSchedule')?.addEventListener('change', loadCatalog);
+
         await loadCatalogsForSeason();
         await loadCatalog();
-      });
 
-      document.getElementById('catalogSearch').addEventListener('input', scheduleCatalogSearch);
-      document.getElementById('filterPartner').addEventListener('change', loadCatalog);
-      document.getElementById('filterModality').addEventListener('change', loadCatalog);
-      document.getElementById('filterWeekDays').addEventListener('change', loadCatalog);
-      document.getElementById('filterSchedule').addEventListener('change', loadCatalog);
-
-      await loadCatalogsForSeason();
-      await loadCatalog();
-      renderSelectedProjectBanner();
-      renderRequestInfo(null);
-      renderPassInfo(null);
-      renderPreview(null);
-      renderRegistrationSuccess(null);
-      setCurrentStep(1);
-      updateHeroState();
+        renderSelectedProjectBanner();
+        renderRequestInfo(null);
+        renderPassInfo(null);
+        renderPreview(null);
+        renderRegistrationSuccess(null);
+        setCurrentStep(1);
+        updateHeroState();
+      } catch (e) {
+        console.error('Error al inicializar alumno:', e);
+        showMsg('Error al inicializar la página: ' + e.message, false);
+      }
     });
   </script>
 </body>
