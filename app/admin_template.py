@@ -4,61 +4,49 @@ ADMIN_HTML = r"""
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>🌐  Panel Administrativo</title>
+  <title>Panel Administrativo</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     :root {
-      --bg: #eef3fb;
-      --bg-2: #f8fbff;
+      --bg: #F4F7FA;
+      --panel: #FFFFFF;
+      --panel-soft: #FAFBFD;
+      --text: #1F2937;
+      --text-soft: #6B7280;
+      --muted: #94A3B8;
+      --line: #E5E7EB;
+      --line-strong: #D1D5DB;
 
-      --panel: #ffffff;
-      --panel-soft: #f6f9ff;
+      --orange: #FF8C42;
+      --green: #43AA8B;
+      --purple: #7D5BA6;
+      --pink: #F25C78;
 
-      --sidebar-bg: #1f2a44;
-      --sidebar-bg-2: #263553;
+      --orange-soft: #FFF3EA;
+      --green-soft: #ECFDF7;
+      --purple-soft: #F5F0FB;
+      --pink-soft: #FFF1F5;
 
-      --text: #1b2435;
-      --text-soft: #607089;
-      --muted: #93a1b7;
+      --shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.06);
 
-      --line: #dbe4f2;
-      --line-strong: #c7d4e8;
-
-      --brand: #4f7cff;
-      --brand-2: #72a7ff;
-      --accent: #ff5d73;
-      --accent-soft: #fff1f3;
-
-      --ok-bg: #dcfce7;
-      --ok-text: #166534;
-
-      --warn-bg: #fef3c7;
-      --warn-text: #92400e;
-
-      --err-bg: #fee2e2;
-      --err-text: #991b1b;
-
-      --purple-bg: #ede9fe;
-      --purple-text: #6d28d9;
-
-      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 14px 28px rgba(35, 60, 120, 0.10);
-
-      --r-sm: 10px;
-      --r-md: 14px;
-      --r-lg: 18px;
-      --r-xl: 24px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 22px;
       --r-pill: 999px;
+
+      --module-accent: var(--purple);
+      --module-accent-soft: var(--purple-soft);
     }
 
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 0;
+      font-family: Inter, Montserrat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
       color: var(--text);
-      background:
-        radial-gradient(circle at top left, #ffffff 0%, #eef4ff 28%, #eaf1fb 100%);
       min-height: 100vh;
     }
 
@@ -71,92 +59,87 @@ ADMIN_HTML = r"""
     }
 
     .sidebar {
-      background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-2) 100%);
-      color: #e2e8f0;
+      background: #FFFFFF;
+      border-right: 1px solid var(--line);
       padding: 18px 16px;
       position: sticky;
       top: 0;
       height: 100vh;
       overflow-y: auto;
-      border-right: 1px solid rgba(255,255,255,0.05);
     }
 
     .sidebar-shell {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 18px;
     }
 
     .brand-box {
-      position: relative;
-      overflow: hidden;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      padding: 16px;
       box-shadow: var(--shadow-sm);
     }
 
-    .brand-box::before {
-      content: "";
-      position: absolute;
-      top: -18px;
-      right: -12px;
-      width: 90px;
-      height: 90px;
-      background: radial-gradient(circle, rgba(79,124,255,0.28) 0%, rgba(79,124,255,0) 72%);
-      pointer-events: none;
-    }
-
-    .brand-box::after {
-      content: "";
-      position: absolute;
-      top: 22px;
-      right: 26px;
-      width: 56px;
-      height: 56px;
-      background: radial-gradient(circle, rgba(255,93,115,0.20) 0%, rgba(255,93,115,0) 72%);
-      pointer-events: none;
-    }
-
     .brand-title {
-      position: relative;
-      z-index: 1;
       font-size: 1.06rem;
       font-weight: 900;
-      color: #f8fafc;
       margin-bottom: 4px;
+      color: var(--text);
     }
 
     .brand-subtitle {
-      position: relative;
-      z-index: 1;
-      color: #cbd5e1;
       font-size: .88rem;
-      line-height: 1.4;
+      color: var(--text-soft);
+      line-height: 1.45;
     }
 
     .role-box {
-      position: relative;
-      z-index: 1;
       margin-top: 12px;
-      padding: 12px 14px;
       border-radius: var(--r-md);
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      padding: 12px 14px;
       font-size: .9rem;
-      color: #e2e8f0;
+      color: var(--text-soft);
       font-weight: 700;
     }
 
-    .nav-section-title {
-      font-size: .74rem;
+    .nav-group {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 4px;
+    }
+
+    .nav-group-title {
+      font-size: .76rem;
       text-transform: uppercase;
       letter-spacing: .08em;
-      color: #94a3b8;
       font-weight: 900;
-      margin: 10px 8px 6px;
+      color: var(--muted);
     }
+
+    .nav-group-pill {
+      font-size: .72rem;
+      font-weight: 900;
+      padding: 6px 9px;
+      border-radius: var(--r-pill);
+      white-space: nowrap;
+    }
+
+    .pill-purple { background: var(--purple-soft); color: var(--purple); }
+    .pill-orange { background: var(--orange-soft); color: var(--orange); }
+    .pill-green  { background: var(--green-soft); color: var(--green); }
+    .pill-pink   { background: var(--pink-soft); color: var(--pink); }
+    .pill-neutral { background: #F3F4F6; color: #374151; }
 
     .nav-list {
       display: grid;
@@ -164,57 +147,63 @@ ADMIN_HTML = r"""
     }
 
     .nav-item {
-      border: none;
-      background: transparent;
-      color: #e2e8f0;
-      padding: 12px 14px;
-      border-radius: var(--r-md);
+      width: 100%;
       text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      border-radius: var(--r-lg);
+      padding: 12px 14px;
       font-size: .94rem;
       font-weight: 800;
       cursor: pointer;
-      transition: .18s ease;
-      border-left: 4px solid transparent;
+      transition: background .18s ease, transform .16s ease, border-color .18s ease, box-shadow .18s ease;
     }
 
     .nav-item:hover {
-      background: rgba(255,255,255,0.08);
-      transform: translateX(2px);
+      transform: translateY(-1px);
+      background: #F9FAFB;
+      border-color: var(--line);
+      box-shadow: var(--shadow-sm);
     }
 
     .nav-item.active {
-      background: linear-gradient(90deg, rgba(79,124,255,0.18) 0%, rgba(255,255,255,0.05) 100%);
-      border-left: 4px solid var(--brand-2);
-      color: #ffffff;
+      background: var(--module-accent-soft);
+      border-color: color-mix(in srgb, var(--module-accent) 35%, white);
+      color: var(--module-accent);
+      box-shadow: var(--shadow-sm);
     }
 
     .sidebar-actions {
-      margin-top: 12px;
       display: grid;
       gap: 10px;
+      margin-top: 6px;
     }
 
     .sidebar-actions a,
     .sidebar-actions button {
       text-decoration: none;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.05);
-      color: #e2e8f0;
-      padding: 11px 12px;
+      text-align: center;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text-soft);
       border-radius: var(--r-md);
+      padding: 11px 12px;
       font-size: .9rem;
       font-weight: 800;
       cursor: pointer;
-      text-align: center;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
     }
 
     .sidebar-actions a:hover,
     .sidebar-actions button:hover {
-      background: rgba(255,255,255,0.10);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+      border-color: var(--line-strong);
     }
 
     .main {
-      padding: 24px;
+      padding: 22px;
     }
 
     .topbar {
@@ -222,54 +211,40 @@ ADMIN_HTML = r"""
     }
 
     .screen-header {
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
-      border: 1px solid var(--line);
+      background: linear-gradient(135deg, white 0%, var(--module-accent-soft) 100%);
+      border: 1px solid color-mix(in srgb, var(--module-accent) 25%, white);
       border-radius: var(--r-xl);
-      padding: 20px 22px;
+      padding: 18px 20px;
       box-shadow: var(--shadow-md);
     }
 
-    .screen-header::before {
-      content: "";
-      position: absolute;
-      right: -40px;
-      top: -40px;
-      width: 180px;
-      height: 180px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(79,124,255,0.18) 0%, rgba(79,124,255,0.00) 72%);
-      pointer-events: none;
-    }
-
     .screen-header__content {
-      position: relative;
-      z-index: 1;
       display: flex;
       justify-content: space-between;
-      gap: 16px;
-      align-items: center;
+      gap: 14px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .screen-kicker {
       font-size: .76rem;
       text-transform: uppercase;
       letter-spacing: .08em;
-      color: var(--muted);
+      color: var(--module-accent);
       font-weight: 900;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .screen-title strong {
       display: block;
-      font-size: 1.3rem;
+      font-size: 1.34rem;
       font-weight: 900;
       margin-bottom: 4px;
+      color: var(--text);
     }
 
     .screen-title span {
+      display: block;
       color: var(--text-soft);
       font-size: .95rem;
     }
@@ -278,38 +253,71 @@ ADMIN_HTML = r"""
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: var(--r-pill);
+      font-size: .8rem;
+      font-weight: 900;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .chip-accent {
+      background: var(--module-accent-soft);
+      color: var(--module-accent);
+      border-color: color-mix(in srgb, var(--module-accent) 20%, white);
+    }
+
+    .chip-dark {
+      background: white;
+      color: var(--text-soft);
+      border-color: var(--line);
+    }
+
+    .login-wrap {
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 0 18px;
     }
 
     .login-card,
     .card {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: var(--r-xl);
-      box-shadow: var(--shadow-md);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-sm);
       padding: 22px;
     }
 
-    .card {
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    .msg {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: var(--r-md);
+      font-size: .94rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
     }
 
-    .card::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 78px;
-      height: 78px;
-      background: linear-gradient(135deg, rgba(79,124,255,0.10) 0%, rgba(79,124,255,0.00) 72%);
-      clip-path: polygon(100% 0, 0 0, 100% 100%);
-      pointer-events: none;
+    .msg.ok {
+      display: block;
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: #CDEFE4;
     }
 
-    .login-wrap {
-      max-width: 760px;
-      margin: 40px auto;
+    .msg.err {
+      display: block;
+      background: var(--pink-soft);
+      color: var(--pink);
+      border-color: #FFD4DD;
     }
 
     .module {
@@ -331,6 +339,15 @@ ADMIN_HTML = r"""
     .span-6 { grid-column: span 6; }
     .span-4 { grid-column: span 4; }
 
+    .module-card-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
     h2, h3 {
       margin: 0;
       line-height: 1.2;
@@ -346,20 +363,7 @@ ADMIN_HTML = r"""
       font-weight: 900;
     }
 
-    .module-card-title {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
     .muted {
-      position: relative;
-      z-index: 1;
       color: var(--text-soft);
       font-size: .93rem;
       line-height: 1.55;
@@ -370,34 +374,20 @@ ADMIN_HTML = r"""
       color: var(--text-soft);
     }
 
-    .screen-chip,
-    .chip {
+    .screen-chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 8px 12px;
       border-radius: var(--r-pill);
-      font-size: .8rem;
+      background: var(--module-accent-soft);
+      color: var(--module-accent);
+      font-size: .82rem;
       font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .screen-chip,
-    .chip-primary {
-      background: #eff6ff;
-      color: var(--brand);
-      border: 1px solid #d8e5ff;
-    }
-
-    .chip-dark {
-      background: #1f2a44;
-      color: #eaf1ff;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid color-mix(in srgb, var(--module-accent) 16%, white);
     }
 
     .form-grid {
-      position: relative;
-      z-index: 1;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 12px;
@@ -428,7 +418,7 @@ ADMIN_HTML = r"""
       font-size: .94rem;
       padding: 10px 12px;
       outline: none;
-      transition: .18s ease;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .16s ease;
     }
 
     textarea {
@@ -437,13 +427,11 @@ ADMIN_HTML = r"""
     }
 
     input:focus, select:focus, textarea:focus {
-      border-color: var(--brand-2);
-      box-shadow: 0 0 0 3px rgba(79,124,255,0.10);
+      border-color: var(--module-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--module-accent) 14%, white);
     }
 
     .actions {
-      position: relative;
-      z-index: 1;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
@@ -455,7 +443,6 @@ ADMIN_HTML = r"""
       min-width: 150px;
     }
 
-    .btn,
     .btn-primary,
     .btn-secondary,
     .btn-danger {
@@ -465,70 +452,37 @@ ADMIN_HTML = r"""
       font-size: .94rem;
       font-weight: 900;
       cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease, border-color .15s ease;
     }
 
-    .btn:hover,
     .btn-primary:hover,
     .btn-secondary:hover,
     .btn-danger:hover {
-      transform: translateY(-1px);
+      transform: translateY(-1px) scale(1.01);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent) 0%, #ff7b8d 100%);
+      background: var(--module-accent);
       color: white;
       border: none;
-      box-shadow: 0 10px 18px rgba(230,57,70,0.18);
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--module-accent) 22%, white);
     }
 
     .btn-secondary {
-      background: #f8fafc;
-      color: #334155;
+      background: #FFFFFF;
+      color: #374151;
       border: 1px solid var(--line);
-    }
-
-    .btn-danger {
-      background: #ef4444;
-      color: white;
-      border: none;
-    }
-
-    @keyframes popIn {
-      0% { transform: scale(0.95); opacity: 0.85; }
-      60% { transform: scale(1.02); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .msg {
-      display: none;
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: var(--r-md);
-      font-size: .94rem;
-      font-weight: 800;
-      border: 1px solid transparent;
       box-shadow: var(--shadow-sm);
     }
 
-    .msg.ok {
-      display: block;
-      background: var(--ok-bg);
-      color: var(--ok-text);
-      border-color: #bbf7d0;
-      animation: popIn .28s ease;
+    .btn-danger {
+      background: var(--pink);
+      color: white;
+      border: none;
+      box-shadow: 0 8px 18px rgba(242,92,120,0.18);
     }
 
-    .msg.err {
-      display: block;
-      background: var(--err-bg);
-      color: var(--err-text);
-      border-color: #fecaca;
-      animation: popIn .28s ease;
-    }
-
-    .pill,
-    .status-badge {
+    .badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -539,69 +493,50 @@ ADMIN_HTML = r"""
       white-space: nowrap;
     }
 
-    .pill-ok,
-    .status-badge--ok {
-      background: var(--ok-bg);
-      color: var(--ok-text);
-    }
+    .badge-success { background: var(--green-soft); color: var(--green); }
+    .badge-warn { background: var(--orange-soft); color: var(--orange); }
+    .badge-danger { background: var(--pink-soft); color: var(--pink); }
+    .badge-purple { background: var(--purple-soft); color: var(--purple); }
+    .badge-neutral { background: #F3F4F6; color: #374151; }
 
-    .pill-err,
-    .status-badge--err {
-      background: var(--err-bg);
-      color: var(--err-text);
-    }
-
-    .pill-warn,
-    .status-badge--warn {
-      background: var(--warn-bg);
-      color: var(--warn-text);
-    }
-
-    .pill-info,
-    .status-badge--info {
-      background: #eff6ff;
-      color: var(--brand-2);
-    }
-
-    .pill-purple {
-      background: var(--purple-bg);
-      color: var(--purple-text);
-    }
-
-    .pill-neutral {
-      background: #f1f5f9;
-      color: #334155;
-    }
-
-    .list {
-      position: relative;
-      z-index: 1;
+    .stats-grid {
       display: grid;
-      gap: 12px;
-      margin-top: 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
     }
 
-    .item {
-      border: 1px solid var(--line);
+    .kpi-card {
       border-radius: var(--r-lg);
-      background: #fff;
-      padding: 16px;
+      padding: 18px;
+      color: white;
       box-shadow: var(--shadow-sm);
     }
 
-    .item-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: start;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
+    .kpi-card--green { background: linear-gradient(135deg, #43AA8B 0%, #57C3A2 100%); }
+    .kpi-card--orange { background: linear-gradient(135deg, #FF8C42 0%, #FFAA6E 100%); }
+    .kpi-card--purple { background: linear-gradient(135deg, #7D5BA6 0%, #9B79C6 100%); }
+    .kpi-card--pink { background: linear-gradient(135deg, #F25C78 0%, #FF7D96 100%); }
+
+    .kpi-label {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 900;
+      opacity: .95;
+      margin-bottom: 8px;
     }
 
-    .item-title {
+    .kpi-value {
+      font-size: 2rem;
       font-weight: 900;
-      font-size: 1rem;
-      color: var(--text);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .kpi-sub {
+      font-size: .84rem;
+      opacity: .96;
     }
 
     .meta {
@@ -612,8 +547,8 @@ ADMIN_HTML = r"""
     }
 
     .meta-box {
-      border: 1px solid #eef2f7;
-      background: #f8fafc;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
       border-radius: var(--r-md);
       padding: 10px 12px;
     }
@@ -635,119 +570,89 @@ ADMIN_HTML = r"""
       line-height: 1.4;
     }
 
-    .stats-grid {
-      position: relative;
-      z-index: 1;
+    .record-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
       margin-top: 14px;
     }
 
-    .stat-card {
+    .record-card {
+      background: #FFF;
       border: 1px solid var(--line);
       border-radius: var(--r-lg);
-      background: white;
       padding: 16px;
       box-shadow: var(--shadow-sm);
     }
 
-    .stat-label {
-      color: var(--muted);
-      font-size: .8rem;
-      text-transform: uppercase;
-      font-weight: 900;
-      letter-spacing: .04em;
-      margin-bottom: 8px;
+    .record-card__head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
-    .stat-value {
-      font-size: 1.7rem;
+    .record-card__title {
+      font-size: .98rem;
       font-weight: 900;
       color: var(--text);
+      margin-bottom: 3px;
     }
 
-    .table-shell {
-      position: relative;
-      z-index: 1;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      overflow: hidden;
-      background: white;
-      box-shadow: var(--shadow-sm);
-      margin-top: 14px;
+    .record-card__sub {
+      font-size: .84rem;
+      color: var(--text-soft);
     }
 
-    .table-topbar {
+    .record-stack {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stack-row {
       display: flex;
       justify-content: space-between;
       gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
-      border-bottom: 1px solid var(--line);
+      align-items: start;
+      font-size: .88rem;
     }
 
-    .table-title {
-      font-size: .95rem;
-      font-weight: 900;
-      color: var(--text);
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1040px;
-      background: white;
-    }
-
-    thead th {
-      background: #f8fafc;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 12px 10px;
-      border-bottom: 1px solid var(--line);
-      vertical-align: top;
-    }
-
-    th {
-      font-size: .78rem;
-      text-transform: uppercase;
-      letter-spacing: .04em;
+    .stack-row strong {
       color: var(--text-soft);
-      font-weight: 900;
+      font-weight: 800;
+      min-width: 120px;
     }
 
-    td {
-      font-size: .92rem;
+    .stack-row span {
+      text-align: right;
       color: var(--text);
+      font-weight: 700;
+      word-break: break-word;
     }
 
     .mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: .92rem;
-      background: #16233c;
-      color: #e8eef8;
+      font-size: .9rem;
+      background: #111827;
+      color: #E5EEF8;
       border-radius: var(--r-md);
-      padding: 10px 12px;
+      padding: 9px 11px;
       word-break: break-all;
+      display: inline-block;
     }
 
     .mono-soft {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: .88rem;
-      color: #21304b;
-      background: #eef4ff;
-      border: 1px solid #dbe7ff;
+      color: #334155;
+      background: #F3F4F6;
+      border: 1px solid var(--line);
       padding: 5px 8px;
       border-radius: 10px;
+      display: inline-block;
     }
 
     .xp-wrapper {
@@ -769,33 +674,53 @@ ADMIN_HTML = r"""
     .xp-bar-bg {
       width: 100%;
       height: 12px;
-      background: #e5e7eb;
+      background: #E5E7EB;
       border-radius: 999px;
       overflow: hidden;
-      position: relative;
     }
 
     .xp-bar-fill {
       height: 100%;
       width: 0%;
       border-radius: 999px;
-      background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+      background: linear-gradient(90deg, var(--purple) 0%, #9B79C6 100%);
       transition: width .35s ease;
     }
 
     .xp-bar-fill.level-up {
-      background: linear-gradient(90deg, #4ade80 0%, #16a34a 100%);
+      background: linear-gradient(90deg, var(--green) 0%, #57C3A2 100%);
+    }
+
+    .scanner-shell {
+      max-width: 620px;
+      margin: 18px auto 0;
+      display: grid;
+      gap: 14px;
+      justify-items: center;
     }
 
     #staffScanner {
       width: 100%;
       max-width: 420px;
-      margin-top: 18px;
       border-radius: var(--r-lg);
       overflow: hidden;
       border: 1px solid var(--line);
-      background: #fff;
+      background: white;
       box-shadow: var(--shadow-sm);
+    }
+
+    .center-note {
+      text-align: center;
+      color: var(--text-soft);
+      font-size: .9rem;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1280px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 1200px) {
@@ -813,7 +738,11 @@ ADMIN_HTML = r"""
       }
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 700px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
       .main {
         padding: 18px;
       }
@@ -859,9 +788,9 @@ ADMIN_HTML = r"""
     <aside class="sidebar">
       <div class="sidebar-shell">
         <div class="brand-box">
-          <div class="brand-title">🌐 Panel Administrativo</div>
+          <div class="brand-title">Panel de Eventos Grandes</div>
           <div class="brand-subtitle">
-            Navegación modular del evento con control visual y operativo.
+            Operación clara, rápida y visual para temporadas, accesos y seguimiento.
           </div>
 
           <div class="role-box" id="sidebarRoleBox">
@@ -870,30 +799,57 @@ ADMIN_HTML = r"""
         </div>
 
         <div id="adminNavWrap">
-          <div class="nav-section-title">Admin</div>
-          <div class="nav-list">
-            <button class="nav-item active" data-module="summaryModule" onclick="showModule('summaryModule', this)">📊 Dashboard</button>
-            <button class="nav-item" data-module="eventsModule" onclick="showModule('eventsModule', this)">📅 Temporadas</button>
-            <button class="nav-item" data-module="masterProjectsModule" onclick="showModule('masterProjectsModule', this)">📖 Proyectos Base</button>
-            <button class="nav-item" data-module="eventProjectsModule" onclick="showModule('eventProjectsModule', this)">🚀 Proyecto Activo (Temporada)</button>
-            <button class="nav-item" data-module="tokensModule" onclick="showModule('tokensModule', this)">🔴 Generar Tokens</button>
-            <button class="nav-item" data-module="registrationsModule" onclick="showModule('registrationsModule', this)">👥 Inscritos</button>
-            <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">⚠ Reportes (Incidentes)</button>
-            <button class="nav-item" data-module="importExportModule" onclick="showModule('importExportModule', this)">📦 Carga Masiva (Import / Export)</button>
+          <div class="nav-group">
+            <div class="nav-group-header">
+              <div class="nav-group-title">Estrategia</div>
+              <span class="nav-group-pill pill-purple">Morado</span>
+            </div>
+            <div class="nav-list">
+              <button class="nav-item active" data-module="summaryModule" onclick="showModule('summaryModule', this)">Dashboard</button>
+              <button class="nav-item" data-module="eventsModule" onclick="showModule('eventsModule', this)">Temporadas</button>
+              <button class="nav-item" data-module="masterProjectsModule" onclick="showModule('masterProjectsModule', this)">Proyectos Base</button>
+            </div>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-group-header">
+              <div class="nav-group-title">Operación</div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <span class="nav-group-pill pill-orange">Naranja</span>
+                <span class="nav-group-pill pill-green">Verde</span>
+              </div>
+            </div>
+            <div class="nav-list">
+              <button class="nav-item" data-module="eventProjectsModule" onclick="showModule('eventProjectsModule', this)">Proyectos Activos</button>
+              <button class="nav-item" data-module="tokensModule" onclick="showModule('tokensModule', this)">Generar Tokens</button>
+              <button class="nav-item" data-module="registrationsModule" onclick="showModule('registrationsModule', this)">Inscritos</button>
+              <button class="nav-item" data-module="checkinModule" onclick="showModule('checkinModule', this)">Check-in (QR)</button>
+            </div>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-group-header">
+              <div class="nav-group-title">Control</div>
+              <span class="nav-group-pill pill-pink">Rosa</span>
+            </div>
+            <div class="nav-list">
+              <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">Incidentes</button>
+              <button class="nav-item" data-module="importExportModule" onclick="showModule('importExportModule', this)">Carga Masiva</button>
+            </div>
           </div>
         </div>
 
         <div id="staffNavWrap" class="hidden">
-          <div class="nav-section-title">Staff</div>
-          <div class="nav-list">
-            <button class="nav-item active" data-module="checkinModule" onclick="showModule('checkinModule', this)">📷 Check-in</button>
-            <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">⚠ Reportes Rocket (Incidentes)</button>
+          <div class="nav-group">
+            <div class="nav-group-header">
+              <div class="nav-group-title">Operación Staff</div>
+              <span class="nav-group-pill pill-green">Verde</span>
+            </div>
+            <div class="nav-list">
+              <button class="nav-item active" data-module="checkinModule" onclick="showModule('checkinModule', this)">Check-in (QR)</button>
+              <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">Incidentes</button>
+            </div>
           </div>
-        </div>
-
-        <div class="nav-section-title">Operación</div>
-        <div class="nav-list">
-          <button class="nav-item" data-module="checkinModule" onclick="showModule('checkinModule', this)">🪪 Escanear QR</button>
         </div>
 
         <div class="sidebar-actions">
@@ -911,14 +867,14 @@ ADMIN_HTML = r"""
         <div class="screen-header">
           <div class="screen-header__content">
             <div class="screen-title">
-              <div class="screen-kicker">Terminal activa</div>
-              <strong id="moduleTitle">📊 Centro de Mando</strong>
-              <span id="moduleSubtitle">Vista general del evento y sus números clave.</span>
+              <div class="screen-kicker" id="moduleKicker">Estrategia</div>
+              <strong id="moduleTitle">Dashboard</strong>
+              <span id="moduleSubtitle">Visión ejecutiva del evento.</span>
             </div>
 
             <div class="screen-badges">
-              <span class="chip chip-primary">Panel modular</span>
-              <span class="chip chip-dark">Operación viva</span>
+              <span class="chip chip-accent" id="headerAccentBadge">Módulo activo</span>
+              <span class="chip chip-dark" id="headerRoleBadge">Panel operativo</span>
             </div>
           </div>
         </div>
@@ -928,11 +884,11 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>Centro de Mando</h2>
-              <span class="screen-chip">Pantalla activa</span>
+              <h2>Dashboard Ejecutivo</h2>
+              <span class="screen-chip">Resumen general</span>
             </div>
             <div class="muted">
-              Vista ejecutiva de la temporada seleccionada.
+              KPI ejecutivos y avance por proyecto para la temporada seleccionada.
             </div>
 
             <div class="form-grid">
@@ -949,34 +905,10 @@ ADMIN_HTML = r"""
 
             <div id="dashboardSummary" class="stats-grid"></div>
 
-            <div class="table-shell">
-              <div class="table-topbar">
-                <div class="table-title">Resumen por proyecto</div>
-                <div>
-                  <span class="chip chip-primary">Dashboard vivo</span>
-                </div>
-              </div>
-
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Proyecto</th>
-                      <th>Carrera preferida</th>
-                      <th>Estado</th>
-                      <th>Slots</th>
-                      <th>Registrados</th>
-                      <th>Progreso</th>
-                      <th>Disponibles</th>
-                      <th>Tokens usados</th>
-                      <th>Revocados</th>
-                      <th>Expirados</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dashboardProjectsBody">
-                    <tr><td colspan="10" class="small">Selecciona una temporada y carga dashboard.</td></tr>
-                  </tbody>
-                </table>
+            <div id="dashboardProjectsBody" class="record-grid">
+              <div class="record-card">
+                <div class="record-card__title">Selecciona una temporada</div>
+                <div class="record-card__sub">Carga el dashboard para ver proyectos, ocupación y tokens.</div>
               </div>
             </div>
           </div>
@@ -987,11 +919,11 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-6">
             <div class="module-card-title">
-              <h2>Temporadas</h2>
+              <h2>Crear temporada</h2>
               <span class="screen-chip">Configuración</span>
             </div>
             <div class="muted">
-              Crea la temporada visible para los alumnos y define sus tiempos.
+              Crea una temporada y define sus ventanas operativas.
             </div>
 
             <div class="form-grid">
@@ -1057,10 +989,10 @@ ADMIN_HTML = r"""
           <div class="card span-6">
             <div class="module-card-title">
               <h2>Operar temporada</h2>
-              <span class="screen-chip">Control</span>
+              <span class="screen-chip">Edición rápida</span>
             </div>
             <div class="muted">
-              Cambia estado o visibilidad de una temporada ya existente.
+              Ajusta estado y visibilidad de una temporada existente.
             </div>
 
             <div class="form-grid">
@@ -1096,7 +1028,7 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-secondary" onclick="setSelectedEventVisible()">Marcar visible</button>
             </div>
 
-            <div id="selectedEventInfo" class="list"></div>
+            <div id="selectedEventInfo" class="record-grid"></div>
           </div>
 
           <div class="card span-12">
@@ -1104,7 +1036,7 @@ ADMIN_HTML = r"""
               <h2>Temporadas existentes</h2>
               <span class="screen-chip">Historial</span>
             </div>
-            <div id="eventsList" class="list"></div>
+            <div id="eventsList" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1114,10 +1046,10 @@ ADMIN_HTML = r"""
           <div class="card span-12">
             <div class="module-card-title">
               <h2>Proyectos Base</h2>
-              <span class="screen-chip">Catálogo base</span>
+              <span class="screen-chip">Catálogo maestro</span>
             </div>
             <div class="muted">
-              Esta es la ficha base del proyecto. Aquí no lo activas todavía en una temporada.
+              Aquí vive la ficha base de cada proyecto.
             </div>
 
             <div class="form-grid">
@@ -1231,7 +1163,7 @@ ADMIN_HTML = r"""
               </div>
             </div>
 
-            <div id="masterProjectsList" class="list"></div>
+            <div id="masterProjectsList" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1240,11 +1172,11 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>Proyecto Activo (Temporada)</h2>
-              <span class="screen-chip">Activación</span>
+              <h2>Proyectos Activos</h2>
+              <span class="screen-chip">Operación</span>
             </div>
             <div class="muted">
-              Aquí tomas un proyecto base y lo activas dentro de una temporada específica.
+              Activa un proyecto base dentro de una temporada y define su cupo.
             </div>
 
             <div class="form-grid">
@@ -1269,7 +1201,7 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-secondary" onclick="loadEventProjects()">Recargar proyectos</button>
             </div>
 
-            <div id="eventProjectsList" class="list"></div>
+            <div id="eventProjectsList" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1278,11 +1210,11 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-6">
             <div class="module-card-title">
-              <h2>🔴 Generar Tokens</h2>
-              <span class="screen-chip">Generación</span>
+              <h2>Generar Tokens</h2>
+              <span class="screen-chip">Acceso</span>
             </div>
             <div class="muted">
-              Crea tokens de inscripción para un proyecto ya activo en temporada.
+              Genera tokens para proyectos activos y controla su vigencia.
             </div>
 
             <div class="form-grid">
@@ -1314,19 +1246,19 @@ ADMIN_HTML = r"""
             </div>
 
             <div class="small" style="margin-top:10px;">
-              Valor actual: <span id="ttl_current" class="pill pill-neutral">—</span>
+              Valor actual: <span id="ttl_current" class="badge badge-warn">—</span>
             </div>
 
-            <div id="tokensGenerationResult" class="list"></div>
+            <div id="tokensGenerationResult" class="record-grid"></div>
           </div>
 
           <div class="card span-6">
             <div class="module-card-title">
               <h2>Revocar token</h2>
-              <span class="screen-chip">Control</span>
+              <span class="screen-chip">Acción crítica</span>
             </div>
             <div class="muted">
-              Revoca un token específico cuando haya error, conflicto o corrección operativa.
+              Revoca un token cuando haya error, conflicto o corrección operativa.
             </div>
 
             <div class="form-grid">
@@ -1348,7 +1280,7 @@ ADMIN_HTML = r"""
 
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>Listado de tokens</h2>
+              <h2>Tokens del proyecto</h2>
               <span class="screen-chip">Seguimiento</span>
             </div>
 
@@ -1367,36 +1299,7 @@ ADMIN_HTML = r"""
             </div>
 
             <div id="tokensSummary" class="stats-grid"></div>
-
-            <div class="table-shell">
-              <div class="table-topbar">
-                <div class="table-title">Tokens del proyecto</div>
-                <div>
-                  <span class="chip chip-primary">Estado operativo</span>
-                </div>
-              </div>
-
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Token</th>
-                      <th>Estado</th>
-                      <th>Reservado por request</th>
-                      <th>Reserved until</th>
-                      <th>Usado por request</th>
-                      <th>Usado</th>
-                      <th>Revocado</th>
-                      <th>Expira</th>
-                      <th>Creado</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tokensTableBody">
-                    <tr><td colspan="9" class="small">Selecciona un proyecto en temporada y carga tokens.</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <div id="tokensCards" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1405,11 +1308,11 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>👥 Inscritos</h2>
-              <span class="screen-chip">Resultado final</span>
+              <h2>Inscritos</h2>
+              <span class="screen-chip">Cierre final</span>
             </div>
             <div class="muted">
-              Aquí ves claramente quién cerró contrato, en qué proyecto y cuándo.
+              Consulta qué alumno cerró contrato, en qué proyecto y con qué token.
             </div>
 
             <div class="form-grid">
@@ -1423,31 +1326,10 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-primary" onclick="loadRegistrations()">Cargar inscripciones</button>
             </div>
 
-            <div class="table-shell">
-              <div class="table-topbar">
-                <div class="table-title">Inscripciones cerradas</div>
-                <div>
-                  <span class="chip chip-primary">Seguimiento final</span>
-                </div>
-              </div>
-
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Alumno</th>
-                      <th>Matrícula</th>
-                      <th>Proyecto</th>
-                      <th>Organización</th>
-                      <th>Token</th>
-                      <th>Fecha de cierre</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody id="registrationsTableBody">
-                    <tr><td colspan="7" class="small">Selecciona una temporada para consultar inscripciones.</td></tr>
-                  </tbody>
-                </table>
+            <div id="registrationsCards" class="record-grid">
+              <div class="record-card">
+                <div class="record-card__title">Selecciona una temporada</div>
+                <div class="record-card__sub">Carga inscripciones cerradas para ver resultados.</div>
               </div>
             </div>
           </div>
@@ -1458,14 +1340,14 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>📷 Check-in</h2>
-              <span class="screen-chip">Modo misión</span>
+              <h2>Check-in (QR)</h2>
+              <span class="screen-chip">Acceso presencial</span>
             </div>
-            <div class="muted">
-              Escanea QR, valida matrícula y habilita acceso.
+            <div class="center-note">
+              Escanea el QR, valida matrícula y habilita acceso sin ruido visual.
             </div>
 
-            <div class="form-grid">
+            <div class="form-grid" style="margin-top:18px;">
               <div class="field">
                 <label>QR escaneado</label>
                 <input id="staffScannedToken" placeholder="Aquí aparece el token escaneado o puedes pegarlo manualmente">
@@ -1484,8 +1366,11 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-primary" onclick="grantStaffAccess()">Dar acceso</button>
             </div>
 
-            <div id="staffScanner"></div>
-            <div id="staffCheckinInfo" class="list"></div>
+            <div class="scanner-shell">
+              <div id="staffScanner"></div>
+            </div>
+
+            <div id="staffCheckinInfo" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1494,11 +1379,11 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-6">
             <div class="module-card-title">
-              <h2>⚠ Reportes Rocket (Incidentes)</h2>
-              <span class="screen-chip">Reporte</span>
+              <h2>Incidentes</h2>
+              <span class="screen-chip">Control crítico</span>
             </div>
             <div class="muted">
-              Usa esta sección para reportar conflictos, errores o casos especiales.
+              Reporta y da seguimiento a errores, conflictos o casos especiales.
             </div>
 
             <div class="form-grid">
@@ -1568,7 +1453,7 @@ ADMIN_HTML = r"""
               <span class="screen-chip">Seguimiento</span>
             </div>
             <div class="muted">
-              Consulta y cambia el estado de los incidentes reportados.
+              Revisa severidad, estado y resuelve incidentes abiertos.
             </div>
 
             <div class="form-grid">
@@ -1598,7 +1483,7 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-secondary" onclick="loadIncidents()">Recargar incidentes</button>
             </div>
 
-            <div id="incidentsList" class="list"></div>
+            <div id="incidentsList" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1607,11 +1492,11 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>📦 Carga Masiva (Import / Export)</h2>
-              <span class="screen-chip">Excel</span>
+              <h2>Carga Masiva (Import / Export)</h2>
+              <span class="screen-chip">Control de catálogo</span>
             </div>
             <div class="muted">
-              Usa esta sección para cargas masivas y exportación del catálogo base.
+              Importa o exporta proyectos base desde Excel.
             </div>
 
             <div class="form-grid">
@@ -1626,7 +1511,7 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-secondary" onclick="exportProjects()">Exportar proyectos</button>
             </div>
 
-            <div id="importProjectsResult" class="list"></div>
+            <div id="importProjectsResult" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1643,40 +1528,67 @@ ADMIN_HTML = r"""
 
     const MODULE_META = {
       summaryModule: {
-        title: '📊 Centro de Mando',
-        subtitle: 'Vista general del evento y sus números clave.'
+        title: 'Dashboard',
+        subtitle: 'Visión ejecutiva del evento.',
+        kicker: 'Estrategia',
+        accent: '#7D5BA6',
+        accentSoft: '#F5F0FB'
       },
       eventsModule: {
-        title: '📅 Temporadas',
-        subtitle: 'Crear, abrir, cerrar y mostrar temporadas.'
+        title: 'Temporadas',
+        subtitle: 'Configuración de ciclos y ventanas operativas.',
+        kicker: 'Estrategia',
+        accent: '#7D5BA6',
+        accentSoft: '#F5F0FB'
       },
       masterProjectsModule: {
-        title: '📖 Proyectos Base',
-        subtitle: 'Catálogo base de fichas maestras.'
+        title: 'Proyectos Base',
+        subtitle: 'Catálogo maestro de proyectos.',
+        kicker: 'Estrategia',
+        accent: '#7D5BA6',
+        accentSoft: '#F5F0FB'
       },
       eventProjectsModule: {
-        title: '🚀 Proyecto Activo (Temporada)',
-        subtitle: 'Toma un proyecto base y actívalo en una temporada.'
+        title: 'Proyectos Activos',
+        subtitle: 'Activación de proyectos por temporada.',
+        kicker: 'Operación',
+        accent: '#FF8C42',
+        accentSoft: '#FFF3EA'
       },
       tokensModule: {
-        title: '🔴 Generar Tokens',
-        subtitle: 'Genera, consulta y revoca tokens de inscripción.'
+        title: 'Generar Tokens',
+        subtitle: 'Flujos de acceso, vigencia y control de tokens.',
+        kicker: 'Operación',
+        accent: '#FF8C42',
+        accentSoft: '#FFF3EA'
       },
       registrationsModule: {
-        title: '👥 Inscritos',
-        subtitle: 'Consulta cierres de inscripción por proyecto y alumno.'
+        title: 'Inscritos',
+        subtitle: 'Consulta de cierres de inscripción.',
+        kicker: 'Operación',
+        accent: '#43AA8B',
+        accentSoft: '#ECFDF7'
       },
       checkinModule: {
-        title: '📷 Check-in',
-        subtitle: 'Escanea QR y habilita acceso.'
+        title: 'Check-in (QR)',
+        subtitle: 'Escaneo y habilitación de acceso.',
+        kicker: 'Operación',
+        accent: '#43AA8B',
+        accentSoft: '#ECFDF7'
       },
       incidentsModule: {
-        title: '⚠ Reportes (Incidentes)',
-        subtitle: 'Seguimiento de problemas y casos especiales.'
+        title: 'Incidentes',
+        subtitle: 'Seguimiento de problemas y casos especiales.',
+        kicker: 'Control',
+        accent: '#F25C78',
+        accentSoft: '#FFF1F5'
       },
       importExportModule: {
-        title: '📦 Carga Masiva (Import / Export)',
-        subtitle: 'Carga y descarga proyectos base desde Excel.'
+        title: 'Carga Masiva',
+        subtitle: 'Importación y exportación del catálogo.',
+        kicker: 'Control',
+        accent: '#F25C78',
+        accentSoft: '#FFF1F5'
       }
     };
 
@@ -1706,6 +1618,11 @@ ADMIN_HTML = r"""
       return storage.getItem('ADMIN_ROLE') || '';
     }
 
+    function setModuleAccent(accent, accentSoft) {
+      document.documentElement.style.setProperty('--module-accent', accent);
+      document.documentElement.style.setProperty('--module-accent-soft', accentSoft);
+    }
+
     function showModule(moduleId, btn = null) {
       document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
       const moduleEl = document.getElementById(moduleId);
@@ -1714,9 +1631,13 @@ ADMIN_HTML = r"""
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
       document.querySelectorAll(`.nav-item[data-module="${moduleId}"]`).forEach(x => x.classList.add('active'));
 
-      const meta = MODULE_META[moduleId];
-      document.getElementById('moduleTitle').textContent = meta?.title || 'Panel';
-      document.getElementById('moduleSubtitle').textContent = meta?.subtitle || '';
+      const meta = MODULE_META[moduleId] || MODULE_META.summaryModule;
+      document.getElementById('moduleTitle').textContent = meta.title;
+      document.getElementById('moduleSubtitle').textContent = meta.subtitle;
+      document.getElementById('moduleKicker').textContent = meta.kicker;
+      document.getElementById('headerAccentBadge').textContent = meta.title;
+
+      setModuleAccent(meta.accent, meta.accentSoft);
     }
 
     function applyRoleUI(role) {
@@ -1724,9 +1645,11 @@ ADMIN_HTML = r"""
       const appShell = document.getElementById('appShell');
       const roleBadge = document.getElementById('roleBadge');
       const sidebarRoleBox = document.getElementById('sidebarRoleBox');
+      const headerRoleBadge = document.getElementById('headerRoleBadge');
 
       roleBadge.textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: —';
       sidebarRoleBox.textContent = role ? `Rol actual: ${role}` : 'Rol actual: —';
+      headerRoleBadge.textContent = role ? role : 'Panel operativo';
 
       loginWrap.classList.toggle('hidden', !!role);
       appShell.classList.toggle('hidden', !role);
@@ -1812,21 +1735,27 @@ ADMIN_HTML = r"""
       return data;
     }
 
-    function statusPill(status) {
+    function statusBadge(status) {
+      const value = String(status || '').toUpperCase();
       const map = {
-        'DRAFT': ['status-badge status-badge--info', 'DRAFT'],
-        'VISIBLE': ['status-badge status-badge--info', 'VISIBLE'],
-        'ONSITE': ['status-badge status-badge--ok', 'ONSITE'],
-        'CLOSED': ['status-badge status-badge--warn', 'CLOSED'],
-        'ARCHIVED': ['status-badge status-badge--err', 'ARCHIVED'],
-        'ACTIVE': ['status-badge status-badge--ok', 'ACTIVE'],
-        'HIDDEN': ['status-badge status-badge--warn', 'HIDDEN'],
-        'OPEN': ['status-badge status-badge--err', 'OPEN'],
-        'IN_PROGRESS': ['status-badge status-badge--warn', 'IN_PROGRESS'],
-        'RESOLVED': ['status-badge status-badge--ok', 'RESOLVED'],
-        'DISMISSED': ['status-badge status-badge--info', 'DISMISSED']
+        DRAFT: ['badge badge-purple', 'DRAFT'],
+        VISIBLE: ['badge badge-purple', 'VISIBLE'],
+        ONSITE: ['badge badge-success', 'ONSITE'],
+        CLOSED: ['badge badge-warn', 'CLOSED'],
+        ARCHIVED: ['badge badge-danger', 'ARCHIVED'],
+        ACTIVE: ['badge badge-success', 'ACTIVE'],
+        HIDDEN: ['badge badge-warn', 'HIDDEN'],
+        OPEN: ['badge badge-danger', 'OPEN'],
+        IN_PROGRESS: ['badge badge-warn', 'IN_PROGRESS'],
+        RESOLVED: ['badge badge-success', 'RESOLVED'],
+        DISMISSED: ['badge badge-neutral', 'DISMISSED'],
+        AVAILABLE: ['badge badge-success', 'AVAILABLE'],
+        RESERVED: ['badge badge-warn', 'RESERVED'],
+        USED: ['badge badge-neutral', 'USED'],
+        REVOKED: ['badge badge-danger', 'REVOKED'],
+        EXPIRED: ['badge badge-danger', 'EXPIRED']
       };
-      const cfg = map[status] || ['status-badge status-badge--info', status || '—'];
+      const cfg = map[value] || ['badge badge-neutral', value || '—'];
       return `<span class="${cfg[0]}">${cfg[1]}</span>`;
     }
 
@@ -1857,7 +1786,6 @@ ADMIN_HTML = r"""
     function renderXPBar(registrados, slotsTotales) {
       const usados = Number(registrados || 0);
       const total = Number(slotsTotales || 0);
-
       const porcentaje = total > 0 ? Math.round((usados / total) * 100) : 0;
       const porcentajeSeguro = Math.min(porcentaje, 100);
       const levelUpClass = porcentaje >= 100 ? 'level-up' : '';
@@ -1865,12 +1793,21 @@ ADMIN_HTML = r"""
       return `
         <div class="xp-wrapper">
           <div class="xp-text">
-            <span>Nivel actual</span>
+            <span>Ocupación</span>
             <span>${porcentaje}%</span>
           </div>
           <div class="xp-bar-bg">
             <div class="xp-bar-fill ${levelUpClass}" style="width:${porcentajeSeguro}%"></div>
           </div>
+        </div>
+      `;
+    }
+
+    function renderEmptyCard(title, subtitle='') {
+      return `
+        <div class="record-card">
+          <div class="record-card__title">${escapeHTML(title)}</div>
+          <div class="record-card__sub">${escapeHTML(subtitle)}</div>
         </div>
       `;
     }
@@ -1961,21 +1898,21 @@ ADMIN_HTML = r"""
 
         const eventsList = document.getElementById('eventsList');
         if (!allEvents.length) {
-          eventsList.innerHTML = `<div class="item"><div class="small">No hay temporadas creadas todavía.</div></div>`;
+          eventsList.innerHTML = renderEmptyCard('No hay temporadas creadas todavía', 'Crea la primera temporada para comenzar.');
           document.getElementById('selectedEventInfo').innerHTML = '';
           return showMsg('No hay temporadas creadas todavía');
         }
 
         eventsList.innerHTML = allEvents.map(e => `
-          <div class="item">
-            <div class="item-head">
+          <div class="record-card">
+            <div class="record-card__head">
               <div>
-                <div class="item-title">${escapeHTML(e.display_name)}</div>
-                <div class="small">Año ${e.year} · ${e.season}</div>
+                <div class="record-card__title">${escapeHTML(e.display_name)}</div>
+                <div class="record-card__sub">Año ${e.year} · ${e.season}</div>
               </div>
-              <div class="inline-row">
-                ${statusPill(e.status)}
-                ${e.is_visible_to_students ? '<span class="pill pill-purple">VISIBLE ALUMNO</span>' : '<span class="pill pill-neutral">NO VISIBLE</span>'}
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                ${statusBadge(e.status)}
+                ${e.is_visible_to_students ? '<span class="badge badge-success">VISIBLE ALUMNO</span>' : '<span class="badge badge-neutral">NO VISIBLE</span>'}
               </div>
             </div>
 
@@ -2008,23 +1945,23 @@ ADMIN_HTML = r"""
       try {
         const e = await getJSONAuth(`/api/admin/events/${eventId}`);
         box.innerHTML = `
-          <div class="item">
-            <div class="item-head">
+          <div class="record-card">
+            <div class="record-card__head">
               <div>
-                <div class="item-title">${escapeHTML(e.display_name)}</div>
-                <div class="small">${e.season} ${e.year}</div>
+                <div class="record-card__title">${escapeHTML(e.display_name)}</div>
+                <div class="record-card__sub">${e.season} ${e.year}</div>
               </div>
-              <div class="inline-row">
-                ${statusPill(e.status)}
-                ${e.is_visible_to_students ? '<span class="pill pill-purple">VISIBLE ALUMNO</span>' : '<span class="pill pill-neutral">NO VISIBLE</span>'}
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                ${statusBadge(e.status)}
+                ${e.is_visible_to_students ? '<span class="badge badge-success">VISIBLE ALUMNO</span>' : '<span class="badge badge-neutral">NO VISIBLE</span>'}
               </div>
             </div>
-            <div class="small">ID de temporada: ${e.id}</div>
+            <div class="stack-row"><strong>ID:</strong><span>${e.id}</span></div>
           </div>
         `;
         document.getElementById('incidentEventId').value = e.id;
       } catch (e) {
-        box.innerHTML = `<div class="item"><div class="small">${escapeHTML(e.message)}</div></div>`;
+        box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar la temporada');
       }
     }
 
@@ -2119,29 +2056,29 @@ ADMIN_HTML = r"""
 
         const list = document.getElementById('masterProjectsList');
         if (!masterProjectsCache.length) {
-          list.innerHTML = `<div class="item"><div class="small">No hay proyectos base.</div></div>`;
+          list.innerHTML = renderEmptyCard('No hay proyectos base', 'Crea el primero para empezar a operar.');
           return;
         }
 
         list.innerHTML = masterProjectsCache.map(p => `
-          <div class="item">
-            <div class="item-head">
+          <div class="record-card">
+            <div class="record-card__head">
               <div>
-                <div class="item-title">${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name)}</div>
-                <div class="small">Project ID: ${p.id}</div>
+                <div class="record-card__title">${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name)}</div>
+                <div class="record-card__sub">Project ID: ${p.id}</div>
               </div>
-              <div class="inline-row">
-                <span class="pill pill-info">${escapeHTML(p.modality_name || '—')}</span>
-                <span class="pill pill-neutral">${escapeHTML(p.week_days_name || '—')}</span>
-                <span class="pill pill-neutral">${escapeHTML(p.schedule_name || '—')}</span>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <span class="badge badge-purple">${escapeHTML(p.modality_name || '—')}</span>
+                <span class="badge badge-neutral">${escapeHTML(p.week_days_name || '—')}</span>
+                <span class="badge badge-neutral">${escapeHTML(p.schedule_name || '—')}</span>
               </div>
             </div>
 
-            <div class="meta">
-              <div class="meta-box"><span class="meta-label">Carrera preferida</span><div class="meta-value">${escapeHTML(p.partner_name || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Horario</span><div class="meta-value">${escapeHTML(p.schedule_description || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Duración</span><div class="meta-value">${escapeHTML(p.duration || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Clave</span><div class="meta-value">${escapeHTML(p.clave || '—')}</div></div>
+            <div class="record-stack">
+              <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(p.partner_name || '—')}</span></div>
+              <div class="stack-row"><strong>Horario:</strong><span>${escapeHTML(p.schedule_description || '—')}</span></div>
+              <div class="stack-row"><strong>Duración:</strong><span>${escapeHTML(p.duration || '—')}</span></div>
+              <div class="stack-row"><strong>Clave:</strong><span>${escapeHTML(p.clave || '—')}</span></div>
             </div>
           </div>
         `).join('');
@@ -2177,7 +2114,7 @@ ADMIN_HTML = r"""
       const container = document.getElementById('eventProjectsList');
 
       if (!eventId) {
-        container.innerHTML = `<div class="item"><div class="small">Selecciona una temporada.</div></div>`;
+        container.innerHTML = renderEmptyCard('Selecciona una temporada', 'Después podrás ver y operar los proyectos activos.');
         return;
       }
 
@@ -2188,23 +2125,24 @@ ADMIN_HTML = r"""
         fillSelect('tokensEventProjectSelector', eventProjectsCache, 'Selecciona proyecto en temporada', p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`);
 
         if (!eventProjectsCache.length) {
-          container.innerHTML = `<div class="item"><div class="small">No hay proyectos activos en esta temporada.</div></div>`;
+          container.innerHTML = renderEmptyCard('No hay proyectos activos', 'Activa un proyecto para esta temporada.');
           return;
         }
 
         container.innerHTML = eventProjectsCache.map(p => `
-          <div class="item">
-            <div class="item-head">
+          <div class="record-card">
+            <div class="record-card__head">
               <div>
-                <div class="item-title">${escapeHTML(p.name)}</div>
-                <div class="small">Carrera preferida: ${escapeHTML(p.partner || '—')} · Project ID: ${p.project_id} · EventProject ID: ${p.id}</div>
+                <div class="record-card__title">${escapeHTML(p.name)}</div>
+                <div class="record-card__sub">Carrera preferida: ${escapeHTML(p.partner || '—')}</div>
               </div>
-              <div>${statusPill(p.status)}</div>
+              <div>${statusBadge(p.status)}</div>
             </div>
 
-            <div class="meta">
-              <div class="meta-box"><span class="meta-label">Slots total</span><div class="meta-value">${p.slots_total}</div></div>
-              <div class="meta-box"><span class="meta-label">Estado</span><div class="meta-value">${p.status}</div></div>
+            <div class="record-stack">
+              <div class="stack-row"><strong>Project ID:</strong><span>${p.project_id}</span></div>
+              <div class="stack-row"><strong>EventProject ID:</strong><span>${p.id}</span></div>
+              <div class="stack-row"><strong>Slots:</strong><span>${p.slots_total}</span></div>
             </div>
 
             <div class="actions">
@@ -2215,7 +2153,7 @@ ADMIN_HTML = r"""
           </div>
         `).join('');
       } catch (e) {
-        container.innerHTML = `<div class="item"><div class="small">${escapeHTML(e.message)}</div></div>`;
+        container.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar proyectos activos');
       }
     }
 
@@ -2270,10 +2208,10 @@ ADMIN_HTML = r"""
         const data = await postJSON(`/api/admin/event-projects/${eventProjectId}/tokens`, { count, length });
 
         document.getElementById('tokensGenerationResult').innerHTML = `
-          <div class="item">
-            <div class="item-title">${escapeHTML(data.message || 'Tokens generados')}</div>
-            <div class="small">Creados: ${data.created || 0} · TTL: ${data.ttl_hours || '—'} horas</div>
-            <div class="mono" style="margin-top:10px;">${(data.tokens || []).join(', ')}</div>
+          <div class="record-card">
+            <div class="record-card__title">${escapeHTML(data.message || 'Tokens generados')}</div>
+            <div class="record-card__sub">Creados: ${data.created || 0} · TTL: ${data.ttl_hours || '—'} horas</div>
+            <div style="margin-top:12px;" class="mono">${(data.tokens || []).join(', ')}</div>
           </div>
         `;
 
@@ -2288,9 +2226,10 @@ ADMIN_HTML = r"""
     async function loadProjectTokens() {
       const eventProjectId = document.getElementById('tokensEventProjectSelector').value;
       const status = document.getElementById('tokensStatusFilter').value || 'ALL';
+      const cards = document.getElementById('tokensCards');
 
       if (!eventProjectId) {
-        document.getElementById('tokensTableBody').innerHTML = `<tr><td colspan="9" class="small">Selecciona un proyecto en temporada.</td></tr>`;
+        cards.innerHTML = renderEmptyCard('Selecciona un proyecto', 'Después podrás ver el estado de sus tokens.');
         return;
       }
 
@@ -2299,30 +2238,51 @@ ADMIN_HTML = r"""
         const s = data.summary || {};
 
         document.getElementById('tokensSummary').innerHTML = `
-          <div class="stat-card"><div class="stat-label">Available</div><div class="stat-value">${s.available || 0}</div></div>
-          <div class="stat-card"><div class="stat-label">Reserved</div><div class="stat-value">${s.reserved || 0}</div></div>
-          <div class="stat-card"><div class="stat-label">Used</div><div class="stat-value">${s.used || 0}</div></div>
-          <div class="stat-card"><div class="stat-label">Revoked</div><div class="stat-value">${s.revoked || 0}</div></div>
-          <div class="stat-card"><div class="stat-label">Expired</div><div class="stat-value">${s.expired || 0}</div></div>
-          <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${s.total || 0}</div></div>
+          <div class="kpi-card kpi-card--orange">
+            <div class="kpi-label">Available</div>
+            <div class="kpi-value">${s.available || 0}</div>
+            <div class="kpi-sub">Tokens libres</div>
+          </div>
+          <div class="kpi-card kpi-card--orange">
+            <div class="kpi-label">Reserved</div>
+            <div class="kpi-value">${s.reserved || 0}</div>
+            <div class="kpi-sub">En espera</div>
+          </div>
+          <div class="kpi-card kpi-card--green">
+            <div class="kpi-label">Used</div>
+            <div class="kpi-value">${s.used || 0}</div>
+            <div class="kpi-sub">Ya utilizados</div>
+          </div>
+          <div class="kpi-card kpi-card--pink">
+            <div class="kpi-label">Revocados + Expirados</div>
+            <div class="kpi-value">${(s.revoked || 0) + (s.expired || 0)}</div>
+            <div class="kpi-sub">Fuera de circulación</div>
+          </div>
         `;
 
         const items = data.items || [];
-        document.getElementById('tokensTableBody').innerHTML = items.length
+        cards.innerHTML = items.length
           ? items.map(t => `
-              <tr>
-                <td class="mono">${escapeHTML(t.token_value || '—')}</td>
-                <td>${escapeHTML(t.status || '—')}</td>
-                <td>${escapeHTML(t.reserved_by_request_id || '—')}</td>
-                <td>${escapeHTML(t.reserved_until || '—')}</td>
-                <td>${escapeHTML(t.used_by_request_id || '—')}</td>
-                <td>${escapeHTML(t.used_at || '—')}</td>
-                <td>${escapeHTML(t.revoked_at || '—')}</td>
-                <td>${escapeHTML(t.expires_at || '—')}</td>
-                <td>${escapeHTML(t.created_at || '—')}</td>
-              </tr>
+              <div class="record-card">
+                <div class="record-card__head">
+                  <div>
+                    <div class="record-card__title">Token</div>
+                    <div class="record-card__sub"><span class="mono">${escapeHTML(t.token_value || '—')}</span></div>
+                  </div>
+                  <div>${statusBadge(t.status || '—')}</div>
+                </div>
+
+                <div class="record-stack">
+                  <div class="stack-row"><strong>Reservado por:</strong><span>${escapeHTML(t.reserved_by_request_id || '—')}</span></div>
+                  <div class="stack-row"><strong>Reserved until:</strong><span>${escapeHTML(t.reserved_until || '—')}</span></div>
+                  <div class="stack-row"><strong>Usado por:</strong><span>${escapeHTML(t.used_by_request_id || '—')}</span></div>
+                  <div class="stack-row"><strong>Usado:</strong><span>${escapeHTML(t.used_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Revocado:</strong><span>${escapeHTML(t.revoked_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Expira:</strong><span>${escapeHTML(t.expires_at || '—')}</span></div>
+                </div>
+              </div>
             `).join('')
-          : `<tr><td colspan="9" class="small">No hay tokens con ese filtro.</td></tr>`;
+          : renderEmptyCard('No hay tokens con ese filtro', 'Prueba otro estado o genera nuevos tokens.');
       } catch (e) {
         showMsg(e.message, false);
       }
@@ -2353,12 +2313,26 @@ ADMIN_HTML = r"""
         const projects = await getJSONAuth(`/api/admin/dashboard/projects?event_id=${eventId}`);
 
         document.getElementById('dashboardSummary').innerHTML = `
-          <div class="stat-card"><div class="stat-label">Solicitudes</div><div class="stat-value">${summary.requests.total}</div></div>
-          <div class="stat-card"><div class="stat-label">Requested</div><div class="stat-value">${summary.requests.requested}</div></div>
-          <div class="stat-card"><div class="stat-label">Validated</div><div class="stat-value">${summary.requests.validated}</div></div>
-          <div class="stat-card"><div class="stat-label">Access Enabled</div><div class="stat-value">${summary.requests.access_enabled}</div></div>
-          <div class="stat-card"><div class="stat-label">Registered</div><div class="stat-value">${summary.requests.registered}</div></div>
-          <div class="stat-card"><div class="stat-label">Incidentes abiertos</div><div class="stat-value">${summary.incidents.open}</div></div>
+          <div class="kpi-card kpi-card--green">
+            <div class="kpi-label">Total Inscritos</div>
+            <div class="kpi-value">${summary.requests.registered || 0}</div>
+            <div class="kpi-sub">Alumnos con cierre final</div>
+          </div>
+          <div class="kpi-card kpi-card--orange">
+            <div class="kpi-label">Tokens Pendientes</div>
+            <div class="kpi-value">${(summary.tokens?.available || 0) + (summary.tokens?.reserved || 0)}</div>
+            <div class="kpi-sub">Disponibles o reservados</div>
+          </div>
+          <div class="kpi-card kpi-card--purple">
+            <div class="kpi-label">Proyectos</div>
+            <div class="kpi-value">${summary.projects?.total || (projects || []).length || 0}</div>
+            <div class="kpi-sub">Activos en temporada</div>
+          </div>
+          <div class="kpi-card kpi-card--pink">
+            <div class="kpi-label">Incidentes</div>
+            <div class="kpi-value">${summary.incidents?.open || 0}</div>
+            <div class="kpi-sub">Pendientes de resolver</div>
+          </div>
         `;
 
         const body = document.getElementById('dashboardProjectsBody');
@@ -2366,20 +2340,30 @@ ADMIN_HTML = r"""
 
         body.innerHTML = items.length
           ? items.map(p => `
-              <tr>
-                <td><strong>${escapeHTML(p.project_name)}</strong></td>
-                <td>${escapeHTML(p.partner_name || '—')}</td>
-                <td>${statusPill(p.event_project_status)}</td>
-                <td>${p.slots_total}</td>
-                <td>${p.registered_count}</td>
-                <td>${renderXPBar(p.registered_count, p.slots_total)}</td>
-                <td>${p.cupos_disponibles}</td>
-                <td>${p.tokens_used}</td>
-                <td>${p.tokens_revoked}</td>
-                <td>${p.tokens_expired}</td>
-              </tr>
+              <div class="record-card">
+                <div class="record-card__head">
+                  <div>
+                    <div class="record-card__title">${escapeHTML(p.project_name)}</div>
+                    <div class="record-card__sub">${escapeHTML(p.partner_name || 'Sin carrera preferida')}</div>
+                  </div>
+                  <div>${statusBadge(p.event_project_status)}</div>
+                </div>
+
+                <div class="record-stack">
+                  <div class="stack-row"><strong>Slots:</strong><span>${p.slots_total}</span></div>
+                  <div class="stack-row"><strong>Registrados:</strong><span>${p.registered_count}</span></div>
+                  <div class="stack-row"><strong>Disponibles:</strong><span>${p.cupos_disponibles}</span></div>
+                  <div class="stack-row"><strong>Tokens usados:</strong><span>${p.tokens_used}</span></div>
+                  <div class="stack-row"><strong>Revocados:</strong><span>${p.tokens_revoked}</span></div>
+                  <div class="stack-row"><strong>Expirados:</strong><span>${p.tokens_expired}</span></div>
+                </div>
+
+                <div style="margin-top:12px;">
+                  ${renderXPBar(p.registered_count, p.slots_total)}
+                </div>
+              </div>
             `).join('')
-          : `<tr><td colspan="10" class="small">No hay proyectos cargados en esta temporada.</td></tr>`;
+          : renderEmptyCard('No hay proyectos cargados en esta temporada', 'Activa proyectos para empezar a operar.');
       } catch (e) {
         showMsg(e.message, false);
       }
@@ -2387,10 +2371,10 @@ ADMIN_HTML = r"""
 
     async function loadRegistrations() {
       const eventId = document.getElementById('registrationsEventSelector').value;
-      const body = document.getElementById('registrationsTableBody');
+      const cards = document.getElementById('registrationsCards');
 
       if (!eventId) {
-        body.innerHTML = `<tr><td colspan="7" class="small">Selecciona una temporada.</td></tr>`;
+        cards.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás consultar inscripciones cerradas.');
         return;
       }
 
@@ -2398,25 +2382,32 @@ ADMIN_HTML = r"""
         const rows = await getJSONAuth(`/api/admin/registrations?event_id=${encodeURIComponent(eventId)}`);
 
         if (!rows.length) {
-          body.innerHTML = `<tr><td colspan="7" class="small">No hay inscripciones cerradas en esta temporada.</td></tr>`;
+          cards.innerHTML = renderEmptyCard('No hay inscripciones cerradas', 'Todavía no hay cierres en esta temporada.');
           return;
         }
 
-        body.innerHTML = rows.map(r => `
-          <tr>
-            <td><strong>${escapeHTML(r.student_name || '—')}</strong></td>
-            <td><span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span></td>
-            <td>${escapeHTML(r.project_name || '—')}</td>
-            <td>${escapeHTML(r.general_name || '—')}</td>
-            <td class="mono">${escapeHTML(r.token_value || '—')}</td>
-            <td>${escapeHTML(r.accepted_at || '—')}</td>
-            <td>${statusPill(r.registration_status || 'ACTIVE')}</td>
-          </tr>
+        cards.innerHTML = rows.map(r => `
+          <div class="record-card">
+            <div class="record-card__head">
+              <div>
+                <div class="record-card__title">${escapeHTML(r.student_name || '—')}</div>
+                <div class="record-card__sub"><span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span></div>
+              </div>
+              <div>${statusBadge(r.registration_status || 'ACTIVE')}</div>
+            </div>
+
+            <div class="record-stack">
+              <div class="stack-row"><strong>Proyecto:</strong><span>${escapeHTML(r.project_name || '—')}</span></div>
+              <div class="stack-row"><strong>Organización:</strong><span>${escapeHTML(r.general_name || '—')}</span></div>
+              <div class="stack-row"><strong>Token:</strong><span class="mono">${escapeHTML(r.token_value || '—')}</span></div>
+              <div class="stack-row"><strong>Fecha cierre:</strong><span>${escapeHTML(r.accepted_at || '—')}</span></div>
+            </div>
+          </div>
         `).join('');
 
         showMsg('Inscripciones cerradas cargadas correctamente');
       } catch (e) {
-        body.innerHTML = `<tr><td colspan="7" class="small">${escapeHTML(e.message)}</td></tr>`;
+        cards.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar inscripciones');
         showMsg(e.message, false);
       }
     }
@@ -2467,20 +2458,20 @@ ADMIN_HTML = r"""
         lastScannedPassSession = data.pass_session?.id || null;
 
         document.getElementById('staffCheckinInfo').innerHTML = `
-          <div class="item">
-            <div class="item-head">
+          <div class="record-card">
+            <div class="record-card__head">
               <div>
-                <div class="item-title">${escapeHTML(data.student?.full_name || 'Alumno')}</div>
-                <div class="small">Matrícula registrada: ${escapeHTML(data.student?.enrolment_number || '—')}</div>
+                <div class="record-card__title">${escapeHTML(data.student?.full_name || 'Alumno')}</div>
+                <div class="record-card__sub">Matrícula registrada: ${escapeHTML(data.student?.enrolment_number || '—')}</div>
               </div>
-              <div>${statusPill(data.request?.status || 'REQUESTED')}</div>
+              <div>${statusBadge(data.request?.status || 'REQUESTED')}</div>
             </div>
 
-            <div class="meta">
-              <div class="meta-box"><span class="meta-label">Folio</span><div class="meta-value">${escapeHTML(data.request?.folio || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Temporada</span><div class="meta-value">${escapeHTML(data.event?.display_name || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">QR expira</span><div class="meta-value">${escapeHTML(data.pass_session?.expires_at || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Carrera</span><div class="meta-value">${escapeHTML(data.student?.degree || '—')}</div></div>
+            <div class="record-stack">
+              <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(data.request?.folio || '—')}</span></div>
+              <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(data.event?.display_name || '—')}</span></div>
+              <div class="stack-row"><strong>QR expira:</strong><span>${escapeHTML(data.pass_session?.expires_at || '—')}</span></div>
+              <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(data.student?.degree || '—')}</span></div>
             </div>
           </div>
         `;
@@ -2488,7 +2479,7 @@ ADMIN_HTML = r"""
         showMsg('QR válido. Verifica ahora la matrícula física.');
       } catch (e) {
         lastScannedPassSession = null;
-        document.getElementById('staffCheckinInfo').innerHTML = '';
+        document.getElementById('staffCheckinInfo').innerHTML = renderEmptyCard('QR inválido o no disponible', e.message || '');
         showMsg(e.message, false);
       }
     }
@@ -2508,9 +2499,9 @@ ADMIN_HTML = r"""
 
         showMsg(data.message || 'Acceso habilitado');
         document.getElementById('staffCheckinInfo').innerHTML += `
-          <div class="item">
-            <div class="item-title">Acceso habilitado correctamente</div>
-            <div class="small">El alumno ya puede entrar al catálogo y cerrar inscripción.</div>
+          <div class="record-card">
+            <div class="record-card__title">Acceso habilitado correctamente</div>
+            <div class="record-card__sub">El alumno ya puede entrar al catálogo y cerrar inscripción.</div>
           </div>
         `;
       } catch (e) {
@@ -2551,7 +2542,7 @@ ADMIN_HTML = r"""
       const list = document.getElementById('incidentsList');
 
       if (!eventId) {
-        list.innerHTML = `<div class="item"><div class="small">Selecciona una temporada.</div></div>`;
+        list.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás consultar incidentes.');
         return;
       }
 
@@ -2567,29 +2558,27 @@ ADMIN_HTML = r"""
         const data = await getJSONAuth(`/api/incidents?${params.toString()}`);
 
         if (!data.length) {
-          list.innerHTML = `<div class="item"><div class="small">No hay incidentes con esos filtros.</div></div>`;
+          list.innerHTML = renderEmptyCard('No hay incidentes con esos filtros', 'Prueba otro estado o severidad.');
           return;
         }
 
         list.innerHTML = data.map(i => `
-          <div class="item">
-            <div class="item-head">
+          <div class="record-card">
+            <div class="record-card__head">
               <div>
-                <div class="item-title">${escapeHTML(i.type)}</div>
-                <div class="small">Incident ID: ${i.id} · Request ID: ${i.request_id ?? '—'} · User ID: ${i.id_user ?? '—'}</div>
+                <div class="record-card__title">${escapeHTML(i.type)}</div>
+                <div class="record-card__sub">Incident ID: ${i.id} · Request ID: ${i.request_id ?? '—'} · User ID: ${i.id_user ?? '—'}</div>
               </div>
-              <div class="inline-row">
-                ${statusPill(i.status)}
-                <span class="status-badge ${i.severity === 'HIGH' ? 'status-badge--err' : i.severity === 'MEDIUM' ? 'status-badge--warn' : 'status-badge--ok'}">${i.severity}</span>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                ${statusBadge(i.status)}
+                <span class="${i.severity === 'HIGH' ? 'badge badge-danger' : i.severity === 'MEDIUM' ? 'badge badge-warn' : 'badge badge-success'}">${i.severity}</span>
               </div>
             </div>
 
-            <div class="small" style="margin-bottom:10px;">
-              ${escapeHTML(i.description || 'Sin descripción')}
-            </div>
-
-            <div class="small" style="margin-bottom:10px;">
-              Creado: ${escapeHTML(i.created_at || '—')} · Resuelto: ${escapeHTML(i.resolved_at || '—')}
+            <div class="record-stack">
+              <div class="stack-row"><strong>Descripción:</strong><span>${escapeHTML(i.description || 'Sin descripción')}</span></div>
+              <div class="stack-row"><strong>Creado:</strong><span>${escapeHTML(i.created_at || '—')}</span></div>
+              <div class="stack-row"><strong>Resuelto:</strong><span>${escapeHTML(i.resolved_at || '—')}</span></div>
             </div>
 
             <div class="actions">
@@ -2600,7 +2589,7 @@ ADMIN_HTML = r"""
           </div>
         `).join('');
       } catch (e) {
-        list.innerHTML = `<div class="item"><div class="small">${escapeHTML(e.message)}</div></div>`;
+        list.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar incidentes');
       }
     }
 
@@ -2613,6 +2602,10 @@ ADMIN_HTML = r"""
       } catch (e) {
         showMsg(e.message, false);
       }
+    }
+
+    async function markIncidentAsResolved(incidentId) {
+      return updateIncidentStatus(incidentId, 'RESOLVED');
     }
 
     async function importProjects() {
@@ -2634,13 +2627,18 @@ ADMIN_HTML = r"""
         if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
 
         document.getElementById('importProjectsResult').innerHTML = `
-          <div class="item">
-            <div class="item-title">${escapeHTML(data.message || 'Importación completada')}</div>
-            <div class="small">Insertados: ${data.inserted || 0} · Fallidos: ${data.failed || 0}</div>
-            ${(data.errors && data.errors.length)
-              ? `<div class="list" style="margin-top:10px;">${data.errors.map(e => `<div class="item"><div class="small">Fila ${e.row}: ${escapeHTML(e.error)}</div></div>`).join('')}</div>`
-              : '<div class="small" style="margin-top:10px;">Sin errores.</div>'}
+          <div class="record-card">
+            <div class="record-card__title">${escapeHTML(data.message || 'Importación completada')}</div>
+            <div class="record-card__sub">Insertados: ${data.inserted || 0} · Fallidos: ${data.failed || 0}</div>
           </div>
+          ${(data.errors && data.errors.length)
+            ? data.errors.map(e => `
+              <div class="record-card">
+                <div class="record-card__title">Fila ${e.row}</div>
+                <div class="record-card__sub">${escapeHTML(e.error)}</div>
+              </div>
+            `).join('')
+            : ''}
         `;
 
         showMsg(data.message || 'Importación completada');

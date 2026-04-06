@@ -6,234 +6,204 @@ INDEX_HTML = r"""
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Registro de Proyectos</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <style>
     :root {
-      --bg: #eef3fb;
-      --bg-2: #f8fbff;
-
+      --bg: #f4f7fa;
+      --bg-soft: #fbfcfe;
       --panel: #ffffff;
-      --panel-soft: #f6f9ff;
+      --panel-soft: #f8fbff;
 
-      --text: #1b2435;
-      --text-soft: #607089;
-      --muted: #93a1b7;
+      --text: #1f2937;
+      --text-soft: #667085;
+      --muted: #98a2b3;
 
-      --line: #dbe4f2;
-      --line-strong: #c7d4e8;
+      --line: #e4e7ec;
+      --line-strong: #d0d5dd;
 
-      --brand: #4f7cff;
-      --brand-2: #72a7ff;
-      --accent: #ff5d73;
+      --primary: #7d5ba6;
+      --primary-soft: #f5f0fb;
 
-      --ok-bg: #dcfce7;
-      --ok-text: #166534;
+      --green: #43aa8b;
+      --green-soft: #ecfdf7;
 
-      --warn-bg: #fef3c7;
-      --warn-text: #92400e;
+      --orange: #ff8c42;
+      --orange-soft: #fff4ec;
 
-      --err-bg: #fee2e2;
-      --err-text: #991b1b;
+      --pink: #f25c78;
+      --pink-soft: #fff1f5;
 
-      --purple-bg: #ede9fe;
-      --purple-text: #6d28d9;
+      --blue: #4f7cff;
+      --blue-soft: #eef4ff;
 
-      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 14px 28px rgba(35, 60, 120, 0.10);
+      --shadow-sm: 0 4px 16px rgba(16, 24, 40, 0.05);
+      --shadow-md: 0 12px 28px rgba(16, 24, 40, 0.08);
+      --shadow-lg: 0 20px 40px rgba(16, 24, 40, 0.10);
 
-      --r-sm: 10px;
-      --r-md: 14px;
-      --r-lg: 18px;
-      --r-xl: 24px;
+      --r-sm: 12px;
+      --r-md: 16px;
+      --r-lg: 22px;
+      --r-xl: 28px;
       --r-pill: 999px;
     }
 
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
       background:
-        radial-gradient(circle at top left, #ffffff 0%, #eef4ff 28%, #eaf1fb 100%);
+        radial-gradient(circle at top left, #ffffff 0%, #f7f9fd 28%, #f4f7fa 100%);
+      color: var(--text);
       min-height: 100vh;
     }
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      background: rgba(255,255,255,0.86);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
-    }
+    .hidden { display: none !important; }
 
-    .header-shell {
+    .page-shell {
       max-width: 1440px;
       margin: 0 auto;
-      padding: 16px 20px;
+      padding: 20px;
+    }
+
+    .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: wrap;
+      margin-bottom: 18px;
     }
 
-    .brand-copy {
+    .brand {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    .brand-copy strong {
-      font-size: 1.12rem;
+    .brand strong {
+      font-size: 1.2rem;
       font-weight: 900;
-      color: var(--text);
+      letter-spacing: -.02em;
     }
 
-    .brand-copy span {
+    .brand span {
       font-size: .92rem;
       color: var(--text-soft);
     }
 
-    .top-links {
+    .top-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .top-links a {
+    .link-btn {
       text-decoration: none;
       border: 1px solid var(--line);
       background: white;
       color: var(--text-soft);
-      padding: 10px 12px;
       border-radius: var(--r-md);
+      padding: 10px 14px;
       font-size: .9rem;
       font-weight: 800;
       box-shadow: var(--shadow-sm);
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
     }
 
-    .top-links a:hover {
-      border-color: var(--brand);
-      color: var(--brand);
-    }
-
-    .container {
-      max-width: 1440px;
-      margin: 24px auto;
-      padding: 0 18px 32px;
-    }
-
-    .msg {
-      display: none;
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: var(--r-md);
-      font-size: .94rem;
-      font-weight: 800;
-      border: 1px solid transparent;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .msg.ok {
-      display: block;
-      background: var(--ok-bg);
-      color: var(--ok-text);
-      border-color: #bbf7d0;
-    }
-
-    .msg.err {
-      display: block;
-      background: var(--err-bg);
-      color: var(--err-text);
-      border-color: #fecaca;
+    .link-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow-md);
     }
 
     .hero {
       position: relative;
       overflow: hidden;
-      background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
       border: 1px solid var(--line);
       border-radius: var(--r-xl);
-      padding: 22px;
-      box-shadow: var(--shadow-md);
+      background:
+        radial-gradient(circle at top right, rgba(125,91,166,0.15) 0%, rgba(125,91,166,0) 30%),
+        radial-gradient(circle at bottom left, rgba(79,124,255,0.10) 0%, rgba(79,124,255,0) 24%),
+        linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow: var(--shadow-lg);
+      padding: 24px;
       margin-bottom: 18px;
     }
 
-    .hero::before {
-      content: "";
-      position: absolute;
-      right: -40px;
-      top: -40px;
-      width: 180px;
-      height: 180px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(79,124,255,0.18) 0%, rgba(79,124,255,0.00) 72%);
-      pointer-events: none;
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      justify-content: space-between;
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
       gap: 18px;
-      flex-wrap: wrap;
       align-items: center;
-    }
-
-    .hero-copy {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
     }
 
     .hero-kicker {
       font-size: .76rem;
       text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--muted);
+      letter-spacing: .1em;
+      color: var(--primary);
       font-weight: 900;
+      margin-bottom: 8px;
     }
 
-    .hero-copy strong {
-      font-size: 1.4rem;
-      font-weight: 900;
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 3vw, 2.7rem);
+      line-height: 1.05;
+      letter-spacing: -.04em;
     }
 
-    .hero-copy span {
+    .hero p {
+      margin: 0;
       color: var(--text-soft);
+      font-size: 1rem;
+      line-height: 1.6;
       max-width: 760px;
-      line-height: 1.5;
     }
 
     .hero-badges {
+      margin-top: 16px;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
 
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: var(--r-pill);
-      font-size: .8rem;
+    .hero-side {
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero-panel {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(8px);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hero-panel-label {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
       font-weight: 900;
-      white-space: nowrap;
+      margin-bottom: 6px;
     }
 
-    .chip-primary {
-      background: #eff6ff;
-      color: var(--brand);
-      border: 1px solid #d8e5ff;
+    .hero-panel-value {
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 1.35;
     }
 
-    .chip-dark {
-      background: #1f2a44;
-      color: #eaf1ff;
-      border: 1px solid rgba(255,255,255,0.08);
+    .hero-panel-sub {
+      margin-top: 5px;
+      color: var(--text-soft);
+      font-size: .88rem;
+      line-height: 1.45;
     }
 
     .steps {
@@ -247,134 +217,116 @@ INDEX_HTML = r"""
       border: 1px solid var(--line);
       background: white;
       border-radius: var(--r-lg);
-      padding: 14px;
+      padding: 16px;
       box-shadow: var(--shadow-sm);
-      position: relative;
-      overflow: hidden;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
     .step-card.active {
-      border-color: #cfe0ff;
-      background: linear-gradient(135deg, #eef4ff 0%, #ffffff 100%);
+      border-color: #d9c6f0;
+      background: linear-gradient(135deg, var(--primary-soft) 0%, white 100%);
+      box-shadow: var(--shadow-md);
     }
 
     .step-card.done {
-      border-color: #bbf7d0;
-      background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+      border-color: #bee7da;
+      background: linear-gradient(135deg, var(--green-soft) 0%, white 100%);
     }
 
     .step-index {
-      font-size: .74rem;
+      font-size: .72rem;
       text-transform: uppercase;
+      letter-spacing: .08em;
       color: var(--muted);
       font-weight: 900;
       margin-bottom: 6px;
-      letter-spacing: .05em;
     }
 
     .step-title {
-      font-size: .95rem;
+      font-size: .98rem;
       font-weight: 900;
       margin-bottom: 4px;
     }
 
     .step-desc {
-      font-size: .83rem;
       color: var(--text-soft);
-      line-height: 1.4;
+      font-size: .84rem;
+      line-height: 1.45;
     }
 
-    .grid {
+    .layout {
       display: grid;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: 1fr 350px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .main-column {
+      display: grid;
+      gap: 18px;
+    }
+
+    .side-column {
+      position: sticky;
+      top: 20px;
+      display: grid;
       gap: 18px;
     }
 
     .card {
-      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
       border: 1px solid var(--line);
-      border-radius: var(--r-xl);
-      box-shadow: var(--shadow-md);
+      background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%);
+      border-radius: var(--r-lg);
       padding: 22px;
-      position: relative;
-      overflow: hidden;
+      box-shadow: var(--shadow-md);
     }
 
-    .card::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 78px;
-      height: 78px;
-      background: linear-gradient(135deg, rgba(79,124,255,0.10) 0%, rgba(79,124,255,0.00) 72%);
-      clip-path: polygon(100% 0, 0 0, 100% 100%);
-      pointer-events: none;
-    }
-
-    .span-12 { grid-column: span 12; }
-    .span-8 { grid-column: span 8; }
-    .span-6 { grid-column: span 6; }
-    .span-4 { grid-column: span 4; }
-
-    .module-card-title {
-      position: relative;
-      z-index: 1;
+    .card-title-row {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
-      align-items: center;
+      align-items: start;
+      gap: 12px;
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
 
-    h2, h3 {
+    .card h2 {
       margin: 0;
+      font-size: 1.12rem;
       line-height: 1.2;
-    }
-
-    h2 {
-      font-size: 1.14rem;
       font-weight: 900;
     }
 
-    h3 {
-      font-size: 1rem;
-      font-weight: 900;
+    .card-subtitle {
+      color: var(--text-soft);
+      font-size: .93rem;
+      line-height: 1.55;
+      margin-bottom: 14px;
     }
 
-    .screen-chip {
+    .chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 8px 12px;
       border-radius: var(--r-pill);
-      background: #eff6ff;
-      color: var(--brand);
-      font-size: .82rem;
+      font-size: .8rem;
       font-weight: 900;
+      white-space: nowrap;
+      border: 1px solid transparent;
     }
 
-    .muted {
-      position: relative;
-      z-index: 1;
-      color: var(--text-soft);
-      font-size: .93rem;
-      line-height: 1.55;
-    }
-
-    .small {
-      font-size: .84rem;
-      color: var(--text-soft);
-    }
+    .chip-primary { background: var(--primary-soft); color: var(--primary); border-color: #e6dbf3; }
+    .chip-green { background: var(--green-soft); color: var(--green); border-color: #cdeee4; }
+    .chip-orange { background: var(--orange-soft); color: var(--orange); border-color: #ffe1cf; }
+    .chip-pink { background: var(--pink-soft); color: var(--pink); border-color: #ffd7df; }
+    .chip-blue { background: var(--blue-soft); color: var(--blue); border-color: #d6e4ff; }
+    .chip-neutral { background: #f2f4f7; color: #475467; border-color: #eaecf0; }
 
     .form-grid {
-      position: relative;
-      z-index: 1;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
-      margin-top: 14px;
     }
 
     .field {
@@ -383,211 +335,173 @@ INDEX_HTML = r"""
       gap: 7px;
     }
 
+    .field.span-2 {
+      grid-column: span 2;
+    }
+
     .field label {
-      font-size: .78rem;
-      font-weight: 900;
-      color: var(--text-soft);
+      font-size: .76rem;
       text-transform: uppercase;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
+      color: var(--muted);
+      font-weight: 900;
     }
 
     input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
       width: 100%;
-      min-height: 44px;
-      border-radius: var(--r-md);
+      min-height: 46px;
       border: 1px solid var(--line-strong);
       background: white;
+      border-radius: 14px;
+      padding: 11px 13px;
       color: var(--text);
-      font-size: .94rem;
-      padding: 10px 12px;
-      outline: none;
-      transition: .18s ease;
+      transition: border-color .16s ease, box-shadow .16s ease;
     }
 
     textarea {
-      min-height: 100px;
+      min-height: 110px;
       resize: vertical;
     }
 
     input:focus, select:focus, textarea:focus {
-      border-color: var(--brand-2);
-      box-shadow: 0 0 0 3px rgba(79,124,255,0.10);
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(79,124,255,0.10);
     }
 
     .actions {
-      position: relative;
-      z-index: 1;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       margin-top: 16px;
     }
 
-    .actions > button {
-      width: auto;
-      min-width: 150px;
-    }
-
-    .btn-primary, .btn-secondary, .btn-danger {
-      min-height: 44px;
-      border-radius: var(--r-md);
-      padding: 10px 14px;
+    button {
+      border: none;
+      min-height: 46px;
+      border-radius: 14px;
+      padding: 10px 15px;
       font-size: .94rem;
       font-weight: 900;
       cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
     }
 
-    .btn-primary:hover, .btn-secondary:hover, .btn-danger:hover {
+    button:hover {
       transform: translateY(-1px);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent) 0%, #ff7b8d 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, #9b79c6 100%);
       color: white;
-      border: none;
-      box-shadow: 0 10px 18px rgba(230,57,70,0.18);
+      box-shadow: 0 10px 20px rgba(125,91,166,0.20);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, var(--green) 0%, #57c3a2 100%);
+      color: white;
+      box-shadow: 0 10px 20px rgba(67,170,139,0.18);
+    }
+
+    .btn-orange {
+      background: linear-gradient(135deg, var(--orange) 0%, #ffad76 100%);
+      color: white;
+      box-shadow: 0 10px 20px rgba(255,140,66,0.18);
     }
 
     .btn-secondary {
-      background: #f8fafc;
-      color: #334155;
+      background: white;
+      color: var(--text-soft);
       border: 1px solid var(--line);
-    }
-
-    .btn-danger {
-      background: #ef4444;
-      color: white;
-      border: none;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 11px;
-      border-radius: var(--r-pill);
-      font-size: .76rem;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .pill-ok { background: var(--ok-bg); color: var(--ok-text); }
-    .pill-err { background: var(--err-bg); color: var(--err-text); }
-    .pill-warn { background: var(--warn-bg); color: var(--warn-text); }
-    .pill-info { background: #eff6ff; color: var(--brand-2); }
-    .pill-purple { background: var(--purple-bg); color: var(--purple-text); }
-    .pill-neutral { background: #f1f5f9; color: #334155; }
-
-    .list {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .item {
-      border: 1px solid var(--line);
-      border-radius: var(--r-lg);
-      background: #fff;
-      padding: 16px;
       box-shadow: var(--shadow-sm);
     }
 
-    .item-head {
+    .msg {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: .94rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .msg.ok {
+      display: block;
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: #cdeee4;
+    }
+
+    .msg.err {
+      display: block;
+      background: var(--pink-soft);
+      color: var(--pink);
+      border-color: #ffd7df;
+    }
+
+    .catalog-toolbar {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .catalog-stats {
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      align-items: start;
+      align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, #fafbff 0%, #f6f9ff 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
     }
 
-    .item-title {
+    .catalog-count {
       font-weight: 900;
-      font-size: 1rem;
-      color: var(--text);
+      font-size: .96rem;
     }
 
-    .meta {
+    .catalog-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .meta-box {
-      border: 1px solid #eef2f7;
-      background: #f8fafc;
-      border-radius: var(--r-md);
-      padding: 10px 12px;
-    }
-
-    .meta-label {
-      display: block;
-      font-size: .72rem;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 900;
-      margin-bottom: 4px;
-      letter-spacing: .04em;
-    }
-
-    .meta-value {
-      color: var(--text);
-      font-weight: 800;
-      font-size: .92rem;
-      line-height: 1.4;
-    }
-
-    .project-grid {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 16px;
-      margin-top: 16px;
     }
 
-    .tcg-card {
+    .project-card {
       position: relative;
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 24px;
-      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      background:
+        radial-gradient(circle at top right, rgba(79,124,255,0.10) 0%, rgba(79,124,255,0.00) 30%),
+        radial-gradient(circle at bottom left, rgba(125,91,166,0.10) 0%, rgba(125,91,166,0.00) 28%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
       box-shadow: var(--shadow-md);
       padding: 16px;
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
-    .tcg-card:hover {
+    .project-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 18px 34px rgba(35, 60, 120, 0.12);
-      border-color: #cfe0ff;
+      box-shadow: var(--shadow-lg);
+      border-color: #d6e4ff;
     }
 
-    .tcg-card.selected {
-      border-color: #ffb7c0;
-      box-shadow: 0 0 0 3px rgba(255,93,115,0.12), 0 18px 34px rgba(35, 60, 120, 0.12);
+    .project-card.selected {
+      border-color: #e2c6ef;
+      box-shadow: 0 0 0 4px rgba(125,91,166,0.08), var(--shadow-lg);
     }
 
-    .tcg-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at top right, rgba(79,124,255,0.12) 0%, rgba(79,124,255,0) 30%),
-        radial-gradient(circle at bottom left, rgba(255,93,115,0.10) 0%, rgba(255,93,115,0) 28%);
-      pointer-events: none;
-    }
-
-    .tcg-card__content {
-      position: relative;
-      z-index: 1;
-    }
-
-    .tcg-top {
+    .project-head {
       display: flex;
       justify-content: space-between;
       gap: 12px;
@@ -595,180 +509,267 @@ INDEX_HTML = r"""
       margin-bottom: 12px;
     }
 
-    .tcg-kicker {
-      font-size: .74rem;
+    .project-org {
+      font-size: .72rem;
       text-transform: uppercase;
-      letter-spacing: .05em;
+      letter-spacing: .08em;
       color: var(--muted);
       font-weight: 900;
       margin-bottom: 4px;
     }
 
-    .tcg-title {
-      font-size: 1rem;
-      font-weight: 900;
+    .project-title {
+      font-size: 1.02rem;
       line-height: 1.25;
-      margin-bottom: 2px;
+      font-weight: 900;
+      margin-bottom: 3px;
     }
 
-    .tcg-subtitle {
+    .project-subtitle {
       color: var(--text-soft);
       font-size: .86rem;
       line-height: 1.4;
     }
 
-    .tcg-rank {
-      min-width: 54px;
+    .project-rank {
+      min-width: 56px;
       text-align: center;
       border-radius: 16px;
       padding: 10px 8px;
-      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
-      border: 1px solid #dbe7ff;
-      font-size: .74rem;
+      border: 1px solid #dae7ff;
+      background: linear-gradient(180deg, #eff5ff 0%, #ffffff 100%);
+      color: var(--blue);
+      font-size: .72rem;
       font-weight: 900;
-      color: var(--brand);
     }
 
-    .tcg-hero {
-      border: 1px solid #e7eef9;
-      background: linear-gradient(135deg, #f5f9ff 0%, #eef4ff 50%, #fff5f7 100%);
+    .project-hero {
+      border: 1px solid #e6ecf5;
       border-radius: 18px;
-      min-height: 120px;
+      background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 45%, #faf5ff 100%);
       padding: 14px;
+      min-height: 116px;
       display: flex;
       align-items: flex-end;
       margin-bottom: 12px;
     }
 
-    .tcg-hero-text {
+    .project-hero-text {
       font-size: .9rem;
-      color: #34445f;
-      line-height: 1.45;
       font-weight: 700;
+      line-height: 1.5;
+      color: #344054;
     }
 
-    .tcg-stats {
+    .project-stats {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 12px;
     }
 
-    .tcg-stat {
-      border: 1px solid #eef2f7;
-      background: #f8fafc;
+    .project-stat {
+      border: 1px solid #edf1f7;
+      background: #f9fafb;
       border-radius: 14px;
       padding: 10px 12px;
     }
 
-    .tcg-stat-label {
+    .project-stat-label {
       display: block;
       font-size: .7rem;
       text-transform: uppercase;
+      letter-spacing: .04em;
       color: var(--muted);
       font-weight: 900;
       margin-bottom: 4px;
-      letter-spacing: .04em;
     }
 
-    .tcg-stat-value {
+    .project-stat-value {
       font-size: .88rem;
       font-weight: 800;
       color: var(--text);
       line-height: 1.35;
     }
 
-    .tcg-extra {
+    .project-extra {
       display: grid;
       gap: 8px;
       margin-bottom: 12px;
     }
 
-    .tcg-extra-row {
-      font-size: .85rem;
+    .project-extra-row {
+      color: var(--text-soft);
+      font-size: .86rem;
+      line-height: 1.45;
+    }
+
+    .project-extra-row strong {
+      color: var(--text);
+    }
+
+    .selected-banner {
+      border: 1px dashed #e2c6ef;
+      background: linear-gradient(135deg, #fcf8ff 0%, #ffffff 100%);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .selected-banner-title {
+      font-size: .88rem;
+      color: var(--primary);
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .selected-banner-text {
+      font-size: .9rem;
       color: var(--text-soft);
       line-height: 1.45;
     }
 
-    .tcg-extra-row strong {
+    .info-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .info-card {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .info-title {
+      font-size: .98rem;
+      font-weight: 900;
+    }
+
+    .info-sub {
+      color: var(--text-soft);
+      font-size: .84rem;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .meta-box {
+      border: 1px solid #edf1f7;
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .meta-label {
+      display: block;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .meta-value {
+      font-size: .88rem;
+      font-weight: 800;
+      line-height: 1.4;
       color: var(--text);
     }
 
-    .tcg-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .selection-banner {
-      position: relative;
-      z-index: 1;
-      border: 1px dashed #ffb7c0;
-      background: linear-gradient(135deg, #fff7f8 0%, #ffffff 100%);
-      border-radius: 16px;
-      padding: 14px 16px;
-      margin-top: 12px;
-    }
-
-    .selection-title {
-      font-size: .9rem;
-      font-weight: 900;
-      margin-bottom: 4px;
-      color: #b42339;
-    }
-
-    .qr-shell {
-      position: relative;
-      z-index: 1;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-      border-radius: 20px;
-      padding: 18px;
-      display: grid;
-      gap: 14px;
-    }
-
-    .qr-status-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .qr-canvas-wrap {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 220px;
-      border: 1px dashed #d6e4ff;
-      border-radius: 18px;
-      background: #fcfdff;
-    }
-
     .mono {
+      display: inline-block;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: .92rem;
-      background: #16233c;
-      color: #e8eef8;
-      border-radius: var(--r-md);
-      padding: 10px 12px;
+      background: #111827;
+      color: #f8fafc;
+      border-radius: 12px;
+      padding: 9px 11px;
+      font-size: .88rem;
       word-break: break-all;
     }
 
-    .preview-box {
-      position: relative;
-      z-index: 1;
+    .mono-soft {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #f2f4f7;
+      color: #344054;
+      border: 1px solid #eaecf0;
+      border-radius: 10px;
+      padding: 6px 9px;
+      font-size: .82rem;
+      word-break: break-all;
+    }
+
+    .qr-shell {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+      border-radius: 22px;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .qr-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .qr-canvas-wrap {
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #d8e4ff;
+      background: #fcfdff;
+      border-radius: 18px;
+    }
+
+    .qr-plain {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #111827;
+      color: #f8fafc;
+      border-radius: 14px;
+      padding: 12px;
+      font-size: .9rem;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    .legal-box {
       border: 1px solid #dbeafe;
-      border-radius: var(--r-lg);
       background: #f8fbff;
+      border-radius: 16px;
       padding: 16px;
       margin-top: 12px;
     }
 
+    .preview-box {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
     .success-card {
-      border: 1px solid #bbf7d0;
-      background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+      border: 1px solid #cceee3;
+      background: linear-gradient(135deg, #ecfdf7 0%, #ffffff 100%);
       border-radius: 18px;
       padding: 16px;
       box-shadow: var(--shadow-sm);
@@ -777,348 +778,415 @@ INDEX_HTML = r"""
     .success-title {
       font-size: 1rem;
       font-weight: 900;
-      color: var(--ok-text);
+      color: var(--green);
       margin-bottom: 8px;
     }
 
-    .table-wrap {
-      overflow-x: auto;
+    .empty-state {
+      border: 1px dashed var(--line-strong);
+      background: linear-gradient(180deg, #fcfcfd 0%, #f9fafb 100%);
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+      color: var(--text-soft);
+      box-shadow: var(--shadow-sm);
     }
 
-    @media (max-width: 1200px) {
+    .empty-title {
+      font-size: .96rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 1220px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-column {
+        position: static;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .catalog-toolbar {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 820px) {
       .steps {
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .span-8, .span-6, .span-4 {
-        grid-column: span 12;
+      .form-grid,
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.span-2 {
+        grid-column: span 1;
+      }
+
+      .catalog-toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .project-stats {
+        grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 560px) {
+      .page-shell {
+        padding: 14px;
+      }
+
       .steps {
         grid-template-columns: 1fr;
       }
 
-      .hero-content {
-        flex-direction: column;
-        align-items: start;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .container {
-        padding: 0 14px 28px;
+      .catalog-toolbar {
+        grid-template-columns: 1fr;
       }
 
       .actions {
         flex-direction: column;
-        align-items: stretch;
       }
 
-      .actions > button {
+      button {
         width: 100%;
-      }
-
-      .tcg-stats {
-        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-shell">
-      <div class="brand-copy">
-        <strong>Registro de Proyectos</strong>
-        <span>Explora proyectos, solicita tu pase y cierra tu inscripción.</span>
-      </div>
-
-      <div class="top-links">
-        <a href="/admin">Admin</a>
-        <a href="/health">Health</a>
-      </div>
-    </div>
-  </header>
-
-  <div class="container">
+  <div class="page-shell">
     <div id="msg" class="msg"></div>
 
-    <div class="hero">
-      <div class="hero-content">
-        <div class="hero-copy">
-          <div class="hero-kicker">Ruta del alumno</div>
-          <strong>Explora, solicita, valida y registra</strong>
-          <span>
-            Primero explora el catálogo. Después solicita tu pase. Cuando el staff valide tu acceso, ya podrás cerrar tu inscripción con el token del proyecto.
-          </span>
-        </div>
+    <div class="topbar">
+      <div class="brand">
+        <strong>Registro de Proyectos</strong>
+        <span>Explora el catálogo, solicita tu pase y cierra tu inscripción.</span>
+      </div>
 
-        <div class="hero-badges">
-          <span class="chip chip-primary">Catálogo vivo</span>
-          <span class="chip chip-dark">Registro guiado</span>
-        </div>
+      <div class="top-actions">
+        <a href="/admin" class="link-btn">Admin</a>
+        <a href="/health" class="link-btn">Health</a>
       </div>
     </div>
 
-    <div class="steps" id="stepsBar">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-kicker">Ruta del alumno</div>
+          <h1>Elige tu proyecto y completa tu registro sin perderte.</h1>
+          <p>
+            Primero revisa el catálogo. Después solicita tu pase. Cuando el staff te habilite acceso, podrás cerrar tu inscripción con el token del proyecto.
+          </p>
+
+          <div class="hero-badges">
+            <span class="chip chip-primary">Catálogo premium</span>
+            <span class="chip chip-green">Flujo guiado</span>
+            <span class="chip chip-blue">Credencial viva</span>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="hero-panel">
+            <div class="hero-panel-label">Estado de ruta</div>
+            <div class="hero-panel-value" id="heroRouteStatus">Explorando catálogo</div>
+            <div class="hero-panel-sub">Tu progreso se actualiza conforme completas cada paso.</div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="hero-panel-label">Proyecto actual</div>
+            <div class="hero-panel-value" id="heroProjectStatus">Sin proyecto seleccionado</div>
+            <div class="hero-panel-sub">Selecciona uno desde el catálogo para preparar tu cierre.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="steps" id="stepsBar">
       <div class="step-card active" data-step="1">
         <div class="step-index">Paso 1</div>
-        <div class="step-title">Explorar</div>
-        <div class="step-desc">Revisa proyectos y elige el que más te convenga.</div>
+        <div class="step-title">Explorar catálogo</div>
+        <div class="step-desc">Busca, compara y elige el proyecto correcto.</div>
       </div>
 
       <div class="step-card" data-step="2">
         <div class="step-index">Paso 2</div>
-        <div class="step-title">Solicitud</div>
-        <div class="step-desc">Genera tu folio y deja tus datos completos.</div>
+        <div class="step-title">Solicitar pase</div>
+        <div class="step-desc">Genera tu folio y captura tus datos completos.</div>
       </div>
 
       <div class="step-card" data-step="3">
         <div class="step-index">Paso 3</div>
-        <div class="step-title">QR</div>
-        <div class="step-desc">Muestra tu credencial viva al staff para habilitar acceso.</div>
+        <div class="step-title">Mostrar QR</div>
+        <div class="step-desc">Presenta tu credencial viva para habilitar acceso.</div>
       </div>
 
       <div class="step-card" data-step="4">
         <div class="step-index">Paso 4</div>
-        <div class="step-title">Registro</div>
-        <div class="step-desc">Cierra tu inscripción con el token del proyecto.</div>
+        <div class="step-title">Cerrar inscripción</div>
+        <div class="step-desc">Usa el token del proyecto y confirma legalmente.</div>
       </div>
-    </div>
+    </section>
 
-    <div class="grid">
-      <div class="card span-12">
-        <div class="module-card-title">
-          <h2>Catálogo de proyectos</h2>
-          <span class="screen-chip">Tarjetas activas</span>
-        </div>
-        <div class="muted">
-          Selecciona primero la temporada y revisa el catálogo disponible antes de solicitar tu pase.
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label>Temporada</label>
-            <select id="seasonSelector">
-              <option value="PRIMAVERA">Primavera</option>
-              <option value="INVIERNO">Invierno</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Buscar proyecto</label>
-            <input id="catalogSearch" placeholder="Nombre, comentarios, descripción, responsables">
-          </div>
-
-          <div class="field">
-            <label>Carrera preferida</label>
-            <select id="filterPartner">
-              <option value="">Todas</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Modalidad</label>
-            <select id="filterModality">
-              <option value="">Todas</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Días</label>
-            <select id="filterWeekDays">
-              <option value="">Todos</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Horario</label>
-            <select id="filterSchedule">
-              <option value="">Todos</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-primary" onclick="loadCatalog()">Cargar catálogo</button>
-          <button type="button" class="btn-secondary" onclick="resetCatalogFilters()">Limpiar filtros</button>
-        </div>
-
-        <div id="catalogHeader" class="list"></div>
-
-        <div id="selectedProjectBanner" class="selection-banner hidden">
-          <div class="selection-title">Proyecto seleccionado</div>
-          <div id="selectedProjectBannerText" class="small">Aún no seleccionas proyecto.</div>
-        </div>
-
-        <div id="catalogList" class="project-grid"></div>
-      </div>
-
-      <div class="card span-6">
-        <div class="module-card-title">
-          <h2>Solicitar pase</h2>
-          <span class="screen-chip">Paso 2</span>
-        </div>
-        <div class="muted">
-          El pase no te registra todavía. Solo genera tu solicitud y tu folio para avanzar a validación presencial.
-        </div>
-
-        <div class="form-grid">
-          <div class="field">
-            <label>Nombre completo</label>
-            <input id="fullNameInput" placeholder="Nombre completo">
-          </div>
-
-          <div class="field">
-            <label>Matrícula</label>
-            <input id="enrolmentInput" placeholder="Ej: A01234567">
-          </div>
-
-          <div class="field">
-            <label>Correo principal</label>
-            <input id="emailInput" type="email" placeholder="correo@ejemplo.com">
-          </div>
-
-          <div class="field">
-            <label>Segundo correo</label>
-            <input id="secondEmailInput" type="email" placeholder="opcional">
-          </div>
-
-          <div class="field">
-            <label>Teléfono</label>
-            <input id="phoneInput" placeholder="10 dígitos o similar">
-          </div>
-
-          <div class="field">
-            <label>Carrera</label>
-            <input id="degreeInput" placeholder="Ej: LAF, LAE, NEG">
-          </div>
-
-          <div class="field">
-            <label>Semestre</label>
-            <input id="semesterInput" type="number" min="1" max="20" placeholder="Ej: 5">
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-primary" onclick="createStudentRequest()">Solicitar pase</button>
-          <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Consultar mi solicitud</button>
-        </div>
-      </div>
-
-      <div class="card span-6">
-        <div class="module-card-title">
-          <h2>Mi solicitud</h2>
-          <span class="screen-chip">Folio</span>
-        </div>
-        <div class="muted">
-          Aquí puedes consultar tu folio y el estado actual de tu solicitud para la temporada elegida.
-        </div>
-
-        <div id="requestInfo" class="list">
-          <div class="item">
-            <div class="small">Todavía no hay información cargada.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card span-6">
-        <div class="module-card-title">
-          <h2>Credencial viva</h2>
-          <span class="screen-chip">Paso 3</span>
-        </div>
-        <div class="muted">
-          Refresca tu credencial cuando el staff te lo pida. El QR cambia y el anterior deja de servir.
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-primary" onclick="refreshStudentPass()">Refrescar credencial</button>
-          <button type="button" class="btn-secondary" onclick="loadStudentPass()">Consultar estado del pase</button>
-        </div>
-
-        <div id="passInfo" class="list">
-          <div class="item">
-            <div class="small">Todavía no hay información del pase.</div>
-          </div>
-        </div>
-
-        <div class="qr-shell">
-          <div class="qr-status-row">
+    <div class="layout">
+      <main class="main-column">
+        <section class="card">
+          <div class="card-title-row">
             <div>
-              <div class="item-title">QR vigente del pase</div>
-              <div class="small">Este código cambia al refrescarse y deja de servir al expirar o cuando el staff lo usa.</div>
+              <h2>Catálogo de proyectos</h2>
             </div>
-            <div id="qrStatusBadge" class="pill pill-neutral">Sin sesión</div>
+            <span class="chip chip-primary">Explorar</span>
           </div>
 
-          <div class="qr-canvas-wrap">
-            <div id="qrCanvas"></div>
+          <div class="card-subtitle">
+            Elige la temporada, filtra el catálogo y selecciona el proyecto que mejor se adapte a ti.
           </div>
 
-          <div id="qrPlainToken" class="mono">Genera tu código</div>
-        </div>
-      </div>
+          <div class="catalog-toolbar">
+            <div class="field">
+              <label>Temporada</label>
+              <select id="seasonSelector">
+                <option value="PRIMAVERA">Primavera</option>
+                <option value="INVIERNO">Invierno</option>
+              </select>
+            </div>
 
-      <div class="card span-6">
-        <div class="module-card-title">
-          <h2>Cierre de inscripción</h2>
-          <span class="screen-chip">Paso 4</span>
-        </div>
-        <div class="muted">
-          Cuando el staff ya te haya habilitado acceso y tengas el token del proyecto, haz preview y luego confirma.
-        </div>
+            <div class="field">
+              <label>Buscar</label>
+              <input id="catalogSearch" placeholder="Nombre, responsables, comentarios">
+            </div>
 
-        <div class="form-grid">
-          <div class="field">
-            <label>Proyecto seleccionado</label>
-            <input id="selectedProjectName" placeholder="Elige un proyecto del catálogo" readonly>
+            <div class="field">
+              <label>Carrera preferida</label>
+              <select id="filterPartner">
+                <option value="">Todas</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Modalidad</label>
+              <select id="filterModality">
+                <option value="">Todas</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Días</label>
+              <select id="filterWeekDays">
+                <option value="">Todos</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Horario</label>
+              <select id="filterSchedule">
+                <option value="">Todos</option>
+              </select>
+            </div>
           </div>
 
-          <div class="field">
-            <label>ID del proyecto</label>
-            <input id="selectedProjectId" placeholder="Se llena al elegir un proyecto" readonly>
+          <div class="actions">
+            <button type="button" class="btn-primary" onclick="loadCatalog()">Cargar catálogo</button>
+            <button type="button" class="btn-secondary" onclick="resetCatalogFilters()">Limpiar filtros</button>
           </div>
 
-          <div class="field">
-            <label>Token del proyecto</label>
-            <input id="projectTokenInput" placeholder="Token que te entrega el proyecto">
+          <div class="catalog-stats">
+            <div class="catalog-count" id="catalogCountLabel">Sin catálogo cargado</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <span class="chip chip-blue" id="catalogSeasonChip">Temporada</span>
+              <span class="chip chip-neutral" id="catalogProjectsChip">0 proyectos</span>
+            </div>
           </div>
 
-          <div class="field">
-            <label>Nombre completo para aceptación</label>
-            <input id="acceptanceFullNameInput" placeholder="Debe coincidir con tu nombre">
+          <div id="selectedProjectBanner" class="selected-banner hidden">
+            <div class="selected-banner-title">Proyecto seleccionado</div>
+            <div id="selectedProjectBannerText" class="selected-banner-text">Aún no seleccionas proyecto.</div>
           </div>
 
-          <div class="field">
-            <label>Versión legal</label>
-            <input id="legalVersionInput" value="v1">
+          <div id="catalogList" class="catalog-grid"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-title-row">
+            <div>
+              <h2>Solicitar pase</h2>
+            </div>
+            <span class="chip chip-orange">Paso 2</span>
           </div>
-        </div>
 
-        <div class="preview-box">
-          <div class="small" style="margin-bottom:8px;"><strong>Confirmación legal</strong></div>
-          <label style="display:flex; gap:10px; align-items:flex-start; font-size:.92rem; color:var(--text);">
-            <input id="acceptanceCheckbox" type="checkbox" style="width:auto; min-height:auto; margin-top:3px;">
-            <span>
-              Confirmo que realicé esta inscripción de manera personal, que acepto el proyecto y que entiendo que el cierre queda auditado con token y registro digital.
-            </span>
-          </label>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn-secondary" onclick="previewRegistration()">Ver preview</button>
-          <button type="button" class="btn-primary" id="confirmRegistrationBtn" onclick="confirmRegistration()">Confirmar inscripción</button>
-        </div>
-
-        <div id="registrationPreview" class="list">
-          <div class="item">
-            <div class="small">Todavía no hay preview del cierre.</div>
+          <div class="card-subtitle">
+            El pase no te registra todavía. Solo genera tu solicitud y tu folio para validación presencial.
           </div>
-        </div>
 
-        <div id="registrationSuccessBox" class="list hidden"></div>
-      </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Nombre completo</label>
+              <input id="fullNameInput" placeholder="Nombre completo">
+            </div>
+
+            <div class="field">
+              <label>Matrícula</label>
+              <input id="enrolmentInput" placeholder="Ej: A01234567">
+            </div>
+
+            <div class="field">
+              <label>Correo principal</label>
+              <input id="emailInput" type="email" placeholder="correo@ejemplo.com">
+            </div>
+
+            <div class="field">
+              <label>Segundo correo</label>
+              <input id="secondEmailInput" type="email" placeholder="Opcional">
+            </div>
+
+            <div class="field">
+              <label>Teléfono</label>
+              <input id="phoneInput" placeholder="10 dígitos o similar">
+            </div>
+
+            <div class="field">
+              <label>Carrera</label>
+              <input id="degreeInput" placeholder="Ej: LAF, LAE, NEG">
+            </div>
+
+            <div class="field">
+              <label>Semestre</label>
+              <input id="semesterInput" type="number" min="1" max="20" placeholder="Ej: 5">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-orange" onclick="createStudentRequest()">Solicitar pase</button>
+            <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Consultar solicitud</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-title-row">
+            <div>
+              <h2>Cierre de inscripción</h2>
+            </div>
+            <span class="chip chip-green">Paso 4</span>
+          </div>
+
+          <div class="card-subtitle">
+            Cuando el staff ya te haya habilitado acceso y tengas el token del proyecto, primero haz preview y luego confirma.
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Proyecto seleccionado</label>
+              <input id="selectedProjectName" placeholder="Elige un proyecto del catálogo" readonly>
+            </div>
+
+            <div class="field">
+              <label>ID del proyecto</label>
+              <input id="selectedProjectId" placeholder="Se llena al elegir un proyecto" readonly>
+            </div>
+
+            <div class="field">
+              <label>Token del proyecto</label>
+              <input id="projectTokenInput" placeholder="Token que te entrega el proyecto">
+            </div>
+
+            <div class="field">
+              <label>Nombre completo para aceptación</label>
+              <input id="acceptanceFullNameInput" placeholder="Debe coincidir con tu nombre">
+            </div>
+
+            <div class="field">
+              <label>Versión legal</label>
+              <input id="legalVersionInput" value="v1">
+            </div>
+          </div>
+
+          <div class="legal-box">
+            <div style="font-size:.84rem; font-weight:900; margin-bottom:8px; color:var(--text);">
+              Confirmación legal
+            </div>
+
+            <label style="display:flex; gap:10px; align-items:flex-start; font-size:.92rem; line-height:1.55; color:var(--text);">
+              <input id="acceptanceCheckbox" type="checkbox" style="width:auto; min-height:auto; margin-top:3px;">
+              <span>
+                Confirmo que realicé esta inscripción de manera personal, que acepto el proyecto seleccionado y que entiendo que el cierre queda auditado con token y registro digital.
+              </span>
+            </label>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-secondary" onclick="previewRegistration()">Ver preview</button>
+            <button type="button" class="btn-green" id="confirmRegistrationBtn" onclick="confirmRegistration()">Confirmar inscripción</button>
+          </div>
+
+          <div id="registrationPreview" class="preview-box"></div>
+          <div id="registrationSuccessBox" class="preview-box hidden"></div>
+        </section>
+      </main>
+
+      <aside class="side-column">
+        <section class="card">
+          <div class="card-title-row">
+            <div>
+              <h2>Mi solicitud</h2>
+            </div>
+            <span class="chip chip-primary">Folio</span>
+          </div>
+
+          <div class="card-subtitle">
+            Aquí puedes consultar el estado actual de tu solicitud para la temporada elegida.
+          </div>
+
+          <div id="requestInfo" class="info-stack"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-title-row">
+            <div>
+              <h2>Credencial viva</h2>
+            </div>
+            <span class="chip chip-blue">Paso 3</span>
+          </div>
+
+          <div class="card-subtitle">
+            Refresca tu credencial cuando el staff te lo pida. El QR cambia y el anterior deja de servir.
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-primary" onclick="refreshStudentPass()">Refrescar credencial</button>
+            <button type="button" class="btn-secondary" onclick="loadStudentPass()">Consultar pase</button>
+          </div>
+
+          <div id="passInfo" class="info-stack"></div>
+
+          <div class="qr-shell">
+            <div class="qr-head">
+              <div>
+                <div style="font-weight:900; margin-bottom:3px;">QR vigente del pase</div>
+                <div style="font-size:.86rem; color:var(--text-soft);">
+                  Este código cambia al refrescarse y deja de servir al expirar o cuando el staff lo usa.
+                </div>
+              </div>
+
+              <div id="qrStatusBadge" class="chip chip-neutral">Sin sesión</div>
+            </div>
+
+            <div class="qr-canvas-wrap">
+              <div id="qrCanvas"></div>
+            </div>
+
+            <div id="qrPlainToken" class="qr-plain">Genera tu código</div>
+          </div>
+        </section>
+      </aside>
     </div>
   </div>
 
@@ -1129,6 +1197,7 @@ INDEX_HTML = r"""
     let currentPreview = null;
     let currentSelectedProject = null;
     let currentRegistration = null;
+    let catalogSearchTimer = null;
 
     function escapeHTML(value) {
       return String(value ?? '')
@@ -1137,14 +1206,6 @@ INDEX_HTML = r"""
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
-    }
-
-    function debounce(fn, delay) {
-      let timeout;
-      return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), delay);
-      };
     }
 
     function showMsg(text, ok = true) {
@@ -1183,168 +1244,62 @@ INDEX_HTML = r"""
       const el = document.getElementById(id);
       if (!el) return;
 
-      const firstOption = el.querySelector('option') ? el.querySelector('option').outerHTML : '<option value="">Todos</option>';
-      el.innerHTML = firstOption;
+      const baseOption = el.querySelector('option') ? el.querySelector('option').outerHTML : '<option value="">Todas</option>';
+      el.innerHTML = baseOption;
 
-      for (const item of items || []) {
+      for (const item of (items || [])) {
         const opt = document.createElement('option');
-        opt.value = item.id;
-        opt.textContent = item[labelKey];
+        opt.value = item.id ?? item.value ?? item.name ?? '';
+        opt.textContent = 
+        item[labelKey]??
+        item.description??
+        item.name??
+        item.label??
+        item.value??
+        'Opción';
         el.appendChild(opt);
       }
     }
 
     function setCurrentStep(step) {
       document.querySelectorAll('.step-card').forEach(el => {
-        const stepNum = Number(el.getAttribute('data-step'));
+        const n = Number(el.getAttribute('data-step'));
         el.classList.remove('active', 'done');
-
-        if (stepNum < step) {
-          el.classList.add('done');
-        } else if (stepNum === step) {
-          el.classList.add('active');
-        }
+        if (n < step) el.classList.add('done');
+        else if (n === step) el.classList.add('active');
       });
     }
 
-    function renderCatalogHeader(projects, eventInfo = null) {
-      const season = eventInfo?.season || getSeason();
-      const displayName = eventInfo?.display_name || season;
-      const el = document.getElementById('catalogHeader');
+    function updateHeroState() {
+      const route = document.getElementById('heroRouteStatus');
+      const project = document.getElementById('heroProjectStatus');
 
-      el.innerHTML = `
-        <div class="item">
-          <div class="item-head">
-            <div>
-              <div class="item-title">Catálogo de ${escapeHTML(displayName)}</div>
-              <div class="small">Total de proyectos mostrados: ${projects.length}</div>
-            </div>
-            <div>
-              <span class="pill pill-info">${escapeHTML(season)}</span>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderCatalog(projects) {
-      const list = document.getElementById('catalogList');
-
-      if (!projects || !projects.length) {
-        list.innerHTML = `
-          <div class="item">
-            <div class="small">No hay proyectos para mostrar con esos filtros o no hay proyectos activos en esta temporada.</div>
-          </div>
-        `;
-        return;
+      if (currentRegistration) {
+        route.textContent = 'Inscripción completada';
+      } else if (currentPreview) {
+        route.textContent = 'Preview listo para confirmar';
+      } else if (currentPass && (currentPass.pass_session || currentPass.active_session)) {
+        route.textContent = 'Pase activo para validación';
+      } else if (currentRequest) {
+        route.textContent = 'Solicitud creada';
+      } else {
+        route.textContent = 'Explorando catálogo';
       }
 
-      list.innerHTML = projects.map((p, idx) => `
-        <div class="tcg-card ${currentSelectedProject && Number(currentSelectedProject.id) === Number(p.id) ? 'selected' : ''}">
-          <div class="tcg-card__content">
-            <div class="tcg-top">
-              <div>
-                <div class="tcg-kicker">${escapeHTML(p.general_name || 'Proyecto')}</div>
-                <div class="tcg-title">${escapeHTML(p.name || 'Sin nombre')}</div>
-                <div class="tcg-subtitle">Carrera preferida: ${escapeHTML(p.socio || 'Sin preferencia')}</div>
-              </div>
-
-              <div class="tcg-rank">
-                CARD<br>#${idx + 1}
-              </div>
-            </div>
-
-            <div class="tcg-hero">
-              <div class="tcg-hero-text">
-                ${escapeHTML((p.objectives || p.comments || 'Proyecto activo para esta temporada.').slice(0, 140))}
-              </div>
-            </div>
-
-            <div class="tcg-stats">
-              <div class="tcg-stat">
-                <span class="tcg-stat-label">Modalidad</span>
-                <div class="tcg-stat-value">${escapeHTML(p.modalidad || '—')}</div>
-              </div>
-
-              <div class="tcg-stat">
-                <span class="tcg-stat-label">Días</span>
-                <div class="tcg-stat-value">${escapeHTML(p.dia || '—')}</div>
-              </div>
-
-              <div class="tcg-stat">
-                <span class="tcg-stat-label">Horario</span>
-                <div class="tcg-stat-value">${escapeHTML(p.horario || '—')}</div>
-              </div>
-
-              <div class="tcg-stat">
-                <span class="tcg-stat-label">Cupos</span>
-                <div class="tcg-stat-value">${escapeHTML(p.cupos_disponibles ?? p.cupos ?? '—')}</div>
-              </div>
-            </div>
-
-            <div class="tcg-extra">
-              <div class="tcg-extra-row"><strong>Duración:</strong> ${escapeHTML(p.duration || '—')}</div>
-              <div class="tcg-extra-row"><strong>Lugar:</strong> ${escapeHTML(p.location || '—')}</div>
-              <div class="tcg-extra-row"><strong>Competencias:</strong> ${escapeHTML(p.competencies || '—')}</div>
-            </div>
-
-            <div class="tcg-actions">
-              <button type="button" class="btn-primary" onclick="selectProject(${Number(p.id)})">Elegir proyecto</button>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderSkeleton() {
-      const list = document.getElementById('catalogList');
-
-      list.innerHTML = Array(6).fill(`
-        <div class="tcg-card">
-          <div class="tcg-card__content">
-            <div style="height:16px;width:60%;background:#eef2f7;border-radius:6px;margin-bottom:8px;"></div>
-            <div style="height:12px;width:40%;background:#eef2f7;border-radius:6px;margin-bottom:12px;"></div>
-            <div style="height:100px;background:#eef2f7;border-radius:12px;margin-bottom:12px;"></div>
-            <div style="height:12px;width:80%;background:#eef2f7;border-radius:6px;margin-bottom:6px;"></div>
-            <div style="height:12px;width:70%;background:#eef2f7;border-radius:6px;"></div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-
-    function renderSelectedProjectBanner() {
-      const banner = document.getElementById('selectedProjectBanner');
-      const text = document.getElementById('selectedProjectBannerText');
-
-      if (!currentSelectedProject) {
-        banner.classList.add('hidden');
-        text.textContent = 'Aún no seleccionas proyecto.';
-        return;
+      if (currentSelectedProject) {
+        project.textContent = ${currentSelectedProject.general_name || 'Proyecto'} | ${currentSelectedProject.name || 'Sin nombre'};
+      } else {
+        project.textContent = 'Sin proyecto seleccionado';
       }
-
-      banner.classList.remove('hidden');
-      text.innerHTML = `
-        <strong>${escapeHTML(currentSelectedProject.general_name || 'Proyecto')}</strong> |
-        ${escapeHTML(currentSelectedProject.name || 'Sin nombre')}
-        · ${escapeHTML(currentSelectedProject.modalidad || '—')}
-        · ${escapeHTML(currentSelectedProject.horario || '—')}
-      `;
     }
 
-    function selectProject(projectId) {
-      const project = currentCatalog.find(p => Number(p.id) === Number(projectId));
-      if (!project) return;
-
-      currentSelectedProject = project;
-
-      document.getElementById('selectedProjectId').value = String(project.id);
-      document.getElementById('selectedProjectName').value = `${project.general_name || 'Sin nombre general'} | ${project.name || 'Sin nombre'}`;
-
-      renderCatalog(currentCatalog);
-      renderSelectedProjectBanner();
-      setCurrentStep(2);
-      showMsg('Proyecto seleccionado para el cierre de inscripción');
+    function renderEmptyState(title, subtitle) {
+      return `
+        <div class="empty-state">
+          <div class="empty-title">${escapeHTML(title)}</div>
+          <div>${escapeHTML(subtitle || '')}</div>
+        </div>
+      `;
     }
 
     function resetCatalogFilters() {
@@ -1356,31 +1311,190 @@ INDEX_HTML = r"""
       loadCatalog();
     }
 
+    function renderSelectedProjectBanner() {
+      const banner = document.getElementById('selectedProjectBanner');
+      const text = document.getElementById('selectedProjectBannerText');
+
+      if (!currentSelectedProject) {
+        banner.classList.add('hidden');
+        text.textContent = 'Aún no seleccionas proyecto.';
+        updateHeroState();
+        return;
+      }
+
+      banner.classList.remove('hidden');
+      text.innerHTML = `
+        <strong>${escapeHTML(currentSelectedProject.general_name || 'Proyecto')}</strong> |
+        ${escapeHTML(currentSelectedProject.name || 'Sin nombre')}
+        · ${escapeHTML(currentSelectedProject.modalidad || '—')}
+        · ${escapeHTML(currentSelectedProject.horario || '—')}
+      `;
+      updateHeroState();
+    }
+
+    function renderCatalogHeader(projects, eventInfo = null) {
+      const season = eventInfo?.season || getSeason();
+      const displayName = eventInfo?.display_name || season;
+
+      document.getElementById('catalogCountLabel').textContent = Catálogo de ${displayName};
+      document.getElementById('catalogSeasonChip').textContent = season;
+      document.getElementById('catalogProjectsChip').textContent = ${projects.length} proyectos;
+    }
+
+    function renderCatalog(projects) {
+      const list = document.getElementById('catalogList');
+
+      if (!projects || !projects.length) {
+        list.innerHTML = renderEmptyState(
+          'No hay proyectos para mostrar',
+          'Prueba otros filtros o revisa si la temporada ya tiene proyectos activos.'
+        );
+        return;
+      }
+
+      list.innerHTML = projects.map((p, idx) => {
+        const projectId = p.id ?? p.project_id ?? '';
+        const generalName = p.general_name ?? p.organization ?? p.partner_group ?? 'Proyecto';
+        const projectName = p.name ?? p.project_name ?? 'Sin nombre';
+        const partnerName = p.socio ?? p.partner ?? p.partner_name ?? 'Sin preferencia';
+        const modalidad = p.modalidad ?? p.modality ?? p.modality_name ?? '—';
+        const dias = p.dia ?? p.days ?? p.week_days ?? p.week_days_name ?? '—';
+        const horario = p.horario ?? p.schedule ?? p.schedule_name ?? '—';
+        const cupos = p.cupos_disponibles ?? p.cupos ?? p.slots_total ?? '—';
+        const objetivos = p.objectives ?? p.comments ?? p.description ?? 'Proyecto activo para esta temporada.';
+        const duracion = p.duration ?? '—';
+        const location = p.location ?? '—';
+        const competencies = p.competencies ?? '—';
+
+        return `
+        <article class="project-card ${currentSelectedProject && Number(currentSelectedProject.id ?? currentSelectedProject.project_id) === Number(p.id) ? 'selected' : ''}">
+          <div class="project-head">
+            <div>
+              <div class="project-org">${escapeHTML(p.general_name || 'Proyecto')}</div>
+              <div class="project-title">${escapeHTML(p.name || 'Sin nombre')}</div>
+              <div class="project-subtitle">Carrera preferida: ${escapeHTML(p.socio || 'Sin preferencia')}</div>
+            </div>
+
+            <div class="project-rank">
+              CARD<br>#${idx + 1}
+            </div>
+          </div>
+
+          <div class="project-hero">
+            <div class="project-hero-text">
+              ${escapeHTML(String(objetivos).slice(0, 155))}
+            </div>
+          </div>
+
+          <div class="project-stats">
+            <div class="project-stat">
+              <span class="project-stat-label">Modalidad</span>
+              <div class="project-stat-value">${escapeHTML(modalidad)}</div>
+            </div>
+
+            <div class="project-stat">
+              <span class="project-stat-label">Días</span>
+              <div class="project-stat-value">${escapeHTML(dias)}</div>
+            </div>
+
+            <div class="project-stat">
+              <span class="project-stat-label">Horario</span>
+              <div class="project-stat-value">${escapeHTML(horario)}</div>
+            </div>
+
+            <div class="project-stat">
+              <span class="project-stat-label">Cupos</span>
+              <div class="project-stat-value">${escapeHTML(cupos)}</div>
+            </div>
+          </div>
+
+          <div class="project-extra">
+            <div class="project-extra-row"><strong>Duración:</strong> ${escapeHTML(duracion)}</div>
+            <div class="project-extra-row"><strong>Lugar:</strong> ${escapeHTML(location)}</div>
+            <div class="project-extra-row"><strong>Competencias:</strong> ${escapeHTML(competencies)}</div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-primary" onclick="selectProject(${Number(projectId)})">Elegir proyecto</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function selectProject(projectId) {
+      const project = currentCatalog.find(p => Number(p.id ?? p.project_id) === Number(projectId));
+      if (!project) return;
+
+      currentSelectedProject = project;
+
+      document.getElementById('selectedProjectId').value = String(project.id ?? project.project_id ?? '');
+      document.getElementById('selectedProjectName').value =
+        `${project.general_name ?? project.organization ?? 'Sin nombre general'} | ${project.name ?? project.project_name ?? 'Sin nombre'}`;
+
+      renderCatalog(currentCatalog);
+      renderSelectedProjectBanner();
+      setCurrentStep(2);
+      showMsg('Proyecto seleccionado para el cierre de inscripción');
+    }
+
     async function loadCatalogsForSeason() {
       try {
         const season = getSeason();
-        const data = await getJSON(`/api/catalogs?temporada=${encodeURIComponent(season)}`);
 
-        fillSelect('filterPartner', data.socio || [], 'name');
-        fillSelect('filterModality', data.modalidad || [], 'description');
-        fillSelect('filterWeekDays', data.dias || [], 'description');
-        fillSelect('filterSchedule', data.horario || [], 'description');
+        let data = null;
+
+        try{
+          data = await getJSON(`/api/catalogs?temporada=${encodeURIComponent(season)}`);
+        } catch (_) {}
+
+        if (!data) {
+          try {
+            data = await getJSON(`/api/catalogs?season=${encodeURIComponent(season)}`);
+          } catch (_) {}
+        }
+
+        if (!data) {
+          data = await getJSON(`/api/catalogs`);
+        }
+
+        const partners =
+          data.socio ||
+          data.partner ||
+          data.partners ||
+          data.carreras ||
+          data.carrera ||
+          [];
+
+        const modalidades =
+          data.modalidad ||
+          data.modality ||
+          data.modalidades ||
+          [];
+
+        const weekDays =     
+          data.dias ||
+          data.week_days ||
+          data.weekDays ||
+          data.days ||
+          [];
+
+        const schedules =
+          data.horario ||
+          data.schedule ||
+          data.schedules ||
+          [];  
+
+        fillSelect('filterPartner', partners, 'name');
+        fillSelect('filterModality', modalities, 'description');
+        fillSelect('filterWeekDays', weekDays, 'description');
+        fillSelect('filterSchedule', schedules, 'description');
       } catch (e) {
-        showMsg(e.message, false);
+        showMsg('No se pudieron cargar los catálogos: ' + e.message, false);
       }
     }
 
-    let lastRequestId = 0;
-
     async function loadCatalog() {
-      const requestId = ++lastRequestId;
-
       try {
-        renderSkeleton();
-
-        // ⚡ pequeño delay para UX más suave (opcional pero pro)
-        await new Promise(r => setTimeout(r, 200));
-
         const season = getSeason();
         const q = (document.getElementById('catalogSearch').value || '').trim();
         const socio = document.getElementById('filterPartner').value;
@@ -1388,19 +1502,21 @@ INDEX_HTML = r"""
         const dia = document.getElementById('filterWeekDays').value;
         const horario = document.getElementById('filterSchedule').value;
 
-        const params = new URLSearchParams();
-        params.set('temporada', season);
-        if (q) params.set('q', q);
-        if (socio) params.set('socio', socio);
-        if (modalidad) params.set('modalidad', modalidad);
-        if (dia) params.set('dia', dia);
+        let data = null;
+
+      try {  
+        const params1 = new URLSearchParams();
+        params1.set('temporada', season);
+        if (q) params1.set('q', q);
+        if (socio) params1.set('socio', socio);
+        if (modalidad) params1.set('modalidad', modalidad);
+        if (dia) params1.set('dia', dia);
         if (horario) params.set('horario', horario);
 
-        const data = await getJSON(`/api/projects?${params.toString()}`);
+        data = await getJSON(/api/projects?${params1.toString()});
+      } catch (_) {}
 
-        // 🚫 Evita respuestas viejas (race condition fix)
-        if (requestId !== lastRequestId) return;
-
+        const data = await getJSON(/api/projects?${params.toString()});
         currentCatalog = data.items || [];
 
         renderCatalogHeader(currentCatalog, data.event || null);
@@ -1408,56 +1524,44 @@ INDEX_HTML = r"""
         renderSelectedProjectBanner();
 
         showMsg('Catálogo cargado correctamente');
-
       } catch (e) {
-        // 🚫 Evita errores de requests viejos
-        if (requestId !== lastRequestId) return;
-
         currentCatalog = [];
         renderCatalogHeader([], null);
-
-        // 💀 Error específico de temporada
-        if (e.message && e.message.toLowerCase().includes('temporada')) {
-          document.getElementById('catalogList').innerHTML = `
-            <div class="item" style="border-color:#fecaca;background:#fee2e2;">
-              <div class="item-title" style="color:#991b1b;">
-                No hay proyectos disponibles
-              <div>
-              <div class="small" style="color:#7f1d1d;">
-                Aún no se ha habilitado una temporada para estudiantes.
-              <div>
-            </div>
-          `;
-          return;
-        }
-
         renderCatalog([]);
         showMsg(e.message, false);
       }
     }
 
+    function scheduleCatalogSearch() {
+      clearTimeout(catalogSearchTimer);
+      catalogSearchTimer = setTimeout(() => {
+        loadCatalog();
+      }, 280);
+    }
 
     function renderRequestStatus(status) {
       const value = String(status || '').toUpperCase();
       const map = {
-        REQUESTED: ['pill pill-info', 'REQUESTED'],
-        VALIDATED: ['pill pill-purple', 'VALIDATED'],
-        ACCESS_ENABLED: ['pill pill-ok', 'ACCESS_ENABLED'],
-        REGISTERED: ['pill pill-ok', 'REGISTERED'],
-        CANCELLED: ['pill pill-err', 'CANCELLED'],
-        CLOSED: ['pill pill-warn', 'CLOSED']
+        REQUESTED: ['chip chip-blue', 'REQUESTED'],
+        VALIDATED: ['chip chip-primary', 'VALIDATED'],
+        ACCESS_ENABLED: ['chip chip-green', 'ACCESS_ENABLED'],
+        REGISTERED: ['chip chip-green', 'REGISTERED'],
+        CANCELLED: ['chip chip-pink', 'CANCELLED'],
+        CLOSED: ['chip chip-orange', 'CLOSED']
       };
-      const cfg = map[value] || ['pill pill-neutral', value || '—'];
-      return `<span class="${cfg[0]}">${cfg[1]}</span>`;
+      const cfg = map[value] || ['chip chip-neutral', value || '—'];
+      return <span class="${cfg[0]}">${cfg[1]}</span>;
     }
 
     function renderRequestInfo(data) {
       const box = document.getElementById('requestInfo');
 
       if (!data) {
-        box.innerHTML = `
-          <div class="item"><div class="small">Todavía no hay información cargada.</div></div>
-        `;
+        box.innerHTML = renderEmptyState(
+          'Todavía no hay información de solicitud',
+          'Primero captura tus datos y genera tu folio.'
+        );
+        updateHeroState();
         return;
       }
 
@@ -1473,36 +1577,41 @@ INDEX_HTML = r"""
       };
 
       box.innerHTML = `
-        <div class="item">
-          <div class="item-head">
+        <div class="info-card">
+          <div class="info-head">
             <div>
-              <div class="item-title">Folio ${escapeHTML(request.folio || '—')}</div>
-              <div class="small">Estado actual de tu solicitud</div>
+              <div class="info-title">Folio ${escapeHTML(request.folio || '—')}</div>
+              <div class="info-sub">Estado actual de tu solicitud</div>
             </div>
             <div>${renderRequestStatus(request.status)}</div>
           </div>
 
-          <div class="meta">
+          <div class="meta-grid">
             <div class="meta-box">
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(event.display_name || getSeason())}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Correo principal</span>
               <div class="meta-value">${escapeHTML(user.email || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Segundo correo</span>
               <div class="meta-value">${escapeHTML(user.second_email || user.secondary_email || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Matrícula</span>
               <div class="meta-value">${escapeHTML(user.enrolment_number || getEnrolment() || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Carrera</span>
               <div class="meta-value">${escapeHTML(user.degree || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Semestre</span>
               <div class="meta-value">${escapeHTML(user.semester || '—')}</div>
@@ -1510,6 +1619,8 @@ INDEX_HTML = r"""
           </div>
         </div>
       `;
+
+      updateHeroState();
     }
 
     async function createStudentRequest() {
@@ -1529,6 +1640,7 @@ INDEX_HTML = r"""
         currentRequest = data;
         renderRequestInfo(data);
         setCurrentStep(3);
+        updateHeroState();
         showMsg(data.message || 'Solicitud procesada correctamente');
       } catch (e) {
         showMsg(e.message, false);
@@ -1541,9 +1653,10 @@ INDEX_HTML = r"""
         if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
 
         const season = getSeason();
-        const data = await getJSON(`/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`);
+        const data = await getJSON(/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)});
         currentRequest = data;
         renderRequestInfo(data);
+        updateHeroState();
         showMsg('Solicitud cargada correctamente');
       } catch (e) {
         currentRequest = null;
@@ -1557,14 +1670,14 @@ INDEX_HTML = r"""
       const qrPlainToken = document.getElementById('qrPlainToken');
 
       qrCanvas.innerHTML = '';
-      qrPlainToken.textContent = plainToken || 'Sin código';
+      qrPlainToken.textContent = plainToken || 'Genera tu código';
 
       if (!plainToken) return;
 
       new QRCode(qrCanvas, {
         text: plainToken,
-        width: 180,
-        height: 180,
+        width: 190,
+        height: 190,
         correctLevel: QRCode.CorrectLevel.M
       });
     }
@@ -1574,10 +1687,14 @@ INDEX_HTML = r"""
       const statusBadge = document.getElementById('qrStatusBadge');
 
       if (!data) {
-        box.innerHTML = `<div class="item"><div class="small">Todavía no hay información del pase.</div></div>`;
-        statusBadge.className = 'pill pill-neutral';
+        box.innerHTML = renderEmptyState(
+          'Todavía no hay información del pase',
+          'Cuando tu solicitud exista, podrás consultar o refrescar tu credencial viva.'
+        );
+        statusBadge.className = 'chip chip-neutral';
         statusBadge.textContent = 'Sin sesión';
         renderStudentQR('');
+        updateHeroState();
         return;
       }
 
@@ -1587,32 +1704,36 @@ INDEX_HTML = r"""
       const session = data.pass_session || data.active_session || null;
 
       box.innerHTML = `
-        <div class="item">
-          <div class="item-head">
+        <div class="info-card">
+          <div class="info-head">
             <div>
-              <div class="item-title">${escapeHTML(student.full_name || 'Alumno')}</div>
-              <div class="small">Matrícula: ${escapeHTML(student.enrolment_number || '—')}</div>
+              <div class="info-title">${escapeHTML(student.full_name || 'Alumno')}</div>
+              <div class="info-sub">Matrícula: ${escapeHTML(student.enrolment_number || '—')}</div>
             </div>
             <div>${renderRequestStatus(request.status)}</div>
           </div>
 
-          <div class="meta">
+          <div class="meta-grid">
             <div class="meta-box">
               <span class="meta-label">Folio</span>
               <div class="meta-value">${escapeHTML(request.folio || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Sesión activa</span>
               <div class="meta-value">${session ? escapeHTML(session.status || 'ACTIVE') : 'Sin sesión activa'}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Expira</span>
               <div class="meta-value">${session ? escapeHTML(session.expires_at || '—') : '—'}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Refresh count</span>
               <div class="meta-value">${session ? escapeHTML(session.refresh_count || 0) : 0}</div>
@@ -1626,10 +1747,16 @@ INDEX_HTML = r"""
         data.active_session?.plain_token ||
         '';
 
-      statusBadge.className = session ? 'pill pill-ok' : 'pill pill-neutral';
-      statusBadge.textContent = session ? 'QR activo' : 'Sin sesión';
+      if (session) {
+        statusBadge.className = 'chip chip-green';
+        statusBadge.textContent = 'QR activo';
+      } else {
+        statusBadge.className = 'chip chip-neutral';
+        statusBadge.textContent = 'Sin sesión';
+      }
 
       renderStudentQR(currentToken);
+      updateHeroState();
     }
 
     async function loadStudentPass() {
@@ -1638,9 +1765,11 @@ INDEX_HTML = r"""
         if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
 
         const season = getSeason();
-        const data = await getJSON(`/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`);
+        const data = await getJSON(/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)});
         currentPass = data;
         renderPassInfo(data);
+        setCurrentStep(3);
+        updateHeroState();
         showMsg('Estado del pase cargado correctamente');
       } catch (e) {
         currentPass = null;
@@ -1663,6 +1792,7 @@ INDEX_HTML = r"""
         currentPass = data;
         renderPassInfo(data);
         setCurrentStep(3);
+        updateHeroState();
         showMsg(data.message || 'Credencial actualizada');
       } catch (e) {
         showMsg(e.message, false);
@@ -1673,7 +1803,10 @@ INDEX_HTML = r"""
       const box = document.getElementById('registrationPreview');
 
       if (!data) {
-        box.innerHTML = `<div class="item"><div class="small">Todavía no hay preview del cierre.</div></div>`;
+        box.innerHTML = renderEmptyState(
+          'Todavía no hay preview',
+          'Escribe el token del proyecto y usa “Ver preview” para revisar antes de confirmar.'
+        );
         return;
       }
 
@@ -1683,36 +1816,41 @@ INDEX_HTML = r"""
       const token = data.token || {};
 
       box.innerHTML = `
-        <div class="item">
-          <div class="item-head">
+        <div class="info-card">
+          <div class="info-head">
             <div>
-              <div class="item-title">Preview válido</div>
-              <div class="small">Revisa bien antes de confirmar</div>
+              <div class="info-title">Preview válido</div>
+              <div class="info-sub">Revisa cuidadosamente antes de confirmar</div>
             </div>
-            <div><span class="pill pill-ok">PREVIEW OK</span></div>
+            <div><span class="chip chip-green">PREVIEW OK</span></div>
           </div>
 
-          <div class="meta">
+          <div class="meta-grid">
             <div class="meta-box">
               <span class="meta-label">Alumno</span>
               <div class="meta-value">${escapeHTML(student.full_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Proyecto</span>
               <div class="meta-value">${escapeHTML(project.general_name || '—')} | ${escapeHTML(project.project_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Carrera preferida</span>
               <div class="meta-value">${escapeHTML(project.partner_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Token</span>
               <div class="meta-value">${escapeHTML(token.token_value || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Token expira</span>
               <div class="meta-value">${escapeHTML(token.expires_at || '—')}</div>
@@ -1730,6 +1868,7 @@ INDEX_HTML = r"""
         box.classList.add('hidden');
         box.innerHTML = '';
         btn.disabled = false;
+        updateHeroState();
         return;
       }
 
@@ -1740,7 +1879,7 @@ INDEX_HTML = r"""
         <div class="success-card">
           <div class="success-title">🎉 Inscripción completada</div>
 
-          <div class="meta">
+          <div class="meta-grid">
             <div class="meta-box">
               <span class="meta-label">Proyecto</span>
               <div class="meta-value">${escapeHTML(data.project_name || '—')}</div>
@@ -1773,6 +1912,8 @@ INDEX_HTML = r"""
           </div>
         </div>
       `;
+
+      updateHeroState();
     }
 
     async function previewRegistration() {
@@ -1796,7 +1937,7 @@ INDEX_HTML = r"""
         currentPreview = data;
         renderPreview(data);
         setCurrentStep(4);
-
+        updateHeroState();
         showMsg(data.message || 'Preview válido');
       } catch (e) {
         currentPreview = null;
@@ -1842,6 +1983,7 @@ INDEX_HTML = r"""
 
         renderRegistrationSuccess(currentRegistration);
         setCurrentStep(4);
+        updateHeroState();
         showMsg(data.message || 'Registro completado');
       } catch (e) {
         showMsg(e.message, false);
@@ -1849,15 +1991,12 @@ INDEX_HTML = r"""
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const debouncedLoad = debounce(loadCatalog, 400);
-
       document.getElementById('seasonSelector').addEventListener('change', async () => {
         await loadCatalogsForSeason();
         await loadCatalog();
       });
 
-      document.getElementById('catalogSearch').addEventListener('input', debouncedLoad);
-
+      document.getElementById('catalogSearch').addEventListener('input', scheduleCatalogSearch);
       document.getElementById('filterPartner').addEventListener('change', loadCatalog);
       document.getElementById('filterModality').addEventListener('change', loadCatalog);
       document.getElementById('filterWeekDays').addEventListener('change', loadCatalog);
@@ -1866,45 +2005,13 @@ INDEX_HTML = r"""
       await loadCatalogsForSeason();
       await loadCatalog();
       renderSelectedProjectBanner();
+      renderRequestInfo(null);
+      renderPassInfo(null);
+      renderPreview(null);
+      renderRegistrationSuccess(null);
       setCurrentStep(1);
+      updateHeroState();
     });
-
-
-  // Auto-recarga en filtros (incluye temporada)
-  ['filterPartner','filterModality','filterWeekDays','filterSchedule','seasonSelector']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('change', async () => {
-          // Solo temporada necesita recargar catálogos
-          if (id === 'seasonSelector') {
-            await loadCatalogsForSeason();
-          }
-          await loadCatalog();
-        });
-      }
-    });
-
-  // Enter para buscar
-  document.getElementById('catalogSearch').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') loadCatalog();
-  });
-
-  // Carga inicial
-  await loadCatalogsForSeason();
-  await loadCatalog();
-
-  renderSelectedProjectBanner();
-  setCurrentStep(1);
-
-  // Auto refresh del QR (opcional)
-  setInterval(() => {
-    if (currentPass) {
-      refreshStudentPass();
-    }
-  }, 60000); // cada 60s
-});
-
   </script>
 </body>
 </html>
