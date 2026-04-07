@@ -1,0 +1,3 @@
+INSERT INTO app_settings (k, v)
+VALUES ('PASS_TTL_MINUTES', '5')
+ON DUPLICATE KEY UPDATE v = VALUES(v);
