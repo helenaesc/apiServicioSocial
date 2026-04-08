@@ -4,8 +4,21 @@ from ..database import execute_tx, fetch_one
 import unicodedata
 import hashlib
 import json
+import hmac
+import os
 
 student_registration_bp = Blueprint("student_registration", __name__)
+
+
+def _sign_snapshot(snapshot_json: str) -> str:
+    secret = os.getenv("APP_SIGNATURE_SECRET", "").strip()
+    if not secret:
+        raise RuntimeError("APP_SIGNATURE_SECRET no está configurado")
+    return hmac.new(
+        secret.encode("utf-8"),
+        snapshot_json.encode("utf-8"),
+        hashlib.sha256
+    ).hexdigest()
 
 
 def _normalize_season(raw: str | None) -> str | None:
@@ -190,6 +203,11 @@ def preview_registration():
             "token_value": tk_row["token_value"],
             "status": tk_row["status"],
             "expires_at": tk_row["expires_at"],
+        },
+        "legal_confirmation": {
+            "accepted_checkbox_required": True,
+            "accepted_full_name_required": True,
+            "legal_text_version_default": "v1",
         }
     }), 200
 
@@ -387,7 +405,7 @@ def confirm_registration():
         if expected_name != provided_name:
             return {"error": "El nombre completo no coincide con el del alumno", "status": 409}
 
-        # 7) construir snapshot + hash
+        # 7) construir snapshot + hash + firma
         snapshot = _build_acceptance_snapshot(
             req_row=req_row,
             ep_row=ep_row,
@@ -397,6 +415,7 @@ def confirm_registration():
         )
         snapshot_json = json.dumps(snapshot, ensure_ascii=False, sort_keys=True)
         acceptance_hash = _sha256_text(snapshot_json)
+        acceptance_signature = _sign_snapshot(snapshot_json)
 
         # 8) crear registration
         cur.execute(
@@ -414,6 +433,7 @@ def confirm_registration():
                 accepted_at,
                 acceptance_snapshot_json,
                 acceptance_hash,
+                acceptance_signature,
                 accepted_ip,
                 accepted_user_agent,
                 status
@@ -421,7 +441,7 @@ def confirm_registration():
             VALUES (
                 %s, %s, %s, %s, %s,
                 %s, %s, %s, NOW(),
-                %s, %s, %s, %s,
+                %s, %s, %s, %s, %s,
                 'ACTIVE'
             )
             """,
@@ -436,6 +456,7 @@ def confirm_registration():
                 legal_text_version,
                 snapshot_json,
                 acceptance_hash,
+                acceptance_signature,
                 accepted_ip,
                 accepted_user_agent,
             ]
@@ -472,6 +493,27 @@ def confirm_registration():
         return {
             "status": 201,
             "message": "Registro completado",
+            "event": {
+                "id": req_row["event_id"],
+                "season": season,
+            },
+            "student": {
+                "id": req_row["user_id"],
+                "full_name": req_row["full_name"],
+                "enrolment_number": req_row["enrolment_number"],
+            },
+            "project": {
+                "event_project_id": ep_row["event_project_id"],
+                "project_id": ep_row["project_id"],
+                "project_name": ep_row["project_name"],
+                "general_name": ep_row["general_name"],
+                "partner_name": ep_row["partner_name"],
+            },
+            "token": {
+                "id": tk_row["id"],
+                "token_value": tk_row["token_value"],
+                "status": "USED",
+            },
             "registration": {
                 "id": registration_id,
                 "event_id": req_row["event_id"],
@@ -480,7 +522,18 @@ def confirm_registration():
                 "general_name": ep_row["general_name"],
                 "token_value": tk_row["token_value"],
                 "accepted_full_name": accepted_full_name,
+                "legal_text_version": legal_text_version,
                 "acceptance_hash": acceptance_hash,
+                "acceptance_signature": acceptance_signature,
+            },
+            "legal_confirmation": {
+                "accepted_checkbox": True,
+                "accepted_full_name": accepted_full_name,
+                "legal_text_version": legal_text_version,
+                "acceptance_hash": acceptance_hash,
+                "acceptance_signature": acceptance_signature,
+                "accepted_ip": accepted_ip,
+                "accepted_user_agent": accepted_user_agent,
             }
         }
 

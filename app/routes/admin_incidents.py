@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from mysql.connector import Error
 from ..database import execute_tx, fetch_all, fetch_one
 from ..authz import require_role, ROLE_ADMIN, ROLE_STAFF
@@ -26,6 +26,23 @@ VALID_TYPES = {
 }
 
 
+def _get_current_incident_role(req):
+    """
+    Prioridad:
+    1) sesión real
+    2) compatibilidad temporal con X-ADMIN-KEY
+    """
+    session_role = session.get("admin_user_role")
+    if session_role in {ROLE_ADMIN, ROLE_STAFF}:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN, ROLE_STAFF})
+    if legacy_role:
+        return legacy_role
+
+    return None
+
+
 def _normalize_status(value: str | None) -> str | None:
     if not value:
         return None
@@ -49,7 +66,7 @@ def _normalize_type(value: str | None) -> str | None:
 
 @admin_incidents_bp.post("/api/incidents")
 def create_incident():
-    role = require_role(request, {ROLE_ADMIN, ROLE_STAFF})
+    role = _get_current_incident_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -97,14 +114,27 @@ def create_incident():
 
     def tx(conn, cur):
         # validar evento
-        cur.execute("SELECT id FROM events WHERE id=%s LIMIT 1", [event_id])
+        cur.execute(
+            """
+            SELECT id
+            FROM events
+            WHERE id = %s
+            LIMIT 1
+            """,
+            [event_id]
+        )
         if not cur.fetchone():
             return {"error": "Evento no encontrado", "status": 404}
 
         # validar request si viene
         if request_id is not None:
             cur.execute(
-                "SELECT id FROM student_event_requests WHERE id=%s LIMIT 1",
+                """
+                SELECT id
+                FROM student_event_requests
+                WHERE id = %s
+                LIMIT 1
+                """,
                 [request_id]
             )
             if not cur.fetchone():
@@ -113,7 +143,12 @@ def create_incident():
         # validar user si viene
         if id_user is not None:
             cur.execute(
-                "SELECT id FROM users WHERE id=%s LIMIT 1",
+                """
+                SELECT id
+                FROM users
+                WHERE id = %s
+                LIMIT 1
+                """,
                 [id_user]
             )
             if not cur.fetchone():
@@ -122,7 +157,12 @@ def create_incident():
         # reported_by_user_id opcional
         if reported_by_user_id is not None:
             cur.execute(
-                "SELECT id FROM users WHERE id=%s LIMIT 1",
+                """
+                SELECT id
+                FROM users
+                WHERE id = %s
+                LIMIT 1
+                """,
                 [reported_by_user_id]
             )
             if not cur.fetchone():
@@ -157,10 +197,36 @@ def create_incident():
 
         incident_id = cur.lastrowid
 
+        cur.execute(
+            """
+            SELECT
+                ir.id,
+                ir.event_id,
+                ir.request_id,
+                ir.id_user,
+                ir.reported_by_user_id,
+                ir.type,
+                ir.severity,
+                ir.status,
+                ir.description,
+                ir.resolution_notes,
+                ir.created_at,
+                ir.resolved_at
+            FROM incident_reports ir
+            WHERE ir.id = %s
+            LIMIT 1
+            """,
+            [incident_id]
+        )
+        final_row = cur.fetchone()
+
         return {
             "status": 201,
-            "incident_id": incident_id,
-            "message": "Caso reportado"
+            "message": "Caso reportado",
+            "performed_by": {
+                "role": role
+            },
+            "incident": final_row
         }
 
     try:
@@ -169,10 +235,7 @@ def create_incident():
         if result.get("status") != 201:
             return jsonify({"error": result["error"]}), result["status"]
 
-        return jsonify({
-            "message": result["message"],
-            "incident_id": result["incident_id"]
-        }), 201
+        return jsonify(result), 201
 
     except Error as e:
         return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500
@@ -182,7 +245,7 @@ def create_incident():
 
 @admin_incidents_bp.get("/api/incidents")
 def list_incidents():
-    role = require_role(request, {ROLE_ADMIN, ROLE_STAFF})
+    role = _get_current_incident_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -241,12 +304,17 @@ def list_incidents():
     """
 
     rows = fetch_all(sql, params)
-    return jsonify(rows), 200
+    return jsonify({
+        "performed_by": {
+            "role": role
+        },
+        "items": rows
+    }), 200
 
 
 @admin_incidents_bp.get("/api/incidents/<int:incident_id>")
 def get_incident(incident_id: int):
-    role = require_role(request, {ROLE_ADMIN, ROLE_STAFF})
+    role = _get_current_incident_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -273,12 +341,17 @@ def get_incident(incident_id: int):
     if not row:
         return jsonify({"error": "Caso no encontrado"}), 404
 
-    return jsonify(row), 200
+    return jsonify({
+        "performed_by": {
+            "role": role
+        },
+        "incident": row
+    }), 200
 
 
 @admin_incidents_bp.patch("/api/incidents/<int:incident_id>")
 def update_incident(incident_id: int):
-    role = require_role(request, {ROLE_ADMIN, ROLE_STAFF})
+    role = _get_current_incident_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -350,7 +423,37 @@ def update_incident(incident_id: int):
             params_local
         )
 
-        return {"status": 200, "message": "Caso actualizado"}
+        cur.execute(
+            """
+            SELECT
+                ir.id,
+                ir.event_id,
+                ir.request_id,
+                ir.id_user,
+                ir.reported_by_user_id,
+                ir.type,
+                ir.severity,
+                ir.status,
+                ir.description,
+                ir.resolution_notes,
+                ir.created_at,
+                ir.resolved_at
+            FROM incident_reports ir
+            WHERE ir.id = %s
+            LIMIT 1
+            """,
+            [incident_id]
+        )
+        final_row = cur.fetchone()
+
+        return {
+            "status": 200,
+            "message": "Caso actualizado",
+            "performed_by": {
+                "role": role
+            },
+            "incident": final_row
+        }
 
     try:
         result = execute_tx(tx)
@@ -358,7 +461,7 @@ def update_incident(incident_id: int):
         if result.get("status") != 200:
             return jsonify({"error": result["error"]}), result["status"]
 
-        return jsonify({"message": result["message"]}), 200
+        return jsonify(result), 200
 
     except Error as e:
         return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500

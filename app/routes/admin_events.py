@@ -1,9 +1,25 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from mysql.connector import Error
 from ..database import execute_tx, fetch_all, fetch_one
 from ..authz import require_role, ROLE_ADMIN
 
 admin_events_bp = Blueprint("admin_events", __name__)
+
+def _get_current_admin_role(req):
+    """
+    Prioridad:
+    1) sesión real
+    2) compatibilidad temporal con X-ADMIN-KEY
+    """
+    session_role = session.get("admin_user_role")
+    if session_role == ROLE_ADMIN:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN})
+    if legacy_role:
+        return legacy_role
+
+    return None
 
 VALID_SEASONS = {"PRIMAVERA", "INVIERNO"}
 VALID_STATUSES = {"DRAFT", "VISIBLE", "ONSITE", "CLOSED", "ARCHIVED"}
@@ -36,7 +52,7 @@ def _build_display_name(year: int, season: str) -> str:
 
 @admin_events_bp.get("/api/admin/events")
 def list_events():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -88,7 +104,7 @@ def list_events():
 
 @admin_events_bp.get("/api/admin/events/<int:event_id>")
 def get_event(event_id: int):
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -120,7 +136,7 @@ def get_event(event_id: int):
 
 @admin_events_bp.post("/api/admin/events")
 def create_event():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -206,6 +222,9 @@ def create_event():
 
         return jsonify({
             "message": "Temporada creada",
+            "performed_by": {
+                "role": role
+            },
             "id": result["id"],
             "display_name": result["display_name"]
         }), 201
@@ -218,7 +237,7 @@ def create_event():
 
 @admin_events_bp.patch("/api/admin/events/<int:event_id>")
 def update_event(event_id: int):
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -313,7 +332,12 @@ def update_event(event_id: int):
         if result.get("status") != 200:
             return jsonify({"error": result["error"]}), result["status"]
 
-        return jsonify({"message": result["message"]}), 200
+        return jsonify({
+            "message": result["message"],
+            "performed_by": {
+                "role": role
+            }
+        }), 200
 
     except Error as e:
         return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500
@@ -323,7 +347,7 @@ def update_event(event_id: int):
 
 @admin_events_bp.put("/api/admin/events/<int:event_id>/visible")
 def set_visible_event(event_id: int):
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -359,7 +383,12 @@ def set_visible_event(event_id: int):
         if result.get("status") != 200:
             return jsonify({"error": result["error"]}), result["status"]
 
-        return jsonify({"message": result["message"]}), 200
+        return jsonify({
+            "message": result["message"],
+            "performed_by": {
+                "role": role
+            }
+        }), 200
 
     except Error as e:
         return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500

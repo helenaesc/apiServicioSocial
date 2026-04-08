@@ -50,6 +50,50 @@ def catalogs():
     if not event_row:
         return jsonify({"error": "No hay temporada visible para estudiantes"}), 404
 
+    socio_sql = """
+        SELECT DISTINCT pa.id, pa.name
+        FROM event_projects ep
+        JOIN project p ON p.id = ep.project_id
+        LEFT JOIN partner pa ON pa.id = p.id_partner
+        WHERE ep.event_id = %s
+          AND ep.status = 'ACTIVE'
+          AND pa.id IS NOT NULL
+        ORDER BY pa.name
+    """
+
+    dias_sql = """
+        SELECT DISTINCT wd.id, wd.name AS description
+        FROM event_projects ep
+        JOIN project p ON p.id = ep.project_id
+        LEFT JOIN week_days wd ON wd.id = p.id_week_days
+        WHERE ep.event_id = %s
+          AND ep.status = 'ACTIVE'
+          AND wd.id IS NOT NULL
+        ORDER BY wd.id
+    """
+
+    modalidad_sql = """
+        SELECT DISTINCT m.id, m.name AS description
+        FROM event_projects ep
+        JOIN project p ON p.id = ep.project_id
+        LEFT JOIN modality m ON m.id = p.id_modality
+        WHERE ep.event_id = %s
+          AND ep.status = 'ACTIVE'
+          AND m.id IS NOT NULL
+        ORDER BY m.id
+    """
+
+    horario_sql = """
+        SELECT DISTINCT sc.id, sc.name AS description
+        FROM event_projects ep
+        JOIN project p ON p.id = ep.project_id
+        LEFT JOIN schedule sc ON sc.id = p.id_schedule
+        WHERE ep.event_id = %s
+          AND ep.status = 'ACTIVE'
+          AND sc.id IS NOT NULL
+        ORDER BY sc.id
+    """
+
     return jsonify({
         "event": {
             "id": event_row["id"],
@@ -58,10 +102,8 @@ def catalogs():
             "display_name": event_row["display_name"],
             "status": event_row["status"],
         },
-        "socio": fetch_all("SELECT id, name FROM partner ORDER BY name"),
-        "dias": fetch_all("SELECT id, name AS description FROM week_days ORDER BY id"),
-        "modalidad": fetch_all("SELECT id, name AS description FROM modality ORDER BY id"),
-        "horario": fetch_all("SELECT id, name AS description FROM schedule ORDER BY id"),
-        "status": fetch_all("SELECT id, name FROM status ORDER BY id"),
-        "partner_group": fetch_all("SELECT id, name FROM partner_group ORDER BY name"),
+        "socio": fetch_all(socio_sql, [event_row["id"]]),
+        "dias": fetch_all(dias_sql, [event_row["id"]]),
+        "modalidad": fetch_all(modalidad_sql, [event_row["id"]]),
+        "horario": fetch_all(horario_sql, [event_row["id"]]),
     })

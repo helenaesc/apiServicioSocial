@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from .routes.views import views_bp
 from .routes.catalogs import catalogs_bp
@@ -23,10 +24,13 @@ from .routes.admin_catalogs import admin_catalogs_bp
 from .routes.admin_project_tokens import admin_project_tokens_bp
 from .routes.admin_project_import_export import admin_project_import_export_bp
 from .routes.admin_registration import admin_registrations_bp
+from .routes.admin_session_auth import admin_session_auth_bp
+from .routes.admin_users_managment import admin_users_managment_bp
 
 def create_app():
     app = Flask(__name__)
     app.config["JSON_AS_ASCII"] = False
+    app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-change-me")
 
     app.register_blueprint(views_bp)
     app.register_blueprint(catalogs_bp)
@@ -52,6 +56,8 @@ def create_app():
     app.register_blueprint(admin_project_tokens_bp)
     app.register_blueprint(admin_project_import_export_bp)
     app.register_blueprint(admin_registrations_bp)
+    app.register_blueprint(admin_session_auth_bp)
+    app.register_blueprint(admin_users_managment_bp)
 
 
     return app

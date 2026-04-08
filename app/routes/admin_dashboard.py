@@ -1,13 +1,30 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from ..database import fetch_all, fetch_one
 from ..authz import require_role, ROLE_ADMIN
 
 admin_dashboard_bp = Blueprint("admin_dashboard", __name__)
 
 
+def _get_current_admin_role(req):
+    """
+    Prioridad:
+    1) sesión real
+    2) compatibilidad temporal con X-ADMIN-KEY
+    """
+    session_role = session.get("admin_user_role")
+    if session_role == ROLE_ADMIN:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN})
+    if legacy_role:
+        return legacy_role
+
+    return None
+
+
 @admin_dashboard_bp.get("/api/admin/dashboard/summary")
 def dashboard_summary():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -63,7 +80,24 @@ def dashboard_summary():
     """
     incident_summary = fetch_one(incidents_sql, [event_id]) or {}
 
+    tokens_sql = """
+        SELECT
+            SUM(CASE WHEN pt.status = 'AVAILABLE' AND (pt.expires_at IS NULL OR pt.expires_at > NOW()) THEN 1 ELSE 0 END) AS available_count,
+            SUM(CASE WHEN pt.status = 'RESERVED' THEN 1 ELSE 0 END) AS reserved_count,
+            SUM(CASE WHEN pt.status = 'USED' THEN 1 ELSE 0 END) AS used_count,
+            SUM(CASE WHEN pt.status = 'REVOKED' THEN 1 ELSE 0 END) AS revoked_count,
+            SUM(CASE WHEN pt.status = 'EXPIRED' THEN 1 ELSE 0 END) AS expired_count,
+            COUNT(*) AS total_tokens
+        FROM project_tokens pt
+        JOIN event_projects ep ON ep.id = pt.event_project_id
+        WHERE ep.event_id = %s
+    """
+    token_summary = fetch_one(tokens_sql, [event_id]) or {}
+
     return jsonify({
+        "performed_by": {
+            "role": role
+        },
         "event": event_row,
         "requests": {
             "requested": int(req_summary.get("requested_count") or 0),
@@ -80,13 +114,21 @@ def dashboard_summary():
             "resolved": int(incident_summary.get("resolved_count") or 0),
             "dismissed": int(incident_summary.get("dismissed_count") or 0),
             "total": int(incident_summary.get("total_incidents") or 0),
+        },
+        "tokens": {
+            "available": int(token_summary.get("available_count") or 0),
+            "reserved": int(token_summary.get("reserved_count") or 0),
+            "used": int(token_summary.get("used_count") or 0),
+            "revoked": int(token_summary.get("revoked_count") or 0),
+            "expired": int(token_summary.get("expired_count") or 0),
+            "total": int(token_summary.get("total_tokens") or 0),
         }
     }), 200
 
 
 @admin_dashboard_bp.get("/api/admin/dashboard/projects")
 def dashboard_projects():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -95,7 +137,15 @@ def dashboard_projects():
     if not event_id:
         return jsonify({"error": "event_id es obligatorio"}), 400
 
-    event_row = fetch_one("SELECT id FROM events WHERE id = %s LIMIT 1", [event_id])
+    event_row = fetch_one(
+        """
+        SELECT id
+        FROM events
+        WHERE id = %s
+        LIMIT 1
+        """,
+        [event_id]
+    )
     if not event_row:
         return jsonify({"error": "Evento no encontrado"}), 404
 
@@ -153,7 +203,7 @@ def dashboard_projects():
 
         FROM event_projects ep
         JOIN project p ON p.id = ep.project_id
-        JOIN partner pa ON pa.id = p.id_partner
+        LEFT JOIN partner pa ON pa.id = p.id_partner
         WHERE ep.event_id = %s
         ORDER BY p.name
     """
@@ -165,10 +215,15 @@ def dashboard_projects():
         registered_count = int(r.get("registered_count") or 0)
         tokens_available = int(r.get("tokens_available") or 0)
 
-        # fallback visual útil
         if int(r.get("tokens_total") or 0) > 0:
             r["cupos_disponibles"] = tokens_available
         else:
             r["cupos_disponibles"] = max(slots_total - registered_count, 0)
 
-    return jsonify(rows), 200
+    return jsonify({
+        "performed_by": {
+            "role": role
+        },
+        "event_id": event_id,
+        "items": rows
+    }), 200

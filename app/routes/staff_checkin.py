@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from mysql.connector import Error
 from ..database import execute_tx
 from ..authz import require_role, ROLE_ADMIN, ROLE_STAFF
@@ -11,9 +11,26 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _get_current_role(req):
+    """
+    Prioridad:
+    1) sesión real
+    2) compatibilidad temporal con X-ADMIN-KEY
+    """
+    session_role = session.get("admin_user_role")
+    if session_role in {ROLE_ADMIN, ROLE_STAFF}:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN, ROLE_STAFF})
+    if legacy_role:
+        return legacy_role
+
+    return None
+
+
 @staff_checkin_bp.post("/api/staff/checkin/scan")
 def scan_pass():
-    role = require_role(request, {ROLE_ADMIN, ROLE_STAFF})
+    role = _get_current_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -106,7 +123,7 @@ def scan_pass():
             "pass_session": {
                 "id": row["pass_session_id"],
                 "request_id": row["request_id"],
-                "status": row["pass_status"],
+                "status": current["status"],
                 "issued_at": row["issued_at"],
                 "expires_at": row["expires_at"],
                 "refresh_count": row["refresh_count"],
@@ -154,7 +171,7 @@ def scan_pass():
 
 @staff_checkin_bp.post("/api/staff/checkin/grant-access")
 def grant_access():
-    role = require_role(request, {ROLE_ADMIN, ROLE_STAFF})
+    role = _get_current_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -226,7 +243,8 @@ def grant_access():
         if row["request_status"] in ("REGISTERED", "CANCELLED", "CLOSED"):
             return {"error": f"La solicitud ya no permite acceso ({row['request_status']})", "status": 409}
 
-        # Marcar QR como usado
+
+# Marcar QR como usado
         cur.execute(
             """
             UPDATE pass_sessions
@@ -249,20 +267,87 @@ def grant_access():
             [row["request_id"]]
         )
 
+        # Traer contexto completo actualizado
+        cur.execute(
+            """
+            SELECT
+                ps.id AS pass_session_id,
+                ps.request_id,
+                ps.status AS pass_status,
+                ps.issued_at,
+                ps.expires_at,
+                ps.used_at,
+                ps.revoked_at,
+                ps.refresh_count,
+                ser.folio,
+                ser.status AS request_status,
+                ser.requested_at,
+                ser.validated_at,
+                ser.access_enabled_at,
+                ser.registered_at,
+                ev.id AS event_id,
+                ev.year,
+                ev.season,
+                ev.display_name,
+                ev.status AS event_status,
+                u.id AS user_id,
+                CONCAT_WS(' ', u.first_name, u.second_name, u.p_last_name, u.m_last_name) AS full_name,
+                u.email,
+                u.secondary_email,
+                u.phone_number,
+                u.enrolment_number,
+                u.degree,
+                u.semester
+            FROM pass_sessions ps
+            JOIN student_event_requests ser ON ser.id = ps.request_id
+            JOIN events ev ON ev.id = ser.event_id
+            JOIN users u ON u.id = ser.id_user
+            WHERE ps.id = %s
+            LIMIT 1
+            """,
+            [pass_session_id]
+        )
+        final_row = cur.fetchone()
+
         return {
             "status": 200,
-            "message": "Acceso habilitado"
+            "message": "Acceso habilitado",
+            "performed_by": {
+                "role": role
+            },
+            "pass_session": {
+                "id": final_row["pass_session_id"],
+                "request_id": final_row["request_id"],
+                "status": final_row["pass_status"],
+                "issued_at": final_row["issued_at"],
+                "expires_at": final_row["expires_at"],
+                "used_at": final_row["used_at"],
+                "revoked_at": final_row["revoked_at"],
+                "refresh_count": final_row["refresh_count"],
+            },
+            "request": {
+                "folio": final_row["folio"],
+                "status": final_row["request_status"],
+                "requested_at": final_row["requested_at"],
+                "validated_at": final_row["validated_at"],
+                "access_enabled_at": final_row["access_enabled_at"],
+                "registered_at": final_row["registered_at"],
+            },
+            "event": {
+                "id": final_row["event_id"],
+                "year": final_row["year"],
+                "season": final_row["season"],
+                "display_name": final_row["display_name"],
+                "status": final_row["event_status"],
+            },
+            "student": {
+                "id": final_row["user_id"],
+                "full_name": final_row["full_name"],
+                "email": final_row["email"],
+                "secondary_email": final_row["secondary_email"],
+                "phone_number": final_row["phone_number"],
+                "enrolment_number": final_row["enrolment_number"],
+                "degree": final_row["degree"],
+                "semester": final_row["semester"],
+            }
         }
-
-    try:
-        result = execute_tx(tx)
-
-        if result.get("status") != 200:
-            return jsonify({"error": result["error"]}), result["status"]
-
-        return jsonify({"message": result["message"]}), 200
-
-    except Error as e:
-        return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500

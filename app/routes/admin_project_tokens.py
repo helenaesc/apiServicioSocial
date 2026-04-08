@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from mysql.connector import Error
 from ..database import execute_tx
 from ..authz import require_role, ROLE_ADMIN
@@ -7,6 +7,23 @@ import secrets
 admin_project_tokens_bp = Blueprint("admin_project_tokens", __name__)
 
 VALID_STATUSES = {"AVAILABLE", "USED", "REVOKED", "EXPIRED", "RESERVED"}
+
+
+def _get_current_admin_role(req):
+    """
+    Prioridad:
+    1) sesión real
+    2) compatibilidad temporal con X-ADMIN-KEY
+    """
+    session_role = session.get("admin_user_role")
+    if session_role == ROLE_ADMIN:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN})
+    if legacy_role:
+        return legacy_role
+
+    return None
 
 
 def _gen_token(length=10):
@@ -25,7 +42,7 @@ def _get_ttl_hours(cur) -> int:
 
 @admin_project_tokens_bp.post("/api/admin/event-projects/<int:event_project_id>/tokens")
 def generate_project_tokens(event_project_id: int):
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -155,6 +172,10 @@ def generate_project_tokens(event_project_id: int):
         return {
             "status": 201,
             "message": "Tokens generados",
+            "performed_by": {
+                "role": role
+            },
+            "event_project_id": event_project_id,
             "created": len(tokens_created),
             "ttl_hours": ttl_hours,
             "tokens": tokens_created
@@ -166,12 +187,7 @@ def generate_project_tokens(event_project_id: int):
         if result.get("status") != 201:
             return jsonify({"error": result["error"]}), result["status"]
 
-        return jsonify({
-            "message": result["message"],
-            "created": result["created"],
-            "ttl_hours": result["ttl_hours"],
-            "tokens": result["tokens"]
-        }), 201
+        return jsonify(result), 201
 
     except Error as e:
         return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500
@@ -181,7 +197,7 @@ def generate_project_tokens(event_project_id: int):
 
 @admin_project_tokens_bp.get("/api/admin/event-projects/<int:event_project_id>/tokens")
 def list_project_tokens(event_project_id: int):
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -251,6 +267,10 @@ def list_project_tokens(event_project_id: int):
 
         return {
             "status": 200,
+            "performed_by": {
+                "role": role
+            },
+            "event_project_id": event_project_id,
             "summary": {
                 "available": int(summary.get("available_count") or 0),
                 "reserved": int(summary.get("reserved_count") or 0),
@@ -264,10 +284,7 @@ def list_project_tokens(event_project_id: int):
 
     try:
         result = execute_tx(tx)
-        return jsonify({
-            "summary": result["summary"],
-            "items": result["items"]
-        }), 200
+        return jsonify(result), 200
     except Error as e:
         return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500
     except Exception as e:
@@ -276,7 +293,7 @@ def list_project_tokens(event_project_id: int):
 
 @admin_project_tokens_bp.post("/api/admin/project-tokens/revoke")
 def revoke_project_token():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -302,7 +319,7 @@ def revoke_project_token():
 
         cur.execute(
             """
-            SELECT id, status
+            SELECT id, event_project_id, status
             FROM project_tokens
             WHERE token_value = %s
             LIMIT 1
@@ -319,10 +336,26 @@ def revoke_project_token():
             return {"error": "No se puede revocar: token ya fue usado", "status": 409}
 
         if row["status"] == "REVOKED":
-            return {"message": "Token ya estaba revocado", "status": 200}
+            return {
+                "status": 200,
+                "message": "Token ya estaba revocado",
+                "performed_by": {
+                    "role": role
+                },
+                "event_project_id": row["event_project_id"],
+                "token": tok
+            }
 
         if row["status"] == "EXPIRED":
-            return {"message": "Token ya estaba expirado", "status": 200}
+            return {
+                "status": 200,
+                "message": "Token ya estaba expirado",
+                "performed_by": {
+                    "role": role
+                },
+                "event_project_id": row["event_project_id"],
+                "token": tok
+            }
 
         cur.execute(
             """
@@ -335,7 +368,15 @@ def revoke_project_token():
             [reason, row["id"]]
         )
 
-        return {"message": "Token revocado", "status": 200}
+        return {
+            "status": 200,
+            "message": "Token revocado",
+            "performed_by": {
+                "role": role
+            },
+            "event_project_id": row["event_project_id"],
+            "token": tok
+        }
 
     try:
         result = execute_tx(tx)
@@ -343,7 +384,7 @@ def revoke_project_token():
         if result["status"] != 200:
             return jsonify({"error": result["error"]}), result["status"]
 
-        return jsonify({"message": result["message"]}), 200
+        return jsonify(result), 200
 
     except Error as e:
         return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500

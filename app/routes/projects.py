@@ -135,12 +135,12 @@ def list_projects():
             ) AS tokens_disponibles
 
         FROM event_projects ep
-        JOIN events ev ON ev.id = ep.event_id
-        JOIN project p ON p.id = ep.project_id
-        JOIN partner pa ON pa.id = p.id_partner
-        JOIN modality m ON m.id = p.id_modality
-        JOIN week_days wd ON wd.id = p.id_week_days
-        JOIN schedule sc ON sc.id = p.id_schedule
+        LEFT JOIN events ev ON ev.id = ep.event_id
+        LEFT JOIN project p ON p.id = ep.project_id
+        LEFT JOIN partner pa ON pa.id = p.id_partner
+        LEFT JOIN modality m ON m.id = p.id_modality
+        LEFT JOIN week_days wd ON wd.id = p.id_week_days
+        LEFT JOIN schedule sc ON sc.id = p.id_schedule
         WHERE {where_sql}
         ORDER BY p.name
     """
@@ -235,12 +235,12 @@ def get_project(project_id: int):
             ) AS tokens_disponibles
 
         FROM event_projects ep
-        JOIN events ev ON ev.id = ep.event_id
-        JOIN project p ON p.id = ep.project_id
-        JOIN partner pa ON pa.id = p.id_partner
-        JOIN modality m ON m.id = p.id_modality
-        JOIN week_days wd ON wd.id = p.id_week_days
-        JOIN schedule sc ON sc.id = p.id_schedule
+        LEFT JOIN events ev ON ev.id = ep.event_id
+        LEFT JOIN project p ON p.id = ep.project_id
+        LEFT JOIN partner pa ON pa.id = p.id_partner
+        LEFT JOIN modality m ON m.id = p.id_modality
+        LEFT JOIN week_days wd ON wd.id = p.id_week_days
+        LEFT JOIN schedule sc ON sc.id = p.id_schedule
         WHERE ep.event_id = %s
           AND ep.status = 'ACTIVE'
           AND p.id = %s

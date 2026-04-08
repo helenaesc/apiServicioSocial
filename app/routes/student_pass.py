@@ -158,6 +158,7 @@ def get_student_pass():
             "degree": row["degree"],
             "semester": row["semester"],
         },
+        "pass_session": active_session,
         "active_session": active_session
     }), 200
 
