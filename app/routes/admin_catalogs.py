@@ -1,12 +1,24 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from ..database import fetch_all
 from ..authz import require_role, ROLE_ADMIN
 
 admin_catalogs_bp = Blueprint("admin_catalogs", __name__)
 
+def _get_current_admin_role(req):
+    session_role = session.get("admin_user_role")
+    if session_role == ROLE_ADMIN:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN})
+    if legacy_role:
+        return legacy_role
+
+    return None
+
+
 @admin_catalogs_bp.get("/api/admin/catalogs")
-def admin_catalogs():
-    role = require_role(request, {ROLE_ADMIN})
+def get_admin_catalogs():
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 

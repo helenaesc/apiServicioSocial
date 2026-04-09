@@ -25,12 +25,18 @@ from .routes.admin_project_tokens import admin_project_tokens_bp
 from .routes.admin_project_import_export import admin_project_import_export_bp
 from .routes.admin_registration import admin_registrations_bp
 from .routes.admin_session_auth import admin_session_auth_bp
-from .routes.admin_users_managment import admin_users_managment_bp
+from .routes.admin_users_management import admin_users_management_bp
+from .routes.admin_registration_evidence import admin_registration_evidence_bp
+from .routes.admin_event_export import admin_event_export_bp
 
 def create_app():
     app = Flask(__name__)
-    app.config["JSON_AS_ASCII"] = False
+
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-secret-change-me")
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SECURE"] = False  
+
 
     app.register_blueprint(views_bp)
     app.register_blueprint(catalogs_bp)
@@ -57,7 +63,9 @@ def create_app():
     app.register_blueprint(admin_project_import_export_bp)
     app.register_blueprint(admin_registrations_bp)
     app.register_blueprint(admin_session_auth_bp)
-    app.register_blueprint(admin_users_managment_bp)
+    app.register_blueprint(admin_users_management_bp)
+    app.register_blueprint(admin_registration_evidence_bp)
+    app.register_blueprint(admin_event_export_bp)
 
 
     return app

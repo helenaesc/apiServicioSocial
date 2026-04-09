@@ -8,6 +8,17 @@ admin_users_management_bp = Blueprint("admin_users_management", __name__)
 
 VALID_STATUSES = {"ACTIVE", "DISABLED"}
 
+def _get_current_admin_role(req):
+    session_role = session.get("admin_user_role")
+    if session_role == ROLE_ADMIN:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN})
+    if legacy_role:
+        return legacy_role
+
+    return None
+
 
 def _get_current_admin_role(req):
     """

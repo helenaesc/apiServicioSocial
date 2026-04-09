@@ -26,6 +26,10 @@ def _get_current_admin_role(req):
     return None
 
 
+def _get_current_admin_user_id():
+    return session.get("admin_user_id")
+
+
 def _gen_token(length=10):
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     return "".join(secrets.choice(alphabet) for _ in range(length))
@@ -61,7 +65,6 @@ def generate_project_tokens(event_project_id: int):
         return jsonify({"error": "length debe estar entre 6 y 20"}), 400
 
     def tx(conn, cur):
-        # bloquear proyecto de temporada
         cur.execute(
             """
             SELECT id, slots_total, status
@@ -86,7 +89,6 @@ def generate_project_tokens(event_project_id: int):
 
         ttl_hours = _get_ttl_hours(cur)
 
-        # expirar disponibles vencidos
         cur.execute(
             """
             UPDATE project_tokens
@@ -99,7 +101,6 @@ def generate_project_tokens(event_project_id: int):
             [event_project_id]
         )
 
-        # contar usados
         cur.execute(
             """
             SELECT COUNT(*) AS c
@@ -111,7 +112,6 @@ def generate_project_tokens(event_project_id: int):
         )
         used_count = int(cur.fetchone()["c"])
 
-        # contar abiertos (AVAILABLE + RESERVED)
         cur.execute(
             """
             SELECT COUNT(*) AS c
@@ -150,12 +150,7 @@ def generate_project_tokens(event_project_id: int):
                     """
                     INSERT INTO project_tokens
                     (event_project_id, token_value, status, expires_at)
-                    VALUES (
-                        %s,
-                        %s,
-                        'AVAILABLE',
-                        DATE_ADD(NOW(), INTERVAL %s HOUR)
-                    )
+                    VALUES (%s, %s, 'AVAILABLE', DATE_ADD(NOW(), INTERVAL %s HOUR))
                     """,
                     [event_project_id, tok, ttl_hours]
                 )
@@ -207,7 +202,6 @@ def list_project_tokens(event_project_id: int):
         return jsonify({"error": "status inválido (AVAILABLE/USED/REVOKED/EXPIRED/RESERVED/ALL)"}), 400
 
     def tx(conn, cur):
-        # expirar primero
         cur.execute(
             """
             UPDATE project_tokens
@@ -239,6 +233,7 @@ def list_project_tokens(event_project_id: int):
                 pt.used_at,
                 pt.revoked_at,
                 pt.revoke_reason,
+                pt.revoked_by_admin_user_id,
                 pt.expires_at,
                 pt.created_at
             FROM project_tokens pt
@@ -297,6 +292,8 @@ def revoke_project_token():
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
+    admin_user_id = _get_current_admin_user_id()
+
     payload = request.get_json(silent=True) or {}
     tok = (payload.get("token") or "").strip().upper()
     reason = (payload.get("reason") or "").strip() or None
@@ -340,7 +337,8 @@ def revoke_project_token():
                 "status": 200,
                 "message": "Token ya estaba revocado",
                 "performed_by": {
-                    "role": role
+                    "role": role,
+                    "admin_user_id": admin_user_id
                 },
                 "event_project_id": row["event_project_id"],
                 "token": tok
@@ -351,7 +349,8 @@ def revoke_project_token():
                 "status": 200,
                 "message": "Token ya estaba expirado",
                 "performed_by": {
-                    "role": role
+                    "role": role,
+                    "admin_user_id": admin_user_id
                 },
                 "event_project_id": row["event_project_id"],
                 "token": tok
@@ -362,17 +361,19 @@ def revoke_project_token():
             UPDATE project_tokens
             SET status = 'REVOKED',
                 revoked_at = NOW(),
-                revoke_reason = %s
+                revoke_reason = %s,
+                revoked_by_admin_user_id = %s
             WHERE id = %s
             """,
-            [reason, row["id"]]
+            [reason, admin_user_id, row["id"]]
         )
 
         return {
             "status": 200,
             "message": "Token revocado",
             "performed_by": {
-                "role": role
+                "role": role,
+                "admin_user_id": admin_user_id
             },
             "event_project_id": row["event_project_id"],
             "token": tok

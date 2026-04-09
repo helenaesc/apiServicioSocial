@@ -11,17 +11,19 @@ ADMIN_HTML = r"""
       --bg: #F4F7FA;
       --panel: #FFFFFF;
       --panel-soft: #FAFBFD;
-      --text: #1F2937;
+      --text: #111827;
       --text-soft: #6B7280;
       --muted: #94A3B8;
       --line: #E5E7EB;
       --line-strong: #D1D5DB;
 
+      --blue: #3B82F6;
       --orange: #FF8C42;
       --green: #43AA8B;
       --purple: #7D5BA6;
       --pink: #F25C78;
 
+      --blue-soft: #EFF6FF;
       --orange-soft: #FFF3EA;
       --green-soft: #ECFDF7;
       --purple-soft: #F5F0FB;
@@ -35,8 +37,8 @@ ADMIN_HTML = r"""
       --r-xl: 22px;
       --r-pill: 999px;
 
-      --module-accent: var(--purple);
-      --module-accent-soft: var(--purple-soft);
+      --module-accent: var(--blue);
+      --module-accent-soft: var(--blue-soft);
     }
 
     * { box-sizing: border-box; }
@@ -139,7 +141,7 @@ ADMIN_HTML = r"""
     .pill-orange { background: var(--orange-soft); color: var(--orange); }
     .pill-green  { background: var(--green-soft); color: var(--green); }
     .pill-pink   { background: var(--pink-soft); color: var(--pink); }
-    .pill-neutral { background: #F3F4F6; color: #374151; }
+    .pill-blue   { background: var(--blue-soft); color: var(--blue); }
 
     .nav-list {
       display: grid;
@@ -281,7 +283,7 @@ ADMIN_HTML = r"""
     }
 
     .login-wrap {
-      max-width: 760px;
+      max-width: 820px;
       margin: 40px auto;
       padding: 0 18px;
     }
@@ -320,13 +322,8 @@ ADMIN_HTML = r"""
       border-color: #FFD4DD;
     }
 
-    .module {
-      display: none;
-    }
-
-    .module.active {
-      display: block;
-    }
+    .module { display: none; }
+    .module.active { display: block; }
 
     .module-grid {
       display: grid;
@@ -351,6 +348,7 @@ ADMIN_HTML = r"""
     h2, h3 {
       margin: 0;
       line-height: 1.2;
+      color: var(--text);
     }
 
     h2 {
@@ -438,7 +436,8 @@ ADMIN_HTML = r"""
       margin-top: 16px;
     }
 
-    .actions > button {
+    .actions > button,
+    .actions > a {
       width: auto;
       min-width: 150px;
     }
@@ -462,10 +461,10 @@ ADMIN_HTML = r"""
     }
 
     .btn-primary {
-      background: var(--module-accent);
+      background: var(--blue);
       color: white;
       border: none;
-      box-shadow: 0 8px 18px color-mix(in srgb, var(--module-accent) 22%, white);
+      box-shadow: 0 8px 18px rgba(59,130,246,0.20);
     }
 
     .btn-secondary {
@@ -497,6 +496,7 @@ ADMIN_HTML = r"""
     .badge-warn { background: var(--orange-soft); color: var(--orange); }
     .badge-danger { background: var(--pink-soft); color: var(--pink); }
     .badge-purple { background: var(--purple-soft); color: var(--purple); }
+    .badge-blue { background: var(--blue-soft); color: var(--blue); }
     .badge-neutral { background: #F3F4F6; color: #374151; }
 
     .stats-grid {
@@ -517,6 +517,7 @@ ADMIN_HTML = r"""
     .kpi-card--orange { background: linear-gradient(135deg, #FF8C42 0%, #FFAA6E 100%); }
     .kpi-card--purple { background: linear-gradient(135deg, #7D5BA6 0%, #9B79C6 100%); }
     .kpi-card--pink { background: linear-gradient(135deg, #F25C78 0%, #FF7D96 100%); }
+    .kpi-card--blue { background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); }
 
     .kpi-label {
       font-size: .78rem;
@@ -655,6 +656,40 @@ ADMIN_HTML = r"""
       display: inline-block;
     }
 
+    .table-wrap {
+      overflow: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 840px;
+      background: white;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: .9rem;
+    }
+
+    th {
+      background: #F8FAFC;
+      color: var(--text);
+      font-weight: 900;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
     .xp-wrapper {
       display: flex;
       flex-direction: column;
@@ -683,7 +718,7 @@ ADMIN_HTML = r"""
       height: 100%;
       width: 0%;
       border-radius: 999px;
-      background: linear-gradient(90deg, var(--purple) 0%, #9B79C6 100%);
+      background: linear-gradient(90deg, var(--blue) 0%, #60A5FA 100%);
       transition: width .35s ease;
     }
 
@@ -715,6 +750,25 @@ ADMIN_HTML = r"""
       font-size: .9rem;
       max-width: 620px;
       margin: 0 auto;
+    }
+
+    .evidence-box {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .json-box {
+      background: #0F172A;
+      color: #E2E8F0;
+      border-radius: var(--r-lg);
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: .84rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: auto;
     }
 
     @media (max-width: 1280px) {
@@ -752,7 +806,8 @@ ADMIN_HTML = r"""
         align-items: stretch;
       }
 
-      .actions > button {
+      .actions > button,
+      .actions > a {
         width: 100%;
       }
     }
@@ -760,27 +815,31 @@ ADMIN_HTML = r"""
 </head>
 <body>
   <div id="loginWrap" class="login-wrap">
-    <div id="msg" class="msg"></div>
+    <div id="msgLogin" class="msg"></div>
 
-    <div id="loginCard" class="login-card">
-      <h2>Acceso Administrador / Staff</h2>
+    <div class="login-card">
+      <h2>Acceso administrativo</h2>
       <div class="muted">
-        Ingresa tu clave para abrir el panel. Staff verá solo herramientas operativas.
+        Inicia sesión con tu cuenta ADMIN o STAFF. El panel usará sesión real del servidor.
       </div>
 
-      <div class="form-grid" style="max-width:540px;">
+      <div class="form-grid" style="max-width:640px;">
         <div class="field">
-          <label>Clave</label>
-          <input id="adminKey" type="password" placeholder="Ingresa clave ADMIN o STAFF">
+          <label>Correo</label>
+          <input id="loginEmail" type="email" placeholder="admin@evento.com">
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <input id="loginPassword" type="password" placeholder="Tu contraseña">
         </div>
       </div>
 
       <div class="actions">
-        <button type="button" class="btn-primary" onclick="validateAndSaveKey()">Entrar</button>
-        <button type="button" class="btn-secondary" onclick="clearKey(false)">Limpiar</button>
+        <button type="button" class="btn-primary" onclick="loginAdmin()">Entrar</button>
+        <button type="button" class="btn-secondary" onclick="clearLoginFields()">Limpiar</button>
       </div>
 
-      <div class="small" id="roleBadge" style="margin-top:12px;">Sesión actual: —</div>
+      <div class="small" id="loginHint" style="margin-top:12px;">Sesión actual: no iniciada</div>
     </div>
   </div>
 
@@ -790,12 +849,10 @@ ADMIN_HTML = r"""
         <div class="brand-box">
           <div class="brand-title">Panel de Eventos Grandes</div>
           <div class="brand-subtitle">
-            Operación clara, rápida y visual para temporadas, accesos y seguimiento.
+            Operación clara, trazable y con evidencia legal verificable.
           </div>
 
-          <div class="role-box" id="sidebarRoleBox">
-            Rol actual: —
-          </div>
+          <div class="role-box" id="sidebarRoleBox">Rol actual: —</div>
         </div>
 
         <div id="adminNavWrap">
@@ -805,9 +862,9 @@ ADMIN_HTML = r"""
               <span class="nav-group-pill pill-purple">Morado</span>
             </div>
             <div class="nav-list">
-              <button class="nav-item active" data-module="summaryModule" onclick="showModule('summaryModule', this)">Dashboard</button>
-              <button class="nav-item" data-module="eventsModule" onclick="showModule('eventsModule', this)">Temporadas</button>
-              <button class="nav-item" data-module="masterProjectsModule" onclick="showModule('masterProjectsModule', this)">Proyectos Base</button>
+              <button class="nav-item active" data-module="summaryModule" onclick="showModule('summaryModule')">Dashboard</button>
+              <button class="nav-item" data-module="eventsModule" onclick="showModule('eventsModule')">Temporadas</button>
+              <button class="nav-item" data-module="masterProjectsModule" onclick="showModule('masterProjectsModule')">Proyectos Base</button>
             </div>
           </div>
 
@@ -820,10 +877,10 @@ ADMIN_HTML = r"""
               </div>
             </div>
             <div class="nav-list">
-              <button class="nav-item" data-module="eventProjectsModule" onclick="showModule('eventProjectsModule', this)">Proyectos Activos</button>
-              <button class="nav-item" data-module="tokensModule" onclick="showModule('tokensModule', this)">Generar Tokens</button>
-              <button class="nav-item" data-module="registrationsModule" onclick="showModule('registrationsModule', this)">Inscritos</button>
-              <button class="nav-item" data-module="checkinModule" onclick="showModule('checkinModule', this)">Check-in (QR)</button>
+              <button class="nav-item" data-module="eventProjectsModule" onclick="showModule('eventProjectsModule')">Proyectos Activos</button>
+              <button class="nav-item" data-module="tokensModule" onclick="showModule('tokensModule')">Tokens</button>
+              <button class="nav-item" data-module="registrationsModule" onclick="showModule('registrationsModule')">Inscritos</button>
+              <button class="nav-item" data-module="checkinModule" onclick="showModule('checkinModule')">Check-in (QR)</button>
             </div>
           </div>
 
@@ -833,8 +890,11 @@ ADMIN_HTML = r"""
               <span class="nav-group-pill pill-pink">Rosa</span>
             </div>
             <div class="nav-list">
-              <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">Incidentes</button>
-              <button class="nav-item" data-module="importExportModule" onclick="showModule('importExportModule', this)">Carga Masiva</button>
+              <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule')">Incidentes</button>
+              <button class="nav-item" data-module="staffModule" onclick="showModule('staffModule')">Staff</button>
+              <button class="nav-item" data-module="evidenceModule" onclick="showModule('evidenceModule')">Evidencia Legal</button>
+              <button class="nav-item" data-module="importExportModule" onclick="showModule('importExportModule')">Importar / Exportar</button>
+              <button class="nav-item" data-module="exportModule" onclick="showModule('exportModule')">Reporte por Temporada</button>
             </div>
           </div>
         </div>
@@ -846,8 +906,8 @@ ADMIN_HTML = r"""
               <span class="nav-group-pill pill-green">Verde</span>
             </div>
             <div class="nav-list">
-              <button class="nav-item active" data-module="checkinModule" onclick="showModule('checkinModule', this)">Check-in (QR)</button>
-              <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule', this)">Incidentes</button>
+              <button class="nav-item active" data-module="checkinModule" onclick="showModule('checkinModule')">Check-in (QR)</button>
+              <button class="nav-item" data-module="incidentsModule" onclick="showModule('incidentsModule')">Incidentes</button>
             </div>
           </div>
         </div>
@@ -855,7 +915,7 @@ ADMIN_HTML = r"""
         <div class="sidebar-actions">
           <a href="/">Vista Alumno</a>
           <a href="/health">Health</a>
-          <button type="button" onclick="logout()">Cerrar sesión</button>
+          <button type="button" onclick="logoutAdmin()">Cerrar sesión</button>
         </div>
       </div>
     </aside>
@@ -871,10 +931,9 @@ ADMIN_HTML = r"""
               <strong id="moduleTitle">Dashboard</strong>
               <span id="moduleSubtitle">Visión ejecutiva del evento.</span>
             </div>
-
             <div class="screen-badges">
-              <span class="chip chip-accent" id="headerAccentBadge">Módulo activo</span>
-              <span class="chip chip-dark" id="headerRoleBadge">Panel operativo</span>
+              <span class="chip chip-accent" id="headerAccentBadge">Dashboard</span>
+              <span class="chip chip-dark" id="headerRoleBadge">Panel</span>
             </div>
           </div>
         </div>
@@ -888,7 +947,7 @@ ADMIN_HTML = r"""
               <span class="screen-chip">Resumen general</span>
             </div>
             <div class="muted">
-              KPI ejecutivos y avance por proyecto para la temporada seleccionada.
+              KPI ejecutivos, proyectos, tokens, incidentes y estado real de la temporada.
             </div>
 
             <div class="form-grid">
@@ -904,13 +963,7 @@ ADMIN_HTML = r"""
             </div>
 
             <div id="dashboardSummary" class="stats-grid"></div>
-
-            <div id="dashboardProjectsBody" class="record-grid">
-              <div class="record-card">
-                <div class="record-card__title">Selecciona una temporada</div>
-                <div class="record-card__sub">Carga el dashboard para ver proyectos, ocupación y tokens.</div>
-              </div>
-            </div>
+            <div id="dashboardProjectsBody" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -922,16 +975,12 @@ ADMIN_HTML = r"""
               <h2>Crear temporada</h2>
               <span class="screen-chip">Configuración</span>
             </div>
-            <div class="muted">
-              Crea una temporada y define sus ventanas operativas.
-            </div>
 
             <div class="form-grid">
               <div class="field">
                 <label>Año</label>
                 <input id="eventYear" type="number" min="2020" max="2100" placeholder="Ej: 2026">
               </div>
-
               <div class="field">
                 <label>Temporada</label>
                 <select id="eventSeason">
@@ -939,18 +988,16 @@ ADMIN_HTML = r"""
                   <option value="INVIERNO">Invierno</option>
                 </select>
               </div>
-
               <div class="field">
                 <label>Estado</label>
                 <select id="eventStatus">
-                  <option value="VISIBLE">Visible</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="ONSITE">Onsite</option>
-                  <option value="CLOSED">Closed</option>
-                  <option value="ARCHIVED">Archived</option>
+                  <option value="VISIBLE">VISIBLE</option>
+                  <option value="DRAFT">DRAFT</option>
+                  <option value="ONSITE">ONSITE</option>
+                  <option value="CLOSED">CLOSED</option>
+                  <option value="ARCHIVED">ARCHIVED</option>
                 </select>
               </div>
-
               <div class="field">
                 <label>Visible para alumnos</label>
                 <select id="eventVisible">
@@ -958,22 +1005,18 @@ ADMIN_HTML = r"""
                   <option value="false">No</option>
                 </select>
               </div>
-
               <div class="field">
                 <label>Abre catálogo</label>
                 <input id="eventCatalogOpenAt" type="datetime-local">
               </div>
-
               <div class="field">
                 <label>Inicio presencial</label>
                 <input id="eventOnsiteStartAt" type="datetime-local">
               </div>
-
               <div class="field">
                 <label>Fin presencial</label>
                 <input id="eventOnsiteEndAt" type="datetime-local">
               </div>
-
               <div class="field">
                 <label>Cierre registro</label>
                 <input id="eventRegistrationCloseAt" type="datetime-local">
@@ -982,17 +1025,13 @@ ADMIN_HTML = r"""
 
             <div class="actions">
               <button type="button" class="btn-primary" onclick="createAdminEvent()">Crear temporada</button>
-              <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar</button>
             </div>
           </div>
 
           <div class="card span-6">
             <div class="module-card-title">
               <h2>Operar temporada</h2>
-              <span class="screen-chip">Edición rápida</span>
-            </div>
-            <div class="muted">
-              Ajusta estado y visibilidad de una temporada existente.
+              <span class="screen-chip">Edición</span>
             </div>
 
             <div class="form-grid">
@@ -1000,19 +1039,17 @@ ADMIN_HTML = r"""
                 <label>Temporada seleccionada</label>
                 <select id="eventSelector"></select>
               </div>
-
               <div class="field">
                 <label>Nuevo estado</label>
                 <select id="eventStatusUpdate">
                   <option value="">Sin cambio</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="VISIBLE">Visible</option>
-                  <option value="ONSITE">Onsite</option>
-                  <option value="CLOSED">Closed</option>
-                  <option value="ARCHIVED">Archived</option>
+                  <option value="DRAFT">DRAFT</option>
+                  <option value="VISIBLE">VISIBLE</option>
+                  <option value="ONSITE">ONSITE</option>
+                  <option value="CLOSED">CLOSED</option>
+                  <option value="ARCHIVED">ARCHIVED</option>
                 </select>
               </div>
-
               <div class="field">
                 <label>Visible para alumnos</label>
                 <select id="eventVisibleUpdate">
@@ -1045,11 +1082,8 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>Proyectos Base</h2>
+              <h2>Crear proyecto base</h2>
               <span class="screen-chip">Catálogo maestro</span>
-            </div>
-            <div class="muted">
-              Aquí vive la ficha base de cada proyecto.
             </div>
 
             <div class="form-grid">
@@ -1057,72 +1091,58 @@ ADMIN_HTML = r"""
                 <label>Nombre general / organización</label>
                 <input id="mp_general_name" placeholder="Ej: Adidas, Tigres, Nike">
               </div>
-
               <div class="field">
                 <label>Nombre del proyecto</label>
-                <input id="mp_name" placeholder="Ej: Análisis del equipo para mejorar el rendimiento">
+                <input id="mp_name" placeholder="Ej: Análisis del equipo">
               </div>
-
               <div class="field">
                 <label>Carrera preferida</label>
                 <select id="mp_partner"></select>
               </div>
-
               <div class="field">
                 <label>Modalidad</label>
                 <select id="mp_modality"></select>
               </div>
-
               <div class="field">
                 <label>Días</label>
                 <select id="mp_week_days"></select>
               </div>
-
               <div class="field">
                 <label>Horario</label>
                 <select id="mp_schedule"></select>
               </div>
-
               <div class="field">
                 <label>Cupo base</label>
                 <input id="mp_slots" type="number" min="0" placeholder="Ej: 2">
               </div>
-
               <div class="field">
                 <label>Detalle de horario</label>
                 <input id="mp_schedule_description" placeholder="Ej: 10:00 a 18:00">
               </div>
-
               <div class="field">
-                <label>Responsables / líderes</label>
+                <label>Responsables</label>
                 <input id="mp_team_owners" placeholder="Ej: Equipo de análisis">
               </div>
-
               <div class="field">
                 <label>Duración</label>
                 <input id="mp_duration" placeholder="Ej: 5 semanas">
               </div>
-
               <div class="field">
                 <label>Población</label>
                 <input id="mp_audience" placeholder="Ej: Jóvenes">
               </div>
-
               <div class="field">
                 <label>Horas máximas</label>
                 <input id="mp_max_hours" type="number" min="0" placeholder="Ej: 100">
               </div>
-
               <div class="field">
                 <label>Lugar de trabajo</label>
                 <input id="mp_location" placeholder="Dirección o lugar">
               </div>
-
               <div class="field">
                 <label>Clave externa</label>
                 <input id="mp_clave" placeholder="Clave usada fuera del evento">
               </div>
-
               <div class="field">
                 <label>Competencias</label>
                 <input id="mp_competencies" placeholder="Ej: creatividad, análisis">
@@ -1131,17 +1151,17 @@ ADMIN_HTML = r"""
 
             <div class="field" style="margin-top:12px;">
               <label>Objetivos</label>
-              <textarea id="mp_objectives" placeholder="Objetivos del proyecto"></textarea>
+              <textarea id="mp_objectives"></textarea>
             </div>
 
             <div class="field" style="margin-top:12px;">
               <label>Actividades</label>
-              <textarea id="mp_activities" placeholder="Actividades del proyecto"></textarea>
+              <textarea id="mp_activities"></textarea>
             </div>
 
             <div class="field" style="margin-top:12px;">
               <label>Comentarios</label>
-              <textarea id="mp_comments" placeholder="Comentarios importantes"></textarea>
+              <textarea id="mp_comments"></textarea>
             </div>
 
             <div class="actions">
@@ -1159,7 +1179,7 @@ ADMIN_HTML = r"""
             <div class="form-grid">
               <div class="field">
                 <label>Buscar proyecto base</label>
-                <input id="masterProjectsSearch" placeholder="Buscar por nombre, organización, líder..." oninput="loadMasterProjects()">
+                <input id="masterProjectsSearch" placeholder="Buscar..." oninput="loadMasterProjects()">
               </div>
             </div>
 
@@ -1172,11 +1192,8 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>Proyectos Activos</h2>
+              <h2>Proyectos activos</h2>
               <span class="screen-chip">Operación</span>
-            </div>
-            <div class="muted">
-              Activa un proyecto base dentro de una temporada y define su cupo.
             </div>
 
             <div class="form-grid">
@@ -1184,12 +1201,10 @@ ADMIN_HTML = r"""
                 <label>Temporada</label>
                 <select id="eventProjectEventSelector"></select>
               </div>
-
               <div class="field">
                 <label>Proyecto base</label>
                 <select id="projectSelector"></select>
               </div>
-
               <div class="field">
                 <label>Slots / cupo total</label>
                 <input id="slotsInput" type="number" min="0" placeholder="Ej: 10">
@@ -1210,11 +1225,8 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-6">
             <div class="module-card-title">
-              <h2>Generar Tokens</h2>
+              <h2>Generar tokens</h2>
               <span class="screen-chip">Acceso</span>
-            </div>
-            <div class="muted">
-              Genera tokens para proyectos activos y controla su vigencia.
             </div>
 
             <div class="form-grid">
@@ -1222,31 +1234,18 @@ ADMIN_HTML = r"""
                 <label>Proyecto en temporada</label>
                 <select id="tokensEventProjectSelector"></select>
               </div>
-
               <div class="field">
-                <label>Cantidad a generar</label>
+                <label>Cantidad</label>
                 <input id="tokensCount" type="number" min="1" max="200" value="5">
               </div>
-
               <div class="field">
-                <label>Longitud del token</label>
+                <label>Longitud</label>
                 <input id="tokensLength" type="number" min="6" max="20" value="8">
-              </div>
-
-              <div class="field">
-                <label>TTL global (horas)</label>
-                <input id="ttl_hours" type="number" min="1" max="168" value="24">
               </div>
             </div>
 
             <div class="actions">
               <button type="button" class="btn-primary" onclick="generateProjectTokens()">Generar tokens</button>
-              <button type="button" class="btn-secondary" onclick="loadTokenTTL()">Recargar TTL</button>
-              <button type="button" class="btn-secondary" onclick="saveTokenTTL()">Guardar TTL</button>
-            </div>
-
-            <div class="small" style="margin-top:10px;">
-              Valor actual: <span id="ttl_current" class="badge badge-warn">—</span>
             </div>
 
             <div id="tokensGenerationResult" class="record-grid"></div>
@@ -1257,16 +1256,12 @@ ADMIN_HTML = r"""
               <h2>Revocar token</h2>
               <span class="screen-chip">Acción crítica</span>
             </div>
-            <div class="muted">
-              Revoca un token cuando haya error, conflicto o corrección operativa.
-            </div>
 
             <div class="form-grid">
               <div class="field">
                 <label>Token</label>
                 <input id="revokeTokenValue" placeholder="Ej: A7K9P3Q2">
               </div>
-
               <div class="field">
                 <label>Motivo</label>
                 <input id="revokeTokenReason" placeholder="Ej: Error del líder">
@@ -1286,14 +1281,14 @@ ADMIN_HTML = r"""
 
             <div class="form-grid">
               <div class="field">
-                <label>Filtrar estado de tokens</label>
+                <label>Estado</label>
                 <select id="tokensStatusFilter" onchange="loadProjectTokens()">
                   <option value="ALL">Todos</option>
-                  <option value="AVAILABLE">Available</option>
-                  <option value="RESERVED">Reserved</option>
-                  <option value="USED">Used</option>
-                  <option value="REVOKED">Revoked</option>
-                  <option value="EXPIRED">Expired</option>
+                  <option value="AVAILABLE">AVAILABLE</option>
+                  <option value="RESERVED">RESERVED</option>
+                  <option value="USED">USED</option>
+                  <option value="REVOKED">REVOKED</option>
+                  <option value="EXPIRED">EXPIRED</option>
                 </select>
               </div>
             </div>
@@ -1311,9 +1306,6 @@ ADMIN_HTML = r"""
               <h2>Inscritos</h2>
               <span class="screen-chip">Cierre final</span>
             </div>
-            <div class="muted">
-              Consulta qué alumno cerró contrato, en qué proyecto y con qué token.
-            </div>
 
             <div class="form-grid">
               <div class="field">
@@ -1326,12 +1318,7 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-primary" onclick="loadRegistrations()">Cargar inscripciones</button>
             </div>
 
-            <div id="registrationsCards" class="record-grid">
-              <div class="record-card">
-                <div class="record-card__title">Selecciona una temporada</div>
-                <div class="record-card__sub">Carga inscripciones cerradas para ver resultados.</div>
-              </div>
-            </div>
+            <div id="registrationsCards" class="record-grid"></div>
           </div>
         </div>
       </div>
@@ -1344,15 +1331,14 @@ ADMIN_HTML = r"""
               <span class="screen-chip">Acceso presencial</span>
             </div>
             <div class="center-note">
-              Escanea el QR, valida matrícula y habilita acceso sin ruido visual.
+              Escanea el QR, valida matrícula y habilita acceso.
             </div>
 
             <div class="form-grid" style="margin-top:18px;">
               <div class="field">
                 <label>QR escaneado</label>
-                <input id="staffScannedToken" placeholder="Aquí aparece el token escaneado o puedes pegarlo manualmente">
+                <input id="staffScannedToken" placeholder="Aquí aparece el token escaneado o puedes pegarlo">
               </div>
-
               <div class="field">
                 <label>Matrícula física presentada</label>
                 <input id="staffPhysicalEnrolment" placeholder="Ej: A01234567">
@@ -1379,11 +1365,8 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-6">
             <div class="module-card-title">
-              <h2>Incidentes</h2>
+              <h2>Crear incidente</h2>
               <span class="screen-chip">Control crítico</span>
-            </div>
-            <div class="muted">
-              Reporta y da seguimiento a errores, conflictos o casos especiales.
             </div>
 
             <div class="form-grid">
@@ -1391,22 +1374,14 @@ ADMIN_HTML = r"""
                 <label>Event ID</label>
                 <input id="incidentEventId" placeholder="Se llena con la temporada seleccionada">
               </div>
-
               <div class="field">
                 <label>Request ID (opcional)</label>
                 <input id="incidentRequestId" placeholder="ID de solicitud">
               </div>
-
               <div class="field">
                 <label>User ID (opcional)</label>
                 <input id="incidentUserId" placeholder="ID de usuario">
               </div>
-
-              <div class="field">
-                <label>Reported by User ID (opcional)</label>
-                <input id="incidentReportedBy" placeholder="ID interno del staff/admin">
-              </div>
-
               <div class="field">
                 <label>Tipo</label>
                 <select id="incidentType">
@@ -1426,7 +1401,6 @@ ADMIN_HTML = r"""
                   <option value="OTRO">OTRO</option>
                 </select>
               </div>
-
               <div class="field">
                 <label>Severidad</label>
                 <select id="incidentSeverity">
@@ -1439,7 +1413,7 @@ ADMIN_HTML = r"""
 
             <div class="field" style="margin-top:12px;">
               <label>Descripción</label>
-              <textarea id="incidentDescription" placeholder="Describe el caso con claridad."></textarea>
+              <textarea id="incidentDescription" placeholder="Describe el caso con claridad"></textarea>
             </div>
 
             <div class="actions">
@@ -1451,9 +1425,6 @@ ADMIN_HTML = r"""
             <div class="module-card-title">
               <h2>Listado de incidentes</h2>
               <span class="screen-chip">Seguimiento</span>
-            </div>
-            <div class="muted">
-              Revisa severidad, estado y resuelve incidentes abiertos.
             </div>
 
             <div class="form-grid">
@@ -1467,7 +1438,6 @@ ADMIN_HTML = r"""
                   <option value="DISMISSED">DISMISSED</option>
                 </select>
               </div>
-
               <div class="field">
                 <label>Filtrar severidad</label>
                 <select id="incidentFilterSeverity" onchange="loadIncidents()">
@@ -1488,6 +1458,95 @@ ADMIN_HTML = r"""
         </div>
       </div>
 
+      <div class="module" id="staffModule">
+        <div class="module-grid">
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>Crear staff</h2>
+              <span class="screen-chip">Gestión de cuentas</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Nombre completo</label>
+                <input id="staffFullName" placeholder="Ej: Laura Torres">
+              </div>
+              <div class="field">
+                <label>Correo</label>
+                <input id="staffEmail" type="email" placeholder="laura@evento.com">
+              </div>
+              <div class="field">
+                <label>Contraseña</label>
+                <input id="staffPassword" type="password" placeholder="Mínimo 8 caracteres">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="createStaff()">Crear staff</button>
+            </div>
+          </div>
+
+          <div class="card span-6">
+            <div class="module-card-title">
+              <h2>Listado de staff</h2>
+              <span class="screen-chip">Seguimiento</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Filtrar status</label>
+                <select id="staffStatusFilter" onchange="loadStaff()">
+                  <option value="">Todos</option>
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="DISABLED">DISABLED</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-secondary" onclick="loadStaff()">Recargar staff</button>
+            </div>
+
+            <div id="staffList" class="record-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module" id="evidenceModule">
+        <div class="module-grid">
+          <div class="card span-4">
+            <div class="module-card-title">
+              <h2>Evidencia legal</h2>
+              <span class="screen-chip">Verificación</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Registration ID</label>
+                <input id="evidenceRegistrationId" type="number" min="1" placeholder="Ej: 25">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="loadEvidenceById()">Ver evidencia</button>
+            </div>
+          </div>
+
+          <div class="card span-8">
+            <div class="module-card-title">
+              <h2>Detalle técnico / legal</h2>
+              <span class="screen-chip">Integridad</span>
+            </div>
+            <div id="evidenceResult" class="evidence-box">
+              <div class="record-card">
+                <div class="record-card__title">Sin consulta</div>
+                <div class="record-card__sub">Ingresa un registration_id para ver hash, firma y snapshot.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="module" id="importExportModule">
         <div class="module-grid">
           <div class="card span-12">
@@ -1496,7 +1555,7 @@ ADMIN_HTML = r"""
               <span class="screen-chip">Control de catálogo</span>
             </div>
             <div class="muted">
-              Importa o exporta proyectos base desde Excel.
+              Importa proyectos base desde Excel o exporta el catálogo actual.
             </div>
 
             <div class="form-grid">
@@ -1515,81 +1574,57 @@ ADMIN_HTML = r"""
           </div>
         </div>
       </div>
+
+      <div class="module" id="exportModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Exportación por temporada</h2>
+              <span class="screen-chip">Reporte completo</span>
+            </div>
+            <div class="muted">
+              Descarga el reporte completo de la temporada seleccionada: resumen, proyectos, inscritos, tokens, incidentes y evidencia legal.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Temporada</label>
+                <select id="exportEventSelector"></select>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="exportEventReport()">Exportar reporte completo</button>
+            </div>
+
+            <div id="exportHint" class="record-grid"></div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
   <script>
-    const storage = sessionStorage;
     let staffQrScanner = null;
     let lastScannedPassSession = null;
+    let currentUser = null;
     let allEvents = [];
     let masterProjectsCache = [];
     let eventProjectsCache = [];
 
     const MODULE_META = {
-      summaryModule: {
-        title: 'Dashboard',
-        subtitle: 'Visión ejecutiva del evento.',
-        kicker: 'Estrategia',
-        accent: '#7D5BA6',
-        accentSoft: '#F5F0FB'
-      },
-      eventsModule: {
-        title: 'Temporadas',
-        subtitle: 'Configuración de ciclos y ventanas operativas.',
-        kicker: 'Estrategia',
-        accent: '#7D5BA6',
-        accentSoft: '#F5F0FB'
-      },
-      masterProjectsModule: {
-        title: 'Proyectos Base',
-        subtitle: 'Catálogo maestro de proyectos.',
-        kicker: 'Estrategia',
-        accent: '#7D5BA6',
-        accentSoft: '#F5F0FB'
-      },
-      eventProjectsModule: {
-        title: 'Proyectos Activos',
-        subtitle: 'Activación de proyectos por temporada.',
-        kicker: 'Operación',
-        accent: '#FF8C42',
-        accentSoft: '#FFF3EA'
-      },
-      tokensModule: {
-        title: 'Generar Tokens',
-        subtitle: 'Flujos de acceso, vigencia y control de tokens.',
-        kicker: 'Operación',
-        accent: '#FF8C42',
-        accentSoft: '#FFF3EA'
-      },
-      registrationsModule: {
-        title: 'Inscritos',
-        subtitle: 'Consulta de cierres de inscripción.',
-        kicker: 'Operación',
-        accent: '#43AA8B',
-        accentSoft: '#ECFDF7'
-      },
-      checkinModule: {
-        title: 'Check-in (QR)',
-        subtitle: 'Escaneo y habilitación de acceso.',
-        kicker: 'Operación',
-        accent: '#43AA8B',
-        accentSoft: '#ECFDF7'
-      },
-      incidentsModule: {
-        title: 'Incidentes',
-        subtitle: 'Seguimiento de problemas y casos especiales.',
-        kicker: 'Control',
-        accent: '#F25C78',
-        accentSoft: '#FFF1F5'
-      },
-      importExportModule: {
-        title: 'Carga Masiva',
-        subtitle: 'Importación y exportación del catálogo.',
-        kicker: 'Control',
-        accent: '#F25C78',
-        accentSoft: '#FFF1F5'
-      }
+      summaryModule: { title: 'Dashboard', subtitle: 'Visión ejecutiva del evento.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
+      eventsModule: { title: 'Temporadas', subtitle: 'Configuración de ciclos y ventanas operativas.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
+      masterProjectsModule: { title: 'Proyectos Base', subtitle: 'Catálogo maestro de proyectos.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
+      eventProjectsModule: { title: 'Proyectos Activos', subtitle: 'Activación de proyectos por temporada.', kicker: 'Operación', accent: '#FF8C42', accentSoft: '#FFF3EA' },
+      tokensModule: { title: 'Tokens', subtitle: 'Generación, consulta y revocación.', kicker: 'Operación', accent: '#FF8C42', accentSoft: '#FFF3EA' },
+      registrationsModule: { title: 'Inscritos', subtitle: 'Consulta de cierres de inscripción.', kicker: 'Operación', accent: '#43AA8B', accentSoft: '#ECFDF7' },
+      checkinModule: { title: 'Check-in (QR)', subtitle: 'Escaneo y habilitación de acceso.', kicker: 'Operación', accent: '#43AA8B', accentSoft: '#ECFDF7' },
+      incidentsModule: { title: 'Incidentes', subtitle: 'Seguimiento de problemas y casos especiales.', kicker: 'Control', accent: '#F25C78', accentSoft: '#FFF1F5' },
+      staffModule: { title: 'Staff', subtitle: 'Gestión de cuentas operativas.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
+      evidenceModule: { title: 'Evidencia Legal', subtitle: 'Hash, firma y snapshot del registro.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
+      importExportModule: { title: 'Carga Masiva', subtitle: 'Importación y exportación del catálogo.', kicker: 'Control', accent: '#F25C78', accentSoft: '#FFF1F5' },
+      exportModule: { title: 'Exportación', subtitle: 'Reporte completo por temporada.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' }
     };
 
     function escapeHTML(value) {
@@ -1601,21 +1636,18 @@ ADMIN_HTML = r"""
         .replace(/'/g, '&#39;');
     }
 
-    function showMsg(text, ok = true) {
-      const el = document.getElementById('msgApp');
-      const elLogin = document.getElementById('msg');
-      const target = document.getElementById('appShell').classList.contains('hidden') ? elLogin : el;
-
+    function showMsg(text, ok = true, login = false) {
+      const target = login ? document.getElementById('msgLogin') : document.getElementById('msgApp');
+      if (!target) return;
       target.textContent = text || '';
       target.className = 'msg ' + (ok ? 'ok' : 'err');
     }
 
-    function getKey() {
-      return storage.getItem('ADMIN_API_KEY') || '';
-    }
-
-    function getRole() {
-      return storage.getItem('ADMIN_ROLE') || '';
+    function clearLoginFields() {
+      const email = document.getElementById('loginEmail');
+      const password = document.getElementById('loginPassword');
+      if (email) email.value = '';
+      if (password) password.value = '';
     }
 
     function setModuleAccent(accent, accentSoft) {
@@ -1623,7 +1655,7 @@ ADMIN_HTML = r"""
       document.documentElement.style.setProperty('--module-accent-soft', accentSoft);
     }
 
-    function showModule(moduleId, btn = null) {
+    function showModule(moduleId) {
       document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
       const moduleEl = document.getElementById(moduleId);
       if (moduleEl) moduleEl.classList.add('active');
@@ -1640,19 +1672,16 @@ ADMIN_HTML = r"""
       setModuleAccent(meta.accent, meta.accentSoft);
     }
 
-    function applyRoleUI(role) {
-      const loginWrap = document.getElementById('loginWrap');
-      const appShell = document.getElementById('appShell');
-      const roleBadge = document.getElementById('roleBadge');
-      const sidebarRoleBox = document.getElementById('sidebarRoleBox');
-      const headerRoleBadge = document.getElementById('headerRoleBadge');
+    function applyRoleUI(user) {
+      currentUser = user || null;
+      const role = user?.role || '';
 
-      roleBadge.textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: —';
-      sidebarRoleBox.textContent = role ? `Rol actual: ${role}` : 'Rol actual: —';
-      headerRoleBadge.textContent = role ? role : 'Panel operativo';
+      document.getElementById('loginHint').textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: no iniciada';
+      document.getElementById('sidebarRoleBox').textContent = role ? `Rol actual: ${role} · ${user.full_name || user.email || ''}` : 'Rol actual: —';
+      document.getElementById('headerRoleBadge').textContent = role || 'Panel';
 
-      loginWrap.classList.toggle('hidden', !!role);
-      appShell.classList.toggle('hidden', !role);
+      document.getElementById('loginWrap').classList.toggle('hidden', !!role);
+      document.getElementById('appShell').classList.toggle('hidden', !role);
 
       const adminNavWrap = document.getElementById('adminNavWrap');
       const staffNavWrap = document.getElementById('staffNavWrap');
@@ -1677,57 +1706,42 @@ ADMIN_HTML = r"""
       return value.replace('T', ' ') + ':00';
     }
 
-    async function getJSON(url) {
-      const r = await fetch(url);
+    async function apiGet(url) {
+      const r = await fetch(url, { credentials: 'include' });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
       return data;
     }
 
-    async function getJSONAuth(url) {
-      const r = await fetch(url, {
-        headers: { 'X-ADMIN-KEY': getKey() }
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
-      return data;
-    }
-
-    async function postJSON(url, body) {
+    async function apiPost(url, body) {
       const r = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ADMIN-KEY': getKey()
-        },
-        body: JSON.stringify(body)
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
       return data;
     }
 
-    async function patchJSON(url, body) {
+    async function apiPatch(url, body) {
       const r = await fetch(url, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ADMIN-KEY': getKey()
-        },
-        body: JSON.stringify(body)
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
       return data;
     }
 
-    async function putJSON(url, body) {
+    async function apiPut(url, body) {
       const r = await fetch(url, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ADMIN-KEY': getKey()
-        },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body || {})
       });
       const data = await r.json().catch(() => ({}));
@@ -1744,6 +1758,7 @@ ADMIN_HTML = r"""
         CLOSED: ['badge badge-warn', 'CLOSED'],
         ARCHIVED: ['badge badge-danger', 'ARCHIVED'],
         ACTIVE: ['badge badge-success', 'ACTIVE'],
+        CANCELLED: ['badge badge-danger', 'CANCELLED'],
         HIDDEN: ['badge badge-warn', 'HIDDEN'],
         OPEN: ['badge badge-danger', 'OPEN'],
         IN_PROGRESS: ['badge badge-warn', 'IN_PROGRESS'],
@@ -1753,7 +1768,8 @@ ADMIN_HTML = r"""
         RESERVED: ['badge badge-warn', 'RESERVED'],
         USED: ['badge badge-neutral', 'USED'],
         REVOKED: ['badge badge-danger', 'REVOKED'],
-        EXPIRED: ['badge badge-danger', 'EXPIRED']
+        EXPIRED: ['badge badge-danger', 'EXPIRED'],
+        DISABLED: ['badge badge-danger', 'DISABLED']
       };
       const cfg = map[value] || ['badge badge-neutral', value || '—'];
       return `<span class="${cfg[0]}">${cfg[1]}</span>`;
@@ -1783,6 +1799,15 @@ ADMIN_HTML = r"""
       }
     }
 
+    function ensureSelectsDefault(ids) {
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.value && el.options.length > 0) {
+          el.selectedIndex = 0;
+        }
+      });
+    }
+
     function renderXPBar(registrados, slotsTotales) {
       const usados = Number(registrados || 0);
       const total = Number(slotsTotales || 0);
@@ -1803,7 +1828,7 @@ ADMIN_HTML = r"""
       `;
     }
 
-    function renderEmptyCard(title, subtitle='') {
+    function renderEmptyCard(title, subtitle = '') {
       return `
         <div class="record-card">
           <div class="record-card__title">${escapeHTML(title)}</div>
@@ -1812,48 +1837,49 @@ ADMIN_HTML = r"""
       `;
     }
 
-    async function validateAndSaveKey() {
-      const v = document.getElementById('adminKey').value.trim();
-      if (!v) return showMsg('Escribe tu clave', false);
-
+    async function loginAdmin() {
       try {
-        const r = await fetch('/api/admin/ping', {
-          headers: { 'X-ADMIN-KEY': v }
-        });
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+        const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+        const password = document.getElementById('loginPassword').value;
 
-        storage.setItem('ADMIN_API_KEY', v);
-        storage.setItem('ADMIN_ROLE', data.role);
-        applyRoleUI(data.role);
+        if (!email) return showMsg('Escribe tu correo', false, true);
+        if (!password) return showMsg('Escribe tu contraseña', false, true);
 
+        const data = await apiPost('/api/admin-auth/login', { email, password });
+        showMsg(data.message || 'Login correcto', true, true);
         await bootstrapAdmin();
-        showMsg(`Sesión iniciada (${data.role})`);
       } catch (e) {
-        showMsg('Clave inválida: ' + e.message, false);
-        clearKey(false);
+        showMsg(e.message, false, true);
       }
     }
 
-    function clearKey(show = true) {
-      storage.removeItem('ADMIN_API_KEY');
-      storage.removeItem('ADMIN_ROLE');
-      document.getElementById('adminKey').value = '';
-      applyRoleUI('');
-      if (show) showMsg('Sesión cerrada');
+    async function logoutAdmin() {
+      try {
+        await apiPost('/api/admin-auth/logout', {});
+      } catch (e) {}
+      currentUser = null;
+      applyRoleUI(null);
+      clearLoginFields();
+      showMsg('Sesión cerrada', true, true);
     }
 
-    function logout() {
-      clearKey(true);
+    async function fetchSessionUser() {
+      try {
+        const data = await apiGet('/api/admin-auth/me');
+        return data.user || null;
+      } catch (e) {
+        return null;
+      }
     }
 
     async function bootstrapAdmin() {
-      await Promise.allSettled([
-        loadEvents(),
-        loadAdminCatalogs(),
-        loadMasterProjects(),
-        loadTokenTTL()
-      ]);
+      const user = await fetchSessionUser();
+      applyRoleUI(user);
+      if (!user) return;
+
+      const tasks = [loadEvents(), loadAdminCatalogs(), loadMasterProjects()];
+      if (user.role === 'ADMIN') tasks.push(loadStaff());
+      await Promise.allSettled(tasks);
     }
 
     async function createAdminEvent() {
@@ -1878,7 +1904,7 @@ ADMIN_HTML = r"""
           registration_close_at: toSqlDateTime(document.getElementById('eventRegistrationCloseAt').value)
         };
 
-        const data = await postJSON('/api/admin/events', payload);
+        const data = await apiPost('/api/admin/events', payload);
         showMsg(data.message || 'Temporada creada');
         await loadEvents();
       } catch (e) {
@@ -1888,19 +1914,23 @@ ADMIN_HTML = r"""
 
     async function loadEvents() {
       try {
-        const data = await getJSONAuth('/api/admin/events');
+        const data = await apiGet('/api/admin/events');
         allEvents = data || [];
 
         fillSelectNoBlank('eventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
         fillSelectNoBlank('dashboardEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
         fillSelectNoBlank('eventProjectEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
         fillSelectNoBlank('registrationsEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+        fillSelectNoBlank('exportEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+        ensureSelectsDefault(['eventSelector', 'dashboardEventSelector', 'eventProjectEventSelector', 'registrationsEventSelector', 'exportEventSelector']);
 
         const eventsList = document.getElementById('eventsList');
         if (!allEvents.length) {
-          eventsList.innerHTML = renderEmptyCard('No hay temporadas creadas todavía', 'Crea la primera temporada para comenzar.');
+          eventsList.innerHTML = renderEmptyCard('No hay temporadas creadas', 'Crea la primera temporada para comenzar.');
           document.getElementById('selectedEventInfo').innerHTML = '';
-          return showMsg('No hay temporadas creadas todavía');
+          document.getElementById('dashboardSummary').innerHTML = '';
+          document.getElementById('dashboardProjectsBody').innerHTML = renderEmptyCard('Sin temporadas', 'No hay nada que mostrar todavía.');
+          return;
         }
 
         eventsList.innerHTML = allEvents.map(e => `
@@ -1915,7 +1945,6 @@ ADMIN_HTML = r"""
                 ${e.is_visible_to_students ? '<span class="badge badge-success">VISIBLE ALUMNO</span>' : '<span class="badge badge-neutral">NO VISIBLE</span>'}
               </div>
             </div>
-
             <div class="meta">
               <div class="meta-box"><span class="meta-label">Catálogo abre</span><div class="meta-value">${escapeHTML(e.catalog_open_at || '—')}</div></div>
               <div class="meta-box"><span class="meta-label">Inicio presencial</span><div class="meta-value">${escapeHTML(e.onsite_start_at || '—')}</div></div>
@@ -1943,7 +1972,7 @@ ADMIN_HTML = r"""
       }
 
       try {
-        const e = await getJSONAuth(`/api/admin/events/${eventId}`);
+        const e = await apiGet(`/api/admin/events/${eventId}`);
         box.innerHTML = `
           <div class="record-card">
             <div class="record-card__head">
@@ -1981,7 +2010,7 @@ ADMIN_HTML = r"""
       }
 
       try {
-        const data = await patchJSON(`/api/admin/events/${eventId}`, body);
+        const data = await apiPatch(`/api/admin/events/${eventId}`, body);
         showMsg(data.message || 'Temporada actualizada');
         await loadEvents();
       } catch (e) {
@@ -1994,7 +2023,7 @@ ADMIN_HTML = r"""
       if (!eventId) return showMsg('Selecciona una temporada', false);
 
       try {
-        const data = await putJSON(`/api/admin/events/${eventId}/visible`, {});
+        const data = await apiPut(`/api/admin/events/${eventId}/visible`, {});
         showMsg(data.message || 'Temporada visible actualizada');
         await loadEvents();
       } catch (e) {
@@ -2004,7 +2033,7 @@ ADMIN_HTML = r"""
 
     async function loadAdminCatalogs() {
       try {
-        const data = await getJSONAuth('/api/admin/catalogs');
+        const data = await apiGet('/api/admin/catalogs');
         fillSelect('mp_partner', data.socio || [], 'Selecciona', item => item.name);
         fillSelect('mp_modality', data.modalidad || [], 'Selecciona', item => item.description);
         fillSelect('mp_week_days', data.dias || [], 'Selecciona', item => item.description);
@@ -2037,7 +2066,7 @@ ADMIN_HTML = r"""
           comments: document.getElementById('mp_comments').value.trim()
         };
 
-        const data = await postJSON('/api/admin/projects', payload);
+        const data = await apiPost('/api/admin/projects', payload);
         showMsg(data.message || 'Proyecto base creado');
         await loadMasterProjects();
       } catch (e) {
@@ -2049,14 +2078,14 @@ ADMIN_HTML = r"""
       try {
         const q = document.getElementById('masterProjectsSearch')?.value?.trim() || '';
         const query = q ? `?q=${encodeURIComponent(q)}` : '';
-        const data = await getJSONAuth('/api/admin/projects' + query);
+        const data = await apiGet('/api/admin/projects' + query);
 
         masterProjectsCache = data || [];
         fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto base', p => `${p.general_name || 'Sin nombre general'} | ${p.name}`);
 
         const list = document.getElementById('masterProjectsList');
         if (!masterProjectsCache.length) {
-          list.innerHTML = renderEmptyCard('No hay proyectos base', 'Crea el primero para empezar a operar.');
+          list.innerHTML = renderEmptyCard('No hay proyectos base', 'Crea el primero para empezar.');
           return;
         }
 
@@ -2073,7 +2102,6 @@ ADMIN_HTML = r"""
                 <span class="badge badge-neutral">${escapeHTML(p.schedule_name || '—')}</span>
               </div>
             </div>
-
             <div class="record-stack">
               <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(p.partner_name || '—')}</span></div>
               <div class="stack-row"><strong>Horario:</strong><span>${escapeHTML(p.schedule_description || '—')}</span></div>
@@ -2097,7 +2125,7 @@ ADMIN_HTML = r"""
       if (Number.isNaN(slots) || slots < 0) return showMsg('Slots inválidos', false);
 
       try {
-        const data = await postJSON(`/api/admin/events/${eventId}/projects`, {
+        const data = await apiPost(`/api/admin/events/${eventId}/projects`, {
           project_id: Number(projectId),
           slots_total: slots
         });
@@ -2119,7 +2147,7 @@ ADMIN_HTML = r"""
       }
 
       try {
-        const data = await getJSONAuth(`/api/admin/events/${eventId}/projects`);
+        const data = await apiGet(`/api/admin/events/${eventId}/projects`);
         eventProjectsCache = data || [];
 
         fillSelect('tokensEventProjectSelector', eventProjectsCache, 'Selecciona proyecto en temporada', p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`);
@@ -2159,39 +2187,10 @@ ADMIN_HTML = r"""
 
     async function quickUpdateEventProject(eventProjectId, currentSlots, status) {
       try {
-        const data = await patchJSON(`/api/admin/event-projects/${eventProjectId}`, {
-          slots_total: currentSlots,
-          status: status
-        });
+        const data = await apiPatch(`/api/admin/event-projects/${eventProjectId}`, { slots_total: currentSlots, status: status });
         showMsg(data.message || 'Proyecto de temporada actualizado');
         await loadEventProjects();
         await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
-
-    async function loadTokenTTL() {
-      try {
-        const data = await getJSONAuth('/api/admin/settings');
-        const hours = Number(data.token_ttl_hours || 24);
-        document.getElementById('ttl_hours').value = hours;
-        document.getElementById('ttl_current').textContent = `${hours} horas`;
-      } catch (e) {
-        showMsg('Error TTL: ' + e.message, false);
-      }
-    }
-
-    async function saveTokenTTL() {
-      const hours = Number(document.getElementById('ttl_hours').value || 24);
-      if (!hours || hours < 1 || hours > 168) {
-        return showMsg('Horas inválidas (1 a 168)', false);
-      }
-
-      try {
-        const data = await putJSON('/api/admin/settings/token-ttl-hours', { hours });
-        document.getElementById('ttl_current').textContent = `${data.token_ttl_hours} horas`;
-        showMsg('TTL global actualizado');
       } catch (e) {
         showMsg(e.message, false);
       }
@@ -2205,7 +2204,7 @@ ADMIN_HTML = r"""
 
         if (!eventProjectId) return showMsg('Selecciona un proyecto en temporada', false);
 
-        const data = await postJSON(`/api/admin/event-projects/${eventProjectId}/tokens`, { count, length });
+        const data = await apiPost(`/api/admin/event-projects/${eventProjectId}/tokens`, { count, length });
 
         document.getElementById('tokensGenerationResult').innerHTML = `
           <div class="record-card">
@@ -2216,6 +2215,22 @@ ADMIN_HTML = r"""
         `;
 
         showMsg(data.message || 'Tokens generados');
+        await loadProjectTokens();
+        await loadDashboard();
+      } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
+    async function revokeProjectToken() {
+      try {
+        const token = document.getElementById('revokeTokenValue').value.trim().toUpperCase();
+        const reason = document.getElementById('revokeTokenReason').value.trim();
+
+        if (!token) return showMsg('Escribe un token', false);
+
+        const data = await apiPost('/api/admin/project-tokens/revoke', { token, reason });
+        showMsg(data.message || 'Token revocado');
         await loadProjectTokens();
         await loadDashboard();
       } catch (e) {
@@ -2234,7 +2249,7 @@ ADMIN_HTML = r"""
       }
 
       try {
-        const data = await getJSONAuth(`/api/admin/event-projects/${eventProjectId}/tokens?status=${encodeURIComponent(status)}`);
+        const data = await apiGet(`/api/admin/event-projects/${eventProjectId}/tokens?status=${encodeURIComponent(status)}`);
         const s = data.summary || {};
 
         document.getElementById('tokensSummary').innerHTML = `
@@ -2278,93 +2293,90 @@ ADMIN_HTML = r"""
                   <div class="stack-row"><strong>Usado por:</strong><span>${escapeHTML(t.used_by_request_id || '—')}</span></div>
                   <div class="stack-row"><strong>Usado:</strong><span>${escapeHTML(t.used_at || '—')}</span></div>
                   <div class="stack-row"><strong>Revocado:</strong><span>${escapeHTML(t.revoked_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Revocado por admin:</strong><span>${escapeHTML(t.revoked_by_admin_user_id || '—')}</span></div>
                   <div class="stack-row"><strong>Expira:</strong><span>${escapeHTML(t.expires_at || '—')}</span></div>
                 </div>
               </div>
             `).join('')
           : renderEmptyCard('No hay tokens con ese filtro', 'Prueba otro estado o genera nuevos tokens.');
       } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
-
-    async function revokeProjectToken() {
-      try {
-        const token = document.getElementById('revokeTokenValue').value.trim().toUpperCase();
-        const reason = document.getElementById('revokeTokenReason').value.trim();
-
-        if (!token) return showMsg('Escribe un token', false);
-
-        const data = await postJSON('/api/admin/project-tokens/revoke', { token, reason });
-        showMsg(data.message || 'Token revocado');
-        await loadProjectTokens();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
+        cards.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar tokens');
       }
     }
 
     async function loadDashboard() {
-      const eventId = document.getElementById('dashboardEventSelector').value;
-      if (!eventId) return;
+      const selector = document.getElementById('dashboardEventSelector');
+      const summaryBox = document.getElementById('dashboardSummary');
+      const body = document.getElementById('dashboardProjectsBody');
+
+      const eventId = selector.value;
+      if (!eventId) {
+        summaryBox.innerHTML = '';
+        body.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás ver el dashboard.');
+        return;
+      }
 
       try {
-        const summary = await getJSONAuth(`/api/admin/dashboard/summary?event_id=${eventId}`);
-        const projects = await getJSONAuth(`/api/admin/dashboard/projects?event_id=${eventId}`);
+        const summary = await apiGet(`/api/admin/dashboard/summary?event_id=${eventId}`);
+        const projects = await apiGet(`/api/admin/dashboard/projects?event_id=${eventId}`);
 
-        document.getElementById('dashboardSummary').innerHTML = `
+        const requests = summary.requests || {};
+        const incidents = summary.incidents || {};
+        const items = Array.isArray(projects) ? projects : [];
+
+        summaryBox.innerHTML = `
           <div class="kpi-card kpi-card--green">
             <div class="kpi-label">Total Inscritos</div>
-            <div class="kpi-value">${summary.requests.registered || 0}</div>
+            <div class="kpi-value">${requests.registered || 0}</div>
             <div class="kpi-sub">Alumnos con cierre final</div>
           </div>
           <div class="kpi-card kpi-card--orange">
-            <div class="kpi-label">Tokens Pendientes</div>
-            <div class="kpi-value">${(summary.tokens?.available || 0) + (summary.tokens?.reserved || 0)}</div>
-            <div class="kpi-sub">Disponibles o reservados</div>
+            <div class="kpi-label">Access Enabled</div>
+            <div class="kpi-value">${requests.access_enabled || 0}</div>
+            <div class="kpi-sub">Listos para registrar</div>
           </div>
           <div class="kpi-card kpi-card--purple">
             <div class="kpi-label">Proyectos</div>
-            <div class="kpi-value">${summary.projects?.total || (projects || []).length || 0}</div>
+            <div class="kpi-value">${items.length}</div>
             <div class="kpi-sub">Activos en temporada</div>
           </div>
           <div class="kpi-card kpi-card--pink">
             <div class="kpi-label">Incidentes</div>
-            <div class="kpi-value">${summary.incidents?.open || 0}</div>
+            <div class="kpi-value">${incidents.open || 0}</div>
             <div class="kpi-sub">Pendientes de resolver</div>
           </div>
         `;
-
-        const body = document.getElementById('dashboardProjectsBody');
-        const items = projects || [];
 
         body.innerHTML = items.length
           ? items.map(p => `
               <div class="record-card">
                 <div class="record-card__head">
                   <div>
-                    <div class="record-card__title">${escapeHTML(p.project_name)}</div>
+                    <div class="record-card__title">${escapeHTML(p.project_name || '—')}</div>
                     <div class="record-card__sub">${escapeHTML(p.partner_name || 'Sin carrera preferida')}</div>
                   </div>
                   <div>${statusBadge(p.event_project_status)}</div>
                 </div>
 
                 <div class="record-stack">
-                  <div class="stack-row"><strong>Slots:</strong><span>${p.slots_total}</span></div>
-                  <div class="stack-row"><strong>Registrados:</strong><span>${p.registered_count}</span></div>
-                  <div class="stack-row"><strong>Disponibles:</strong><span>${p.cupos_disponibles}</span></div>
-                  <div class="stack-row"><strong>Tokens usados:</strong><span>${p.tokens_used}</span></div>
-                  <div class="stack-row"><strong>Revocados:</strong><span>${p.tokens_revoked}</span></div>
-                  <div class="stack-row"><strong>Expirados:</strong><span>${p.tokens_expired}</span></div>
+                  <div class="stack-row"><strong>Slots:</strong><span>${escapeHTML(p.slots_total || 0)}</span></div>
+                  <div class="stack-row"><strong>Registrados:</strong><span>${escapeHTML(p.registered_count || 0)}</span></div>
+                  <div class="stack-row"><strong>Disponibles:</strong><span>${escapeHTML(p.cupos_disponibles || 0)}</span></div>
+                  <div class="stack-row"><strong>Tokens usados:</strong><span>${escapeHTML(p.tokens_used || 0)}</span></div>
+                  <div class="stack-row"><strong>Revocados:</strong><span>${escapeHTML(p.tokens_revoked || 0)}</span></div>
+                  <div class="stack-row"><strong>Expirados:</strong><span>${escapeHTML(p.tokens_expired || 0)}</span></div>
                 </div>
 
                 <div style="margin-top:12px;">
-                  ${renderXPBar(p.registered_count, p.slots_total)}
+                  ${renderXPBar(p.registered_count || 0, p.slots_total || 0)}
                 </div>
               </div>
             `).join('')
           : renderEmptyCard('No hay proyectos cargados en esta temporada', 'Activa proyectos para empezar a operar.');
+
       } catch (e) {
+        summaryBox.innerHTML = '';
+        body.innerHTML = renderEmptyCard('No se pudo cargar dashboard', e.message || 'Error inesperado');
         showMsg(e.message, false);
       }
     }
@@ -2379,10 +2391,10 @@ ADMIN_HTML = r"""
       }
 
       try {
-        const rows = await getJSONAuth(`/api/admin/registrations?event_id=${encodeURIComponent(eventId)}`);
+        const rows = await apiGet(`/api/admin/registrations?event_id=${encodeURIComponent(eventId)}`);
 
         if (!rows.length) {
-          cards.innerHTML = renderEmptyCard('No hay inscripciones cerradas', 'Todavía no hay cierres en esta temporada.');
+          cards.innerHTML = renderEmptyCard('No hay inscripciones', 'Todavía no hay registros para esta temporada.');
           return;
         }
 
@@ -2390,24 +2402,144 @@ ADMIN_HTML = r"""
           <div class="record-card">
             <div class="record-card__head">
               <div>
-                <div class="record-card__title">${escapeHTML(r.student_name || '—')}</div>
-                <div class="record-card__sub"><span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span></div>
+                <div class="record-card__title">${escapeHTML(r.student_name || r.student_full_name || '—')}</div>
+                <div class="record-card__sub">
+                  <span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span>
+                </div>
               </div>
-              <div>${statusBadge(r.registration_status || 'ACTIVE')}</div>
+              <div>${statusBadge(r.registration_status || r.status || '—')}</div>
             </div>
 
             <div class="record-stack">
+              <div class="stack-row"><strong>Registration ID:</strong><span>${escapeHTML(r.registration_id || r.id || '—')}</span></div>
               <div class="stack-row"><strong>Proyecto:</strong><span>${escapeHTML(r.project_name || '—')}</span></div>
               <div class="stack-row"><strong>Organización:</strong><span>${escapeHTML(r.general_name || '—')}</span></div>
+              <div class="stack-row"><strong>Carrera preferida:</strong><span>${escapeHTML(r.partner_name || '—')}</span></div>
+              <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(r.folio || '—')}</span></div>
               <div class="stack-row"><strong>Token:</strong><span class="mono">${escapeHTML(r.token_value || '—')}</span></div>
+              <div class="stack-row"><strong>Nombre aceptado:</strong><span>${escapeHTML(r.accepted_full_name || '—')}</span></div>
+              <div class="stack-row"><strong>Versión legal:</strong><span>${escapeHTML(r.legal_text_version || '—')}</span></div>
               <div class="stack-row"><strong>Fecha cierre:</strong><span>${escapeHTML(r.accepted_at || '—')}</span></div>
+
+              ${
+                (r.registration_status || r.status) === 'CANCELLED'
+                  ? `
+                    <div class="stack-row"><strong>Fecha baja:</strong><span>${escapeHTML(r.cancelled_at || '—')}</span></div>
+                    <div class="stack-row"><strong>Motivo baja:</strong><span>${escapeHTML(r.cancel_reason || '—')}</span></div>
+                    <div class="stack-row"><strong>Cancelado por admin:</strong><span>${escapeHTML(r.cancelled_by_admin_user_id || '—')}</span></div>
+                  `
+                  : ''
+              }
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-secondary" onclick="setEvidenceFromRegistration(${Number(r.registration_id || r.id || 0)})">Ver evidencia</button>
+
+              ${
+                (r.registration_status || r.status) === 'ACTIVE'
+                  ? `<button type="button" class="btn-danger" onclick="cancelRegistration(${Number(r.registration_id || r.id || 0)})">Dar de baja</button>`
+                  : ''
+              }
             </div>
           </div>
         `).join('');
 
-        showMsg('Inscripciones cerradas cargadas correctamente');
+        showMsg('Inscripciones cargadas correctamente');
       } catch (e) {
         cards.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar inscripciones');
+        showMsg(e.message, false);
+      }
+    }
+
+    function setEvidenceFromRegistration(registrationId) {
+      document.getElementById('evidenceRegistrationId').value = registrationId;
+      showModule('evidenceModule');
+      loadEvidenceById();
+    }
+
+    async function loadEvidenceById() {
+      const registrationId = Number(document.getElementById('evidenceRegistrationId').value || 0);
+      const box = document.getElementById('evidenceResult');
+
+      if (!registrationId) {
+        return showMsg('Ingresa un registration_id válido', false);
+      }
+
+      try {
+        const data = await apiGet(`/api/admin/registrations/${registrationId}/evidence`);
+        const v = data.verification || {};
+        const legal = data.legal_confirmation || {};
+        const reg = data.registration || {};
+        const student = data.student || {};
+        const project = data.project || {};
+        const request = data.request || {};
+        const event = data.event || {};
+        const evidence = data.evidence || {};
+
+        box.innerHTML = `
+          <div class="record-card">
+            <div class="record-card__head">
+              <div>
+                <div class="record-card__title">${escapeHTML(student.full_name || 'Alumno')}</div>
+                <div class="record-card__sub">Registration ID: ${escapeHTML(reg.id || '—')} · Folio: ${escapeHTML(request.folio || '—')}</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                ${v.verified ? '<span class="badge badge-success">FIRMA VERIFICADA</span>' : '<span class="badge badge-danger">FIRMA NO VÁLIDA</span>'}
+                ${v.hash_matches ? '<span class="badge badge-success">HASH OK</span>' : '<span class="badge badge-danger">HASH FAIL</span>'}
+                ${v.signature_matches ? '<span class="badge badge-success">SIGNATURE OK</span>' : '<span class="badge badge-danger">SIGNATURE FAIL</span>'}
+              </div>
+            </div>
+
+            <div class="record-stack">
+              <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(event.display_name || '—')}</span></div>
+              <div class="stack-row"><strong>Proyecto:</strong><span>${escapeHTML(project.project_name || '—')}</span></div>
+              <div class="stack-row"><strong>Nombre aceptado:</strong><span>${escapeHTML(legal.accepted_full_name || '—')}</span></div>
+              <div class="stack-row"><strong>Versión legal:</strong><span>${escapeHTML(legal.legal_text_version || '—')}</span></div>
+              <div class="stack-row"><strong>Fecha aceptación:</strong><span>${escapeHTML(legal.accepted_at || '—')}</span></div>
+              <div class="stack-row"><strong>IP:</strong><span>${escapeHTML(legal.accepted_ip || '—')}</span></div>
+              <div class="stack-row"><strong>User agent:</strong><span>${escapeHTML(legal.accepted_user_agent || '—')}</span></div>
+            </div>
+          </div>
+
+          <div class="record-card">
+            <div class="record-card__title">Hash guardado</div>
+            <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.stored_hash || '—')}</span></div>
+          </div>
+
+          <div class="record-card">
+            <div class="record-card__title">Firma guardada</div>
+            <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.stored_signature || '—')}</span></div>
+          </div>
+
+          <div class="record-card">
+            <div class="record-card__title">Snapshot JSON</div>
+            <div class="json-box">${escapeHTML(evidence.snapshot_json || '')}</div>
+          </div>
+        `;
+
+        showMsg('Evidencia legal cargada correctamente');
+      } catch (e) {
+        box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar evidencia');
+        showMsg(e.message, false);
+      }
+    }
+
+    async function cancelRegistration(registrationId) {
+      try {
+        if (!registrationId) return showMsg('registrationId inválido', false);
+
+        const reason = window.prompt('Escribe el motivo de baja:');
+        if (reason === null) return;
+
+        const cleanReason = reason.trim();
+        if (!cleanReason) return showMsg('El motivo es obligatorio', false);
+
+        const data = await apiPatch(`/api/admin/registrations/${registrationId}/cancel`, { reason: cleanReason });
+
+        showMsg(data.message || 'Inscripción cancelada');
+        await loadRegistrations();
+        await loadDashboard();
+      } catch (e) {
         showMsg(e.message, false);
       }
     }
@@ -2418,10 +2550,10 @@ ADMIN_HTML = r"""
           await stopQrScanner();
         }
 
-        staffQrScanner = new Html5Qrcode("staffScanner");
+        staffQrScanner = new Html5Qrcode('staffScanner');
 
         await staffQrScanner.start(
-          { facingMode: "environment" },
+          { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 220, height: 220 } },
           async (decodedText) => {
             document.getElementById('staffScannedToken').value = decodedText;
@@ -2454,7 +2586,7 @@ ADMIN_HTML = r"""
         const token = document.getElementById('staffScannedToken').value.trim();
         if (!token) return showMsg('Escanea o pega primero un QR/token', false);
 
-        const data = await postJSON('/api/staff/checkin/scan', { token });
+        const data = await apiPost('/api/staff/checkin/scan', { token });
         lastScannedPassSession = data.pass_session?.id || null;
 
         document.getElementById('staffCheckinInfo').innerHTML = `
@@ -2492,7 +2624,7 @@ ADMIN_HTML = r"""
         if (!passSessionId) return showMsg('Primero debes verificar el QR', false);
         if (!enrolment) return showMsg('Falta capturar la matrícula física', false);
 
-        const data = await postJSON('/api/staff/checkin/grant-access', {
+        const data = await apiPost('/api/staff/checkin/grant-access', {
           pass_session_id: passSessionId,
           enrolment_number: enrolment
         });
@@ -2515,13 +2647,12 @@ ADMIN_HTML = r"""
           event_id: Number(document.getElementById('incidentEventId').value),
           request_id: document.getElementById('incidentRequestId').value || null,
           id_user: document.getElementById('incidentUserId').value || null,
-          reported_by_user_id: document.getElementById('incidentReportedBy').value || null,
           type: document.getElementById('incidentType').value,
           severity: document.getElementById('incidentSeverity').value,
           description: document.getElementById('incidentDescription').value.trim()
         };
 
-        const data = await postJSON('/api/incidents', payload);
+        const data = await apiPost('/api/incidents', payload);
         showMsg(data.message || 'Caso reportado');
         document.getElementById('incidentDescription').value = '';
         document.getElementById('incidentRequestId').value = '';
@@ -2537,7 +2668,8 @@ ADMIN_HTML = r"""
       const eventId =
         document.getElementById('eventSelector').value ||
         document.getElementById('dashboardEventSelector').value ||
-        document.getElementById('eventProjectEventSelector').value;
+        document.getElementById('eventProjectEventSelector').value ||
+        document.getElementById('registrationsEventSelector').value;
 
       const list = document.getElementById('incidentsList');
 
@@ -2555,7 +2687,8 @@ ADMIN_HTML = r"""
       if (severity) params.set('severity', severity);
 
       try {
-        const data = await getJSONAuth(`/api/incidents?${params.toString()}`);
+        const response = await apiGet(`/api/incidents?${params.toString()}`);
+        const data = Array.isArray(response) ? response : (response.items || []);
 
         if (!data.length) {
           list.innerHTML = renderEmptyCard('No hay incidentes con esos filtros', 'Prueba otro estado o severidad.');
@@ -2579,6 +2712,7 @@ ADMIN_HTML = r"""
               <div class="stack-row"><strong>Descripción:</strong><span>${escapeHTML(i.description || 'Sin descripción')}</span></div>
               <div class="stack-row"><strong>Creado:</strong><span>${escapeHTML(i.created_at || '—')}</span></div>
               <div class="stack-row"><strong>Resuelto:</strong><span>${escapeHTML(i.resolved_at || '—')}</span></div>
+              <div class="stack-row"><strong>Actor admin:</strong><span>${escapeHTML(i.performed_by_admin_user_id || '—')}</span></div>
             </div>
 
             <div class="actions">
@@ -2595,7 +2729,7 @@ ADMIN_HTML = r"""
 
     async function updateIncidentStatus(incidentId, status) {
       try {
-        const data = await patchJSON(`/api/incidents/${incidentId}`, { status });
+        const data = await apiPatch(`/api/incidents/${incidentId}`, { status });
         showMsg(data.message || 'Caso actualizado');
         await loadIncidents();
         await loadDashboard();
@@ -2604,8 +2738,79 @@ ADMIN_HTML = r"""
       }
     }
 
-    async function markIncidentAsResolved(incidentId) {
-      return updateIncidentStatus(incidentId, 'RESOLVED');
+    async function loadStaff() {
+      const list = document.getElementById('staffList');
+      if (!list) return;
+
+      try {
+        const status = document.getElementById('staffStatusFilter')?.value || '';
+        const query = status ? `?status=${encodeURIComponent(status)}` : '';
+        const response = await apiGet('/api/admin/staff' + query);
+        const items = response.items || response || [];
+
+        if (!items.length) {
+          list.innerHTML = renderEmptyCard('No hay cuentas staff', 'Crea la primera cuenta operativa.');
+          return;
+        }
+
+        list.innerHTML = items.map(s => `
+          <div class="record-card">
+            <div class="record-card__head">
+              <div>
+                <div class="record-card__title">${escapeHTML(s.full_name || '—')}</div>
+                <div class="record-card__sub">${escapeHTML(s.email || '—')}</div>
+              </div>
+              <div>${statusBadge(s.status)}</div>
+            </div>
+
+            <div class="record-stack">
+              <div class="stack-row"><strong>ID:</strong><span>${escapeHTML(s.id || '—')}</span></div>
+              <div class="stack-row"><strong>Último login:</strong><span>${escapeHTML(s.last_login_at || '—')}</span></div>
+              <div class="stack-row"><strong>Creado:</strong><span>${escapeHTML(s.created_at || '—')}</span></div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-secondary" onclick="updateStaffStatus(${s.id}, 'ACTIVE')">Activar</button>
+              <button type="button" class="btn-danger" onclick="updateStaffStatus(${s.id}, 'DISABLED')">Desactivar</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        list.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar staff');
+      }
+    }
+
+    async function createStaff() {
+      try {
+        const full_name = document.getElementById('staffFullName').value.trim();
+        const email = document.getElementById('staffEmail').value.trim().toLowerCase();
+        const password = document.getElementById('staffPassword').value;
+
+        if (!full_name) return showMsg('Falta nombre completo', false);
+        if (!email) return showMsg('Falta correo', false);
+        if (!password) return showMsg('Falta contraseña', false);
+
+        const data = await apiPost('/api/admin/staff', { full_name, email, password });
+        showMsg(data.message || 'Staff creado');
+
+        document.getElementById('staffFullName').value = '';
+        document.getElementById('staffEmail').value = '';
+        document.getElementById('staffPassword').value = '';
+
+        await loadStaff();
+      } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
+    async function updateStaffStatus(userId, status) {
+      try {
+        const data = await apiPatch(`/api/admin/staff/${userId}/status`, { status });
+        showMsg(data.message || 'Estado de staff actualizado');
+        await loadStaff();
+      } catch (e) {
+        showMsg(e.message, false);
+      }
     }
 
     async function importProjects() {
@@ -2619,7 +2824,7 @@ ADMIN_HTML = r"""
 
         const r = await fetch('/api/admin/projects/import', {
           method: 'POST',
-          headers: { 'X-ADMIN-KEY': getKey() },
+          credentials: 'include',
           body: formData
         });
 
@@ -2651,7 +2856,7 @@ ADMIN_HTML = r"""
     async function exportProjects() {
       try {
         const r = await fetch('/api/admin/projects/export', {
-          headers: { 'X-ADMIN-KEY': getKey() }
+          credentials: 'include'
         });
 
         if (!r.ok) {
@@ -2675,36 +2880,68 @@ ADMIN_HTML = r"""
       }
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      if (getKey()) {
-        applyRoleUI(getRole());
-        await bootstrapAdmin();
-      } else {
-        applyRoleUI('');
-      }
+    async function exportEventReport() {
+      const eventId = document.getElementById('exportEventSelector').value;
+      if (!eventId) return showMsg('Selecciona una temporada para exportar', false);
 
-      document.getElementById('adminKey').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') validateAndSaveKey();
+      try {
+        const r = await fetch(`/api/admin/events/${eventId}/export`, {
+          credentials: 'include'
+        });
+
+        if (!r.ok) {
+          const data = await r.json().catch(() => ({}));
+          throw new Error(data.error || ('Error ' + r.status));
+        }
+
+        const blob = await r.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        document.getElementById('exportHint').innerHTML = `
+          <div class="record-card">
+            <div class="record-card__title">Exportación iniciada</div>
+            <div class="record-card__sub">El reporte completo de la temporada se descargó correctamente.</div>
+          </div>
+        `;
+
+        showMsg('Exportación iniciada correctamente');
+      } catch (e) {
+        showMsg(e.message, false);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await bootstrapAdmin();
+
+      document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginAdmin();
       });
 
-      document.getElementById('eventSelector').addEventListener('change', async () => {
+      document.getElementById('eventSelector')?.addEventListener('change', async () => {
         await loadSelectedEventInfo();
         document.getElementById('incidentEventId').value = document.getElementById('eventSelector').value || '';
       });
 
-      document.getElementById('dashboardEventSelector').addEventListener('change', async () => {
+      document.getElementById('dashboardEventSelector')?.addEventListener('change', async () => {
         await loadDashboard();
       });
 
-      document.getElementById('eventProjectEventSelector').addEventListener('change', async () => {
+      document.getElementById('eventProjectEventSelector')?.addEventListener('change', async () => {
         await loadEventProjects();
       });
 
-      document.getElementById('tokensEventProjectSelector').addEventListener('change', async () => {
+      document.getElementById('tokensEventProjectSelector')?.addEventListener('change', async () => {
         await loadProjectTokens();
       });
 
-      document.getElementById('registrationsEventSelector').addEventListener('change', async () => {
+      document.getElementById('registrationsEventSelector')?.addEventListener('change', async () => {
         await loadRegistrations();
       });
     });

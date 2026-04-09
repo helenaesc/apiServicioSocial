@@ -8,6 +8,7 @@ admin_incidents_bp = Blueprint("admin_incidents", __name__)
 VALID_SEVERITIES = {"LOW", "MEDIUM", "HIGH"}
 VALID_STATUSES = {"OPEN", "IN_PROGRESS", "RESOLVED", "DISMISSED"}
 
+
 VALID_TYPES = {
     "ID_NO_COINCIDE",
     "FOLIO_NO_ENCONTRADO",
@@ -27,11 +28,6 @@ VALID_TYPES = {
 
 
 def _get_current_incident_role(req):
-    """
-    Prioridad:
-    1) sesión real
-    2) compatibilidad temporal con X-ADMIN-KEY
-    """
     session_role = session.get("admin_user_role")
     if session_role in {ROLE_ADMIN, ROLE_STAFF}:
         return session_role
@@ -41,6 +37,10 @@ def _get_current_incident_role(req):
         return legacy_role
 
     return None
+
+
+def _get_current_admin_user_id():
+    return session.get("admin_user_id")
 
 
 def _normalize_status(value: str | None) -> str | None:
@@ -70,12 +70,13 @@ def create_incident():
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
+    admin_user_id = _get_current_admin_user_id()
+
     payload = request.get_json(silent=True) or {}
 
     event_id = payload.get("event_id")
     request_id = payload.get("request_id")
     id_user = payload.get("id_user")
-    reported_by_user_id = payload.get("reported_by_user_id")
     incident_type = _normalize_type(payload.get("type"))
     severity = _normalize_severity(payload.get("severity")) or "MEDIUM"
     description = (payload.get("description") or "").strip() or None
@@ -101,19 +102,10 @@ def create_incident():
     else:
         id_user = None
 
-    if reported_by_user_id not in (None, ""):
-        try:
-            reported_by_user_id = int(reported_by_user_id)
-        except:
-            return jsonify({"error": "reported_by_user_id debe ser numérico"}), 400
-    else:
-        reported_by_user_id = None
-
     if not incident_type:
         return jsonify({"error": "type inválido o faltante"}), 400
 
     def tx(conn, cur):
-        # validar evento
         cur.execute(
             """
             SELECT id
@@ -126,7 +118,6 @@ def create_incident():
         if not cur.fetchone():
             return {"error": "Evento no encontrado", "status": 404}
 
-        # validar request si viene
         if request_id is not None:
             cur.execute(
                 """
@@ -140,7 +131,6 @@ def create_incident():
             if not cur.fetchone():
                 return {"error": "Solicitud no encontrada", "status": 404}
 
-        # validar user si viene
         if id_user is not None:
             cur.execute(
                 """
@@ -154,20 +144,6 @@ def create_incident():
             if not cur.fetchone():
                 return {"error": "Usuario no encontrado", "status": 404}
 
-        # reported_by_user_id opcional
-        if reported_by_user_id is not None:
-            cur.execute(
-                """
-                SELECT id
-                FROM users
-                WHERE id = %s
-                LIMIT 1
-                """,
-                [reported_by_user_id]
-            )
-            if not cur.fetchone():
-                return {"error": "reported_by_user_id no encontrado", "status": 404}
-
         cur.execute(
             """
             INSERT INTO incident_reports
@@ -176,19 +152,20 @@ def create_incident():
                 request_id,
                 id_user,
                 reported_by_user_id,
+                performed_by_admin_user_id,
                 type,
                 severity,
                 status,
                 description,
                 created_at
             )
-            VALUES (%s, %s, %s, %s, %s, %s, 'OPEN', %s, NOW())
+            VALUES (%s, %s, %s, NULL, %s, %s, %s, 'OPEN', %s, NOW())
             """,
             [
                 event_id,
                 request_id,
                 id_user,
-                reported_by_user_id,
+                admin_user_id,
                 incident_type,
                 severity,
                 description
@@ -205,6 +182,7 @@ def create_incident():
                 ir.request_id,
                 ir.id_user,
                 ir.reported_by_user_id,
+                ir.performed_by_admin_user_id,
                 ir.type,
                 ir.severity,
                 ir.status,
@@ -224,7 +202,8 @@ def create_incident():
             "status": 201,
             "message": "Caso reportado",
             "performed_by": {
-                "role": role
+                "role": role,
+                "admin_user_id": admin_user_id
             },
             "incident": final_row
         }
@@ -248,6 +227,8 @@ def list_incidents():
     role = _get_current_incident_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
+    
+    admin_user_id = _get_current_admin_user_id()
 
     event_id = request.args.get("event_id", type=int)
     status = _normalize_status(request.args.get("status"))
@@ -282,6 +263,7 @@ def list_incidents():
             ir.request_id,
             ir.id_user,
             ir.reported_by_user_id,
+            ir.performed_by_admin_user_id,
             ir.type,
             ir.severity,
             ir.status,
@@ -306,7 +288,8 @@ def list_incidents():
     rows = fetch_all(sql, params)
     return jsonify({
         "performed_by": {
-            "role": role
+            "role": role,
+            "admin_user_id": admin_user_id
         },
         "items": rows
     }), 200
@@ -317,6 +300,8 @@ def get_incident(incident_id: int):
     role = _get_current_incident_role(request)
     if not role:
         return jsonify({"error": "No autorizado"}), 401
+    
+    admin_user_id = _get_current_admin_user_id()
 
     sql = """
         SELECT
@@ -325,6 +310,7 @@ def get_incident(incident_id: int):
             ir.request_id,
             ir.id_user,
             ir.reported_by_user_id,
+            ir.performed_by_admin_user_id,
             ir.type,
             ir.severity,
             ir.status,
@@ -343,7 +329,8 @@ def get_incident(incident_id: int):
 
     return jsonify({
         "performed_by": {
-            "role": role
+            "role": role,
+            "admin_user_id": admin_user_id
         },
         "incident": row
     }), 200
@@ -355,6 +342,7 @@ def update_incident(incident_id: int):
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
+    admin_user_id = _get_current_admin_user_id()
     payload = request.get_json(silent=True) or {}
 
     status = None
@@ -388,6 +376,10 @@ def update_incident(incident_id: int):
     if "resolution_notes" in payload:
         updates.append("resolution_notes = %s")
         params.append(resolution_notes)
+
+    if admin_user_id is not None:
+        updates.append("performed_by_admin_user_id = %s")
+        params.append(admin_user_id)
 
     if not updates:
         return jsonify({"error": "No hay cambios para aplicar"}), 400
@@ -431,6 +423,7 @@ def update_incident(incident_id: int):
                 ir.request_id,
                 ir.id_user,
                 ir.reported_by_user_id,
+                ir.performed_by_admin_user_id,
                 ir.type,
                 ir.severity,
                 ir.status,
@@ -450,7 +443,8 @@ def update_incident(incident_id: int):
             "status": 200,
             "message": "Caso actualizado",
             "performed_by": {
-                "role": role
+                "role": role,
+                "admin_user_id": admin_user_id
             },
             "incident": final_row
         }

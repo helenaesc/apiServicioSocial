@@ -6,6 +6,18 @@ from ..authz import require_role, ROLE_ADMIN
 admin_events_bp = Blueprint("admin_events", __name__)
 
 def _get_current_admin_role(req):
+    session_role = session.get("admin_user_role")
+    if session_role == ROLE_ADMIN:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN})
+    if legacy_role:
+        return legacy_role
+
+    return None
+
+
+def _get_current_admin_role(req):
     """
     Prioridad:
     1) sesión real
