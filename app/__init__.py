@@ -23,7 +23,7 @@ from .routes.admin_master_projects import admin_master_projects_bp
 from .routes.admin_catalogs import admin_catalogs_bp
 from .routes.admin_project_tokens import admin_project_tokens_bp
 from .routes.admin_project_import_export import admin_project_import_export_bp
-from .routes.admin_registration import admin_registrations_bp
+from .routes.admin_registrations import admin_registrations_bp
 from .routes.admin_session_auth import admin_session_auth_bp
 from .routes.admin_users_management import admin_users_management_bp
 from .routes.admin_registration_evidence import admin_registration_evidence_bp

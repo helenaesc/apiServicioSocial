@@ -47,12 +47,20 @@ def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _build_student_fingerprint(full_name: str, enrolment_number: str) -> str:
+    normalized_name = _normalize_text(full_name)
+    normalized_enrolment = (enrolment_number or "").strip().lower()
+    raw = f"{normalized_name}|{normalized_enrolment}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
 def _build_acceptance_snapshot(
     req_row: dict,
     ep_row: dict,
     token_row: dict,
     accepted_full_name: str,
     legal_text_version: str,
+    student_fingerprint: str,
 ) -> dict:
     return {
         "event_id": req_row["event_id"],
@@ -61,6 +69,7 @@ def _build_acceptance_snapshot(
         "enrolment_number": req_row["enrolment_number"],
         "student_full_name_system": req_row["full_name"],
         "accepted_full_name": accepted_full_name,
+        "student_fingerprint": student_fingerprint,
         "event_project_id": ep_row["event_project_id"],
         "project_id": ep_row["project_id"],
         "project_name": ep_row["project_name"],
@@ -405,13 +414,19 @@ def confirm_registration():
         if expected_name != provided_name:
             return {"error": "El nombre completo no coincide con el del alumno", "status": 409}
 
-        # 7) construir snapshot + hash + firma
+        # 7) construir fingerprint + snapshot + hash
+        student_fingerprint = _build_student_fingerprint(
+            accepted_full_name,
+            req_row["enrolment_number"]
+        )
+
         snapshot = _build_acceptance_snapshot(
             req_row=req_row,
             ep_row=ep_row,
             token_row=tk_row,
             accepted_full_name=accepted_full_name,
             legal_text_version=legal_text_version,
+            student_fingerprint=student_fingerprint,
         )
         snapshot_json = json.dumps(snapshot, ensure_ascii=False, sort_keys=True)
         acceptance_hash = _sha256_text(snapshot_json)
@@ -501,6 +516,7 @@ def confirm_registration():
                 "id": req_row["user_id"],
                 "full_name": req_row["full_name"],
                 "enrolment_number": req_row["enrolment_number"],
+                "student_fingerprint": student_fingerprint,
             },
             "project": {
                 "event_project_id": ep_row["event_project_id"],
@@ -523,17 +539,18 @@ def confirm_registration():
                 "token_value": tk_row["token_value"],
                 "accepted_full_name": accepted_full_name,
                 "legal_text_version": legal_text_version,
+                "student_fingerprint": student_fingerprint,
                 "acceptance_hash": acceptance_hash,
-                "acceptance_signature": acceptance_signature,
             },
             "legal_confirmation": {
                 "accepted_checkbox": True,
                 "accepted_full_name": accepted_full_name,
                 "legal_text_version": legal_text_version,
+                "student_fingerprint": student_fingerprint,
                 "acceptance_hash": acceptance_hash,
-                "acceptance_signature": acceptance_signature,
                 "accepted_ip": accepted_ip,
                 "accepted_user_agent": accepted_user_agent,
+                "acceptance_signature": acceptance_signature,
             }
         }
 

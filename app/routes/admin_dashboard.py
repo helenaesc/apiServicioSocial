@@ -137,15 +137,7 @@ def dashboard_projects():
     if not event_id:
         return jsonify({"error": "event_id es obligatorio"}), 400
 
-    event_row = fetch_one(
-        """
-        SELECT id
-        FROM events
-        WHERE id = %s
-        LIMIT 1
-        """,
-        [event_id]
-    )
+    event_row = fetch_one("SELECT id FROM events WHERE id = %s LIMIT 1", [event_id])
     if not event_row:
         return jsonify({"error": "Evento no encontrado"}), 404
 
@@ -157,6 +149,7 @@ def dashboard_projects():
             ep.slots_total,
             ep.status AS event_project_status,
             p.name AS project_name,
+            p.general_name,
             pa.name AS partner_name,
 
             (
@@ -220,10 +213,4 @@ def dashboard_projects():
         else:
             r["cupos_disponibles"] = max(slots_total - registered_count, 0)
 
-    return jsonify({
-        "performed_by": {
-            "role": role
-        },
-        "event_id": event_id,
-        "items": rows
-    }), 200
+    return jsonify(rows), 200

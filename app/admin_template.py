@@ -1522,13 +1522,17 @@ ADMIN_HTML = r"""
 
             <div class="form-grid">
               <div class="field">
-                <label>Registration ID</label>
-                <input id="evidenceRegistrationId" type="number" min="1" placeholder="Ej: 25">
+                <label>Matrícula</label>
+                <input id="evidenceEnrolmentNumber" placeholder="Ej: A01234567">
+              </div>
+              <div class="field">
+                <label>Temporada</label>
+                <select id="evidenceEventSelector"></select>
               </div>
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-primary" onclick="loadEvidenceById()">Ver evidencia</button>
+              <button type="button" class="btn-primary" onclick="loadEvidenceByEnrolment()">Ver evidencia</button>
             </div>
           </div>
 
@@ -1537,15 +1541,18 @@ ADMIN_HTML = r"""
               <h2>Detalle técnico / legal</h2>
               <span class="screen-chip">Integridad</span>
             </div>
+
             <div id="evidenceResult" class="evidence-box">
               <div class="record-card">
                 <div class="record-card__title">Sin consulta</div>
-                <div class="record-card__sub">Ingresa un registration_id para ver hash, firma y snapshot.</div>
+                <div class="record-card__sub">
+                  Ingresa matrícula y temporada para ver fingerprint, hash, firma y snapshot.
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </div> 
 
       <div class="module" id="importExportModule">
         <div class="module-grid">
@@ -1605,334 +1612,372 @@ ADMIN_HTML = r"""
   </div>
 
   <script>
-    let staffQrScanner = null;
-    let lastScannedPassSession = null;
-    let currentUser = null;
-    let allEvents = [];
-    let masterProjectsCache = [];
-    let eventProjectsCache = [];
+  let staffQrScanner = null;
+  let lastScannedPassSession = null;
+  let currentUser = null;
+  let allEvents = [];
+  let masterProjectsCache = [];
+  let eventProjectsCache = [];
 
-    const MODULE_META = {
-      summaryModule: { title: 'Dashboard', subtitle: 'Visión ejecutiva del evento.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
-      eventsModule: { title: 'Temporadas', subtitle: 'Configuración de ciclos y ventanas operativas.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
-      masterProjectsModule: { title: 'Proyectos Base', subtitle: 'Catálogo maestro de proyectos.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
-      eventProjectsModule: { title: 'Proyectos Activos', subtitle: 'Activación de proyectos por temporada.', kicker: 'Operación', accent: '#FF8C42', accentSoft: '#FFF3EA' },
-      tokensModule: { title: 'Tokens', subtitle: 'Generación, consulta y revocación.', kicker: 'Operación', accent: '#FF8C42', accentSoft: '#FFF3EA' },
-      registrationsModule: { title: 'Inscritos', subtitle: 'Consulta de cierres de inscripción.', kicker: 'Operación', accent: '#43AA8B', accentSoft: '#ECFDF7' },
-      checkinModule: { title: 'Check-in (QR)', subtitle: 'Escaneo y habilitación de acceso.', kicker: 'Operación', accent: '#43AA8B', accentSoft: '#ECFDF7' },
-      incidentsModule: { title: 'Incidentes', subtitle: 'Seguimiento de problemas y casos especiales.', kicker: 'Control', accent: '#F25C78', accentSoft: '#FFF1F5' },
-      staffModule: { title: 'Staff', subtitle: 'Gestión de cuentas operativas.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
-      evidenceModule: { title: 'Evidencia Legal', subtitle: 'Hash, firma y snapshot del registro.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
-      importExportModule: { title: 'Carga Masiva', subtitle: 'Importación y exportación del catálogo.', kicker: 'Control', accent: '#F25C78', accentSoft: '#FFF1F5' },
-      exportModule: { title: 'Exportación', subtitle: 'Reporte completo por temporada.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' }
+  const MODULE_META = {
+    summaryModule: { title: 'Dashboard', subtitle: 'Visión ejecutiva del evento.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
+    eventsModule: { title: 'Temporadas', subtitle: 'Configuración de ciclos y ventanas operativas.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
+    masterProjectsModule: { title: 'Proyectos Base', subtitle: 'Catálogo maestro de proyectos.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
+    eventProjectsModule: { title: 'Proyectos Activos', subtitle: 'Activación de proyectos por temporada.', kicker: 'Operación', accent: '#FF8C42', accentSoft: '#FFF3EA' },
+    tokensModule: { title: 'Tokens', subtitle: 'Generación, consulta y revocación.', kicker: 'Operación', accent: '#FF8C42', accentSoft: '#FFF3EA' },
+    registrationsModule: { title: 'Inscritos', subtitle: 'Consulta de cierres de inscripción.', kicker: 'Operación', accent: '#43AA8B', accentSoft: '#ECFDF7' },
+    checkinModule: { title: 'Check-in (QR)', subtitle: 'Escaneo y habilitación de acceso.', kicker: 'Operación', accent: '#43AA8B', accentSoft: '#ECFDF7' },
+    incidentsModule: { title: 'Incidentes', subtitle: 'Seguimiento de problemas y casos especiales.', kicker: 'Control', accent: '#F25C78', accentSoft: '#FFF1F5' },
+    staffModule: { title: 'Staff', subtitle: 'Gestión de cuentas operativas.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
+    evidenceModule: { title: 'Evidencia Legal', subtitle: 'Hash, firma y snapshot del registro.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
+    importExportModule: { title: 'Carga Masiva', subtitle: 'Importación y exportación del catálogo.', kicker: 'Control', accent: '#F25C78', accentSoft: '#FFF1F5' },
+    exportModule: { title: 'Exportación', subtitle: 'Reporte completo por temporada.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' }
+  };
+
+  function escapeHTML(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function prettyJSON(value) {
+    try {
+      if (typeof value === 'string') {
+        return JSON.stringify(JSON.parse(value), null, 2);
+      }
+      return JSON.stringify(value ?? {}, null, 2);
+    } catch {
+      return String(value ?? '');
+    }
+  }
+
+  function showMsg(text, ok = true, login = false) {
+    const target = login ? document.getElementById('msgLogin') : document.getElementById('msgApp');
+    if (!target) return;
+    target.textContent = text || '';
+    target.className = 'msg ' + (ok ? 'ok' : 'err');
+  }
+
+  function clearLoginFields() {
+    const email = document.getElementById('loginEmail');
+    const password = document.getElementById('loginPassword');
+    if (email) email.value = '';
+    if (password) password.value = '';
+  }
+
+  function setModuleAccent(accent, accentSoft) {
+    document.documentElement.style.setProperty('--module-accent', accent);
+    document.documentElement.style.setProperty('--module-accent-soft', accentSoft);
+  }
+
+  function showModule(moduleId) {
+    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+    const moduleEl = document.getElementById(moduleId);
+    if (moduleEl) moduleEl.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll(`.nav-item[data-module="${moduleId}"]`).forEach(x => x.classList.add('active'));
+
+    const meta = MODULE_META[moduleId] || MODULE_META.summaryModule;
+    document.getElementById('moduleTitle').textContent = meta.title;
+    document.getElementById('moduleSubtitle').textContent = meta.subtitle;
+    document.getElementById('moduleKicker').textContent = meta.kicker;
+    document.getElementById('headerAccentBadge').textContent = meta.title;
+    setModuleAccent(meta.accent, meta.accentSoft);
+  }
+
+  function applyRoleUI(user) {
+    currentUser = user || null;
+    const role = user?.role || '';
+
+    const loginHint = document.getElementById('loginHint');
+    const sidebarRoleBox = document.getElementById('sidebarRoleBox');
+    const headerRoleBadge = document.getElementById('headerRoleBadge');
+
+    if (loginHint) {
+      loginHint.textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: no iniciada';
+    }
+    if (sidebarRoleBox) {
+      sidebarRoleBox.textContent = role ? `Rol actual: ${role} · ${user.full_name || user.email || ''}` : 'Rol actual: —';
+    }
+    if (headerRoleBadge) {
+      headerRoleBadge.textContent = role || 'Panel';
+    }
+
+    document.getElementById('loginWrap')?.classList.toggle('hidden', !!role);
+    document.getElementById('appShell')?.classList.toggle('hidden', !role);
+
+    const adminNavWrap = document.getElementById('adminNavWrap');
+    const staffNavWrap = document.getElementById('staffNavWrap');
+
+    if (role === 'ADMIN') {
+      adminNavWrap?.classList.remove('hidden');
+      staffNavWrap?.classList.add('hidden');
+      showModule('summaryModule');
+    } else if (role === 'STAFF') {
+      adminNavWrap?.classList.add('hidden');
+      staffNavWrap?.classList.remove('hidden');
+      showModule('checkinModule');
+    }
+  }
+
+  function boolFromString(v) {
+    return String(v).toLowerCase() === 'true';
+  }
+
+  function toSqlDateTime(value) {
+    if (!value) return null;
+    return value.replace('T', ' ') + ':00';
+  }
+
+  async function apiGet(url) {
+    const r = await fetch(url, { credentials: 'include' });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+    return data;
+  }
+
+  async function apiPost(url, body) {
+    const r = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+    return data;
+  }
+
+  async function apiPatch(url, body) {
+    const r = await fetch(url, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+    return data;
+  }
+
+  async function apiPut(url, body) {
+    const r = await fetch(url, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+    return data;
+  }
+
+  function statusBadge(status) {
+    const value = String(status || '').toUpperCase();
+    const map = {
+      DRAFT: ['badge badge-purple', 'DRAFT'],
+      VISIBLE: ['badge badge-purple', 'VISIBLE'],
+      ONSITE: ['badge badge-success', 'ONSITE'],
+      CLOSED: ['badge badge-warn', 'CLOSED'],
+      ARCHIVED: ['badge badge-danger', 'ARCHIVED'],
+      ACTIVE: ['badge badge-success', 'ACTIVE'],
+      CANCELLED: ['badge badge-danger', 'CANCELLED'],
+      HIDDEN: ['badge badge-warn', 'HIDDEN'],
+      OPEN: ['badge badge-danger', 'OPEN'],
+      IN_PROGRESS: ['badge badge-warn', 'IN_PROGRESS'],
+      RESOLVED: ['badge badge-success', 'RESOLVED'],
+      DISMISSED: ['badge badge-neutral', 'DISMISSED'],
+      AVAILABLE: ['badge badge-success', 'AVAILABLE'],
+      RESERVED: ['badge badge-warn', 'RESERVED'],
+      USED: ['badge badge-neutral', 'USED'],
+      REVOKED: ['badge badge-danger', 'REVOKED'],
+      EXPIRED: ['badge badge-danger', 'EXPIRED'],
+      DISABLED: ['badge badge-danger', 'DISABLED'],
+      ACCESS_ENABLED: ['badge badge-success', 'ACCESS_ENABLED'],
+      REGISTERED: ['badge badge-blue', 'REGISTERED'],
+      REQUESTED: ['badge badge-warn', 'REQUESTED'],
+      VALIDATED: ['badge badge-purple', 'VALIDATED']
     };
+    const cfg = map[value] || ['badge badge-neutral', value || '—'];
+    return `<span class="${cfg[0]}">${cfg[1]}</span>`;
+  }
 
-    function escapeHTML(value) {
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+  function fillSelect(id, items, placeholderText = 'Selecciona', labelFn = null) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = `<option value="">${placeholderText}</option>`;
+    for (const item of items || []) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = labelFn ? labelFn(item) : (item.name || item.description || item.display_name || item.id);
+      el.appendChild(opt);
     }
+  }
 
-    function showMsg(text, ok = true, login = false) {
-      const target = login ? document.getElementById('msgLogin') : document.getElementById('msgApp');
-      if (!target) return;
-      target.textContent = text || '';
-      target.className = 'msg ' + (ok ? 'ok' : 'err');
+  function fillSelectNoBlank(id, items, labelFn = null) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    for (const item of items || []) {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = labelFn ? labelFn(item) : (item.name || item.description || item.display_name || item.id);
+      el.appendChild(opt);
     }
+  }
 
-    function clearLoginFields() {
-      const email = document.getElementById('loginEmail');
-      const password = document.getElementById('loginPassword');
-      if (email) email.value = '';
-      if (password) password.value = '';
-    }
-
-    function setModuleAccent(accent, accentSoft) {
-      document.documentElement.style.setProperty('--module-accent', accent);
-      document.documentElement.style.setProperty('--module-accent-soft', accentSoft);
-    }
-
-    function showModule(moduleId) {
-      document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-      const moduleEl = document.getElementById(moduleId);
-      if (moduleEl) moduleEl.classList.add('active');
-
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll(`.nav-item[data-module="${moduleId}"]`).forEach(x => x.classList.add('active'));
-
-      const meta = MODULE_META[moduleId] || MODULE_META.summaryModule;
-      document.getElementById('moduleTitle').textContent = meta.title;
-      document.getElementById('moduleSubtitle').textContent = meta.subtitle;
-      document.getElementById('moduleKicker').textContent = meta.kicker;
-      document.getElementById('headerAccentBadge').textContent = meta.title;
-
-      setModuleAccent(meta.accent, meta.accentSoft);
-    }
-
-    function applyRoleUI(user) {
-      currentUser = user || null;
-      const role = user?.role || '';
-
-      document.getElementById('loginHint').textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: no iniciada';
-      document.getElementById('sidebarRoleBox').textContent = role ? `Rol actual: ${role} · ${user.full_name || user.email || ''}` : 'Rol actual: —';
-      document.getElementById('headerRoleBadge').textContent = role || 'Panel';
-
-      document.getElementById('loginWrap').classList.toggle('hidden', !!role);
-      document.getElementById('appShell').classList.toggle('hidden', !role);
-
-      const adminNavWrap = document.getElementById('adminNavWrap');
-      const staffNavWrap = document.getElementById('staffNavWrap');
-
-      if (role === 'ADMIN') {
-        adminNavWrap.classList.remove('hidden');
-        staffNavWrap.classList.add('hidden');
-        showModule('summaryModule');
-      } else if (role === 'STAFF') {
-        adminNavWrap.classList.add('hidden');
-        staffNavWrap.classList.remove('hidden');
-        showModule('checkinModule');
+  function ensureSelectsDefault(ids) {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.value && el.options.length > 0) {
+        el.selectedIndex = 0;
       }
-    }
+    });
+  }
 
-    function boolFromString(v) {
-      return String(v).toLowerCase() === 'true';
-    }
+  function renderXPBar(registrados, slotsTotales) {
+    const usados = Number(registrados || 0);
+    const total = Number(slotsTotales || 0);
+    const porcentaje = total > 0 ? Math.round((usados / total) * 100) : 0;
+    const porcentajeSeguro = Math.min(porcentaje, 100);
+    const levelUpClass = porcentaje >= 100 ? 'level-up' : '';
 
-    function toSqlDateTime(value) {
-      if (!value) return null;
-      return value.replace('T', ' ') + ':00';
-    }
+    return `
+      <div class="xp-wrapper">
+        <div class="xp-text">
+          <span>Ocupación</span>
+          <span>${porcentaje}%</span>
+        </div>
+        <div class="xp-bar-bg">
+          <div class="xp-bar-fill ${levelUpClass}" style="width:${porcentajeSeguro}%"></div>
+        </div>
+      </div>
+    `;
+  }
 
-    async function apiGet(url) {
-      const r = await fetch(url, { credentials: 'include' });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
-      return data;
-    }
+  function renderEmptyCard(title, subtitle = '') {
+    return `
+      <div class="record-card">
+        <div class="record-card__title">${escapeHTML(title)}</div>
+        <div class="record-card__sub">${escapeHTML(subtitle)}</div>
+      </div>
+    `;
+  }
 
-    async function apiPost(url, body) {
-      const r = await fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body || {})
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
-      return data;
-    }
+  async function loginAdmin() {
+    try {
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
 
-    async function apiPatch(url, body) {
-      const r = await fetch(url, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body || {})
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
-      return data;
-    }
+      if (!email) return showMsg('Escribe tu correo', false, true);
+      if (!password) return showMsg('Escribe tu contraseña', false, true);
 
-    async function apiPut(url, body) {
-      const r = await fetch(url, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body || {})
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
-      return data;
+      const data = await apiPost('/api/admin-auth/login', { email, password });
+      showMsg(data.message || 'Login correcto', true, true);
+      await bootstrapAdmin();
+    } catch (e) {
+      showMsg(e.message, false, true);
     }
+  }
 
-    function statusBadge(status) {
-      const value = String(status || '').toUpperCase();
-      const map = {
-        DRAFT: ['badge badge-purple', 'DRAFT'],
-        VISIBLE: ['badge badge-purple', 'VISIBLE'],
-        ONSITE: ['badge badge-success', 'ONSITE'],
-        CLOSED: ['badge badge-warn', 'CLOSED'],
-        ARCHIVED: ['badge badge-danger', 'ARCHIVED'],
-        ACTIVE: ['badge badge-success', 'ACTIVE'],
-        CANCELLED: ['badge badge-danger', 'CANCELLED'],
-        HIDDEN: ['badge badge-warn', 'HIDDEN'],
-        OPEN: ['badge badge-danger', 'OPEN'],
-        IN_PROGRESS: ['badge badge-warn', 'IN_PROGRESS'],
-        RESOLVED: ['badge badge-success', 'RESOLVED'],
-        DISMISSED: ['badge badge-neutral', 'DISMISSED'],
-        AVAILABLE: ['badge badge-success', 'AVAILABLE'],
-        RESERVED: ['badge badge-warn', 'RESERVED'],
-        USED: ['badge badge-neutral', 'USED'],
-        REVOKED: ['badge badge-danger', 'REVOKED'],
-        EXPIRED: ['badge badge-danger', 'EXPIRED'],
-        DISABLED: ['badge badge-danger', 'DISABLED']
+  async function logoutAdmin() {
+    try {
+      await apiPost('/api/admin-auth/logout', {});
+    } catch (e) {}
+    currentUser = null;
+    applyRoleUI(null);
+    clearLoginFields();
+    showMsg('Sesión cerrada', true, true);
+  }
+
+  async function fetchSessionUser() {
+    try {
+      const data = await apiGet('/api/admin-auth/me');
+      return data.user || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function bootstrapAdmin() {
+    const user = await fetchSessionUser();
+    applyRoleUI(user);
+    if (!user) return;
+
+    const tasks = [loadEvents(), loadAdminCatalogs(), loadMasterProjects()];
+    if (user.role === 'ADMIN') tasks.push(loadStaff());
+    await Promise.allSettled(tasks);
+  }
+
+  async function createAdminEvent() {
+    try {
+      const year = Number(document.getElementById('eventYear').value);
+      const season = document.getElementById('eventSeason').value;
+      const status = document.getElementById('eventStatus').value;
+      const isVisible = boolFromString(document.getElementById('eventVisible').value);
+
+      if (!year || year < 2020 || year > 2100) return showMsg('Año inválido', false);
+
+      const payload = {
+        year,
+        season,
+        status,
+        is_visible_to_students: isVisible,
+        catalog_open_at: toSqlDateTime(document.getElementById('eventCatalogOpenAt').value),
+        onsite_start_at: toSqlDateTime(document.getElementById('eventOnsiteStartAt').value),
+        onsite_end_at: toSqlDateTime(document.getElementById('eventOnsiteEndAt').value),
+        registration_close_at: toSqlDateTime(document.getElementById('eventRegistrationCloseAt').value)
       };
-      const cfg = map[value] || ['badge badge-neutral', value || '—'];
-      return `<span class="${cfg[0]}">${cfg[1]}</span>`;
+
+      const data = await apiPost('/api/admin/events', payload);
+      showMsg(data.message || 'Temporada creada');
+      await loadEvents();
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    function fillSelect(id, items, placeholderText = 'Selecciona', labelFn = null) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.innerHTML = `<option value="">${placeholderText}</option>`;
-      for (const item of items || []) {
-        const opt = document.createElement('option');
-        opt.value = item.id;
-        opt.textContent = labelFn ? labelFn(item) : (item.name || item.description || item.display_name || item.id);
-        el.appendChild(opt);
-      }
-    }
+  async function loadEvents() {
+    try {
+      const data = await apiGet('/api/admin/events');
+      allEvents = data || [];
 
-    function fillSelectNoBlank(id, items, labelFn = null) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.innerHTML = '';
-      for (const item of items || []) {
-        const opt = document.createElement('option');
-        opt.value = item.id;
-        opt.textContent = labelFn ? labelFn(item) : (item.name || item.description || item.display_name || item.id);
-        el.appendChild(opt);
-      }
-    }
+      fillSelectNoBlank('eventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+      fillSelectNoBlank('dashboardEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+      fillSelectNoBlank('eventProjectEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+      fillSelectNoBlank('registrationsEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+      fillSelectNoBlank('exportEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+      fillSelectNoBlank('evidenceEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
 
-    function ensureSelectsDefault(ids) {
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && !el.value && el.options.length > 0) {
-          el.selectedIndex = 0;
-        }
-      });
-    }
+      ensureSelectsDefault([
+        'eventSelector',
+        'dashboardEventSelector',
+        'eventProjectEventSelector',
+        'registrationsEventSelector',
+        'exportEventSelector',
+        'evidenceEventSelector'
+      ]);
 
-    function renderXPBar(registrados, slotsTotales) {
-      const usados = Number(registrados || 0);
-      const total = Number(slotsTotales || 0);
-      const porcentaje = total > 0 ? Math.round((usados / total) * 100) : 0;
-      const porcentajeSeguro = Math.min(porcentaje, 100);
-      const levelUpClass = porcentaje >= 100 ? 'level-up' : '';
+      const eventsList = document.getElementById('eventsList');
 
-      return `
-        <div class="xp-wrapper">
-          <div class="xp-text">
-            <span>Ocupación</span>
-            <span>${porcentaje}%</span>
-          </div>
-          <div class="xp-bar-bg">
-            <div class="xp-bar-fill ${levelUpClass}" style="width:${porcentajeSeguro}%"></div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderEmptyCard(title, subtitle = '') {
-      return `
-        <div class="record-card">
-          <div class="record-card__title">${escapeHTML(title)}</div>
-          <div class="record-card__sub">${escapeHTML(subtitle)}</div>
-        </div>
-      `;
-    }
-
-    async function loginAdmin() {
-      try {
-        const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-        const password = document.getElementById('loginPassword').value;
-
-        if (!email) return showMsg('Escribe tu correo', false, true);
-        if (!password) return showMsg('Escribe tu contraseña', false, true);
-
-        const data = await apiPost('/api/admin-auth/login', { email, password });
-        showMsg(data.message || 'Login correcto', true, true);
-        await bootstrapAdmin();
-      } catch (e) {
-        showMsg(e.message, false, true);
-      }
-    }
-
-    async function logoutAdmin() {
-      try {
-        await apiPost('/api/admin-auth/logout', {});
-      } catch (e) {}
-      currentUser = null;
-      applyRoleUI(null);
-      clearLoginFields();
-      showMsg('Sesión cerrada', true, true);
-    }
-
-    async function fetchSessionUser() {
-      try {
-        const data = await apiGet('/api/admin-auth/me');
-        return data.user || null;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    async function bootstrapAdmin() {
-      const user = await fetchSessionUser();
-      applyRoleUI(user);
-      if (!user) return;
-
-      const tasks = [loadEvents(), loadAdminCatalogs(), loadMasterProjects()];
-      if (user.role === 'ADMIN') tasks.push(loadStaff());
-      await Promise.allSettled(tasks);
-    }
-
-    async function createAdminEvent() {
-      try {
-        const year = Number(document.getElementById('eventYear').value);
-        const season = document.getElementById('eventSeason').value;
-        const status = document.getElementById('eventStatus').value;
-        const isVisible = boolFromString(document.getElementById('eventVisible').value);
-
-        if (!year || year < 2020 || year > 2100) {
-          return showMsg('Año inválido', false);
-        }
-
-        const payload = {
-          year,
-          season,
-          status,
-          is_visible_to_students: isVisible,
-          catalog_open_at: toSqlDateTime(document.getElementById('eventCatalogOpenAt').value),
-          onsite_start_at: toSqlDateTime(document.getElementById('eventOnsiteStartAt').value),
-          onsite_end_at: toSqlDateTime(document.getElementById('eventOnsiteEndAt').value),
-          registration_close_at: toSqlDateTime(document.getElementById('eventRegistrationCloseAt').value)
-        };
-
-        const data = await apiPost('/api/admin/events', payload);
-        showMsg(data.message || 'Temporada creada');
-        await loadEvents();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
-
-    async function loadEvents() {
-      try {
-        const data = await apiGet('/api/admin/events');
-        allEvents = data || [];
-
-        fillSelectNoBlank('eventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
-        fillSelectNoBlank('dashboardEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
-        fillSelectNoBlank('eventProjectEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
-        fillSelectNoBlank('registrationsEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
-        fillSelectNoBlank('exportEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
-        ensureSelectsDefault(['eventSelector', 'dashboardEventSelector', 'eventProjectEventSelector', 'registrationsEventSelector', 'exportEventSelector']);
-
-        const eventsList = document.getElementById('eventsList');
-        if (!allEvents.length) {
+      if (!allEvents.length) {
+        if (eventsList) {
           eventsList.innerHTML = renderEmptyCard('No hay temporadas creadas', 'Crea la primera temporada para comenzar.');
-          document.getElementById('selectedEventInfo').innerHTML = '';
-          document.getElementById('dashboardSummary').innerHTML = '';
-          document.getElementById('dashboardProjectsBody').innerHTML = renderEmptyCard('Sin temporadas', 'No hay nada que mostrar todavía.');
-          return;
         }
+        const selectedInfo = document.getElementById('selectedEventInfo');
+        const dashboardSummary = document.getElementById('dashboardSummary');
+        const dashboardProjectsBody = document.getElementById('dashboardProjectsBody');
+        if (selectedInfo) selectedInfo.innerHTML = '';
+        if (dashboardSummary) dashboardSummary.innerHTML = '';
+        if (dashboardProjectsBody) dashboardProjectsBody.innerHTML = renderEmptyCard('Sin temporadas', 'No hay nada que mostrar todavía.');
+        return;
+      }
 
+      if (eventsList) {
         eventsList.innerHTML = allEvents.map(e => `
           <div class="record-card">
             <div class="record-card__head">
@@ -1953,26 +1998,28 @@ ADMIN_HTML = r"""
             </div>
           </div>
         `).join('');
-
-        await loadSelectedEventInfo();
-        await loadEventProjects();
-        await loadDashboard();
-        await loadIncidents();
-      } catch (e) {
-        showMsg(e.message, false);
       }
+
+      await loadSelectedEventInfo();
+      await loadEventProjects();
+      await loadDashboard();
+      await loadIncidents();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function loadSelectedEventInfo() {
+    const eventId = document.getElementById('eventSelector')?.value;
+    const box = document.getElementById('selectedEventInfo');
+    if (!eventId) {
+      if (box) box.innerHTML = '';
+      return;
     }
 
-    async function loadSelectedEventInfo() {
-      const eventId = document.getElementById('eventSelector').value;
-      const box = document.getElementById('selectedEventInfo');
-      if (!eventId) {
-        box.innerHTML = '';
-        return;
-      }
-
-      try {
-        const e = await apiGet(`/api/admin/events/${eventId}`);
+    try {
+      const e = await apiGet(`/api/admin/events/${eventId}`);
+      if (box) {
         box.innerHTML = `
           <div class="record-card">
             <div class="record-card__head">
@@ -1988,608 +2035,700 @@ ADMIN_HTML = r"""
             <div class="stack-row"><strong>ID:</strong><span>${e.id}</span></div>
           </div>
         `;
-        document.getElementById('incidentEventId').value = e.id;
-      } catch (e) {
-        box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar la temporada');
       }
+      const incidentEventId = document.getElementById('incidentEventId');
+      if (incidentEventId) incidentEventId.value = e.id;
+    } catch (e) {
+      if (box) box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar la temporada');
     }
+  }
 
-    async function updateSelectedEvent() {
-      const eventId = document.getElementById('eventSelector').value;
-      if (!eventId) return showMsg('Selecciona una temporada', false);
+  async function updateSelectedEvent() {
+    const eventId = document.getElementById('eventSelector')?.value;
+    if (!eventId) return showMsg('Selecciona una temporada', false);
 
-      const body = {};
-      const statusVal = document.getElementById('eventStatusUpdate').value;
-      const visibleVal = document.getElementById('eventVisibleUpdate').value;
+    const body = {};
+    const statusVal = document.getElementById('eventStatusUpdate')?.value;
+    const visibleVal = document.getElementById('eventVisibleUpdate')?.value;
 
-      if (statusVal) body.status = statusVal;
-      if (visibleVal !== '') body.is_visible_to_students = boolFromString(visibleVal);
+    if (statusVal) body.status = statusVal;
+    if (visibleVal !== '') body.is_visible_to_students = boolFromString(visibleVal);
 
-      if (!Object.keys(body).length) {
-        return showMsg('No hay cambios para aplicar', false);
-      }
+    if (!Object.keys(body).length) return showMsg('No hay cambios para aplicar', false);
 
-      try {
-        const data = await apiPatch(`/api/admin/events/${eventId}`, body);
-        showMsg(data.message || 'Temporada actualizada');
-        await loadEvents();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
+    try {
+      const data = await apiPatch(`/api/admin/events/${eventId}`, body);
+      showMsg(data.message || 'Temporada actualizada');
+      await loadEvents();
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    async function setSelectedEventVisible() {
-      const eventId = document.getElementById('eventSelector').value;
-      if (!eventId) return showMsg('Selecciona una temporada', false);
+  async function setSelectedEventVisible() {
+    const eventId = document.getElementById('eventSelector')?.value;
+    if (!eventId) return showMsg('Selecciona una temporada', false);
 
-      try {
-        const data = await apiPut(`/api/admin/events/${eventId}/visible`, {});
-        showMsg(data.message || 'Temporada visible actualizada');
-        await loadEvents();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
+    try {
+      const data = await apiPut(`/api/admin/events/${eventId}/visible`, {});
+      showMsg(data.message || 'Temporada visible actualizada');
+      await loadEvents();
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    async function loadAdminCatalogs() {
-      try {
-        const data = await apiGet('/api/admin/catalogs');
-        fillSelect('mp_partner', data.socio || [], 'Selecciona', item => item.name);
-        fillSelect('mp_modality', data.modalidad || [], 'Selecciona', item => item.description);
-        fillSelect('mp_week_days', data.dias || [], 'Selecciona', item => item.description);
-        fillSelect('mp_schedule', data.horario || [], 'Selecciona', item => item.description);
-      } catch (e) {
-        showMsg('Error cargando catálogos admin: ' + e.message, false);
-      }
+  async function loadAdminCatalogs() {
+    try {
+      const data = await apiGet('/api/admin/catalogs');
+      fillSelect('mp_partner', data.socio || [], 'Selecciona', item => item.name);
+      fillSelect('mp_modality', data.modalidad || [], 'Selecciona', item => item.description);
+      fillSelect('mp_week_days', data.dias || [], 'Selecciona', item => item.description);
+      fillSelect('mp_schedule', data.horario || [], 'Selecciona', item => item.description);
+    } catch (e) {
+      showMsg('Error cargando catálogos admin: ' + e.message, false);
     }
+  }
 
-    async function createMasterProject() {
-      try {
-        const payload = {
-          general_name: document.getElementById('mp_general_name').value.trim(),
-          name: document.getElementById('mp_name').value.trim(),
-          id_partner: Number(document.getElementById('mp_partner').value),
-          id_modality: Number(document.getElementById('mp_modality').value),
-          id_week_days: Number(document.getElementById('mp_week_days').value),
-          id_schedule: Number(document.getElementById('mp_schedule').value),
-          slots: Number(document.getElementById('mp_slots').value || 0),
-          schedule_description: document.getElementById('mp_schedule_description').value.trim(),
-          team_owners: document.getElementById('mp_team_owners').value.trim(),
-          objectives: document.getElementById('mp_objectives').value.trim(),
-          activities: document.getElementById('mp_activities').value.trim(),
-          clave: document.getElementById('mp_clave').value.trim(),
-          competencies: document.getElementById('mp_competencies').value.trim(),
-          location: document.getElementById('mp_location').value.trim(),
-          duration: document.getElementById('mp_duration').value.trim(),
-          audience: document.getElementById('mp_audience').value.trim(),
-          max_hours: document.getElementById('mp_max_hours').value.trim(),
-          comments: document.getElementById('mp_comments').value.trim()
-        };
+  async function createMasterProject() {
+    try {
+      const payload = {
+        general_name: document.getElementById('mp_general_name')?.value.trim(),
+        name: document.getElementById('mp_name')?.value.trim(),
+        id_partner: Number(document.getElementById('mp_partner')?.value),
+        id_modality: Number(document.getElementById('mp_modality')?.value),
+        id_week_days: Number(document.getElementById('mp_week_days')?.value),
+        id_schedule: Number(document.getElementById('mp_schedule')?.value),
+        slots: Number(document.getElementById('mp_slots')?.value || 0),
+        schedule_description: document.getElementById('mp_schedule_description')?.value.trim(),
+        team_owners: document.getElementById('mp_team_owners')?.value.trim(),
+        objectives: document.getElementById('mp_objectives')?.value.trim(),
+        activities: document.getElementById('mp_activities')?.value.trim(),
+        clave: document.getElementById('mp_clave')?.value.trim(),
+        competencies: document.getElementById('mp_competencies')?.value.trim(),
+        location: document.getElementById('mp_location')?.value.trim(),
+        duration: document.getElementById('mp_duration')?.value.trim(),
+        audience: document.getElementById('mp_audience')?.value.trim(),
+        max_hours: document.getElementById('mp_max_hours')?.value.trim(),
+        comments: document.getElementById('mp_comments')?.value.trim()
+      };
 
-        const data = await apiPost('/api/admin/projects', payload);
-        showMsg(data.message || 'Proyecto base creado');
-        await loadMasterProjects();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
+      const data = await apiPost('/api/admin/projects', payload);
+      showMsg(data.message || 'Proyecto base creado');
+      await loadMasterProjects();
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    async function loadMasterProjects() {
-      try {
-        const q = document.getElementById('masterProjectsSearch')?.value?.trim() || '';
-        const query = q ? `?q=${encodeURIComponent(q)}` : '';
-        const data = await apiGet('/api/admin/projects' + query);
+  async function loadMasterProjects() {
+    try {
+      const q = document.getElementById('masterProjectsSearch')?.value?.trim() || '';
+      const query = q ? `?q=${encodeURIComponent(q)}` : '';
+      const data = await apiGet('/api/admin/projects' + query);
 
-        masterProjectsCache = data || [];
-        fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto base', p => `${p.general_name || 'Sin nombre general'} | ${p.name}`);
+      masterProjectsCache = data || [];
+      fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto base', p => `${p.general_name || 'Sin nombre general'} | ${p.name}`);
 
-        const list = document.getElementById('masterProjectsList');
-        if (!masterProjectsCache.length) {
-          list.innerHTML = renderEmptyCard('No hay proyectos base', 'Crea el primero para empezar.');
-          return;
-        }
+      const list = document.getElementById('masterProjectsList');
+      if (!list) return;
 
-        list.innerHTML = masterProjectsCache.map(p => `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name)}</div>
-                <div class="record-card__sub">Project ID: ${p.id}</div>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <span class="badge badge-purple">${escapeHTML(p.modality_name || '—')}</span>
-                <span class="badge badge-neutral">${escapeHTML(p.week_days_name || '—')}</span>
-                <span class="badge badge-neutral">${escapeHTML(p.schedule_name || '—')}</span>
-              </div>
-            </div>
-            <div class="record-stack">
-              <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(p.partner_name || '—')}</span></div>
-              <div class="stack-row"><strong>Horario:</strong><span>${escapeHTML(p.schedule_description || '—')}</span></div>
-              <div class="stack-row"><strong>Duración:</strong><span>${escapeHTML(p.duration || '—')}</span></div>
-              <div class="stack-row"><strong>Clave:</strong><span>${escapeHTML(p.clave || '—')}</span></div>
-            </div>
-          </div>
-        `).join('');
-      } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
-
-    async function addProjectToEvent() {
-      const eventId = document.getElementById('eventProjectEventSelector').value;
-      const projectId = document.getElementById('projectSelector').value;
-      const slots = Number(document.getElementById('slotsInput').value);
-
-      if (!eventId) return showMsg('Selecciona una temporada', false);
-      if (!projectId) return showMsg('Selecciona un proyecto base', false);
-      if (Number.isNaN(slots) || slots < 0) return showMsg('Slots inválidos', false);
-
-      try {
-        const data = await apiPost(`/api/admin/events/${eventId}/projects`, {
-          project_id: Number(projectId),
-          slots_total: slots
-        });
-        showMsg(data.message || 'Proyecto activado en temporada');
-        await loadEventProjects();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
-
-    async function loadEventProjects() {
-      const eventId = document.getElementById('eventProjectEventSelector').value;
-      const container = document.getElementById('eventProjectsList');
-
-      if (!eventId) {
-        container.innerHTML = renderEmptyCard('Selecciona una temporada', 'Después podrás ver y operar los proyectos activos.');
+      if (!masterProjectsCache.length) {
+        list.innerHTML = renderEmptyCard('No hay proyectos base', 'Crea el primero para empezar.');
         return;
       }
 
-      try {
-        const data = await apiGet(`/api/admin/events/${eventId}/projects`);
-        eventProjectsCache = data || [];
-
-        fillSelect('tokensEventProjectSelector', eventProjectsCache, 'Selecciona proyecto en temporada', p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`);
-
-        if (!eventProjectsCache.length) {
-          container.innerHTML = renderEmptyCard('No hay proyectos activos', 'Activa un proyecto para esta temporada.');
-          return;
-        }
-
-        container.innerHTML = eventProjectsCache.map(p => `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(p.name)}</div>
-                <div class="record-card__sub">Carrera preferida: ${escapeHTML(p.partner || '—')}</div>
-              </div>
-              <div>${statusBadge(p.status)}</div>
+      list.innerHTML = masterProjectsCache.map(p => `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name)}</div>
+              <div class="record-card__sub">Project ID: ${p.id}</div>
             </div>
-
-            <div class="record-stack">
-              <div class="stack-row"><strong>Project ID:</strong><span>${p.project_id}</span></div>
-              <div class="stack-row"><strong>EventProject ID:</strong><span>${p.id}</span></div>
-              <div class="stack-row"><strong>Slots:</strong><span>${p.slots_total}</span></div>
-            </div>
-
-            <div class="actions">
-              <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'ACTIVE')">Activar</button>
-              <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'HIDDEN')">Ocultar</button>
-              <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'CLOSED')">Cerrar</button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <span class="badge badge-purple">${escapeHTML(p.modality_name || '—')}</span>
+              <span class="badge badge-neutral">${escapeHTML(p.week_days_name || '—')}</span>
+              <span class="badge badge-neutral">${escapeHTML(p.schedule_name || '—')}</span>
             </div>
           </div>
-        `).join('');
-      } catch (e) {
-        container.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar proyectos activos');
-      }
+          <div class="record-stack">
+            <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(p.partner_name || '—')}</span></div>
+            <div class="stack-row"><strong>Horario:</strong><span>${escapeHTML(p.schedule_description || '—')}</span></div>
+            <div class="stack-row"><strong>Duración:</strong><span>${escapeHTML(p.duration || '—')}</span></div>
+            <div class="stack-row"><strong>Clave:</strong><span>${escapeHTML(p.clave || '—')}</span></div>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function addProjectToEvent() {
+    const eventId = document.getElementById('eventProjectEventSelector')?.value;
+    const projectId = document.getElementById('projectSelector')?.value;
+    const slots = Number(document.getElementById('slotsInput')?.value);
+
+    if (!eventId) return showMsg('Selecciona una temporada', false);
+    if (!projectId) return showMsg('Selecciona un proyecto base', false);
+    if (Number.isNaN(slots) || slots < 0) return showMsg('Slots inválidos', false);
+
+    try {
+      const data = await apiPost(`/api/admin/events/${eventId}/projects`, {
+        project_id: Number(projectId),
+        slots_total: slots
+      });
+      showMsg(data.message || 'Proyecto activado en temporada');
+      await loadEventProjects();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function loadEventProjects() {
+    const eventId = document.getElementById('eventProjectEventSelector')?.value;
+    const container = document.getElementById('eventProjectsList');
+
+    if (!container) return;
+
+    if (!eventId) {
+      container.innerHTML = renderEmptyCard('Selecciona una temporada', 'Después podrás ver y operar los proyectos activos.');
+      return;
     }
 
-    async function quickUpdateEventProject(eventProjectId, currentSlots, status) {
-      try {
-        const data = await apiPatch(`/api/admin/event-projects/${eventProjectId}`, { slots_total: currentSlots, status: status });
-        showMsg(data.message || 'Proyecto de temporada actualizado');
-        await loadEventProjects();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
+    try {
+      const data = await apiGet(`/api/admin/events/${eventId}/projects`);
+      eventProjectsCache = data || [];
+
+      fillSelect('tokensEventProjectSelector', eventProjectsCache, 'Selecciona proyecto en temporada', p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`);
+
+      if (!eventProjectsCache.length) {
+        container.innerHTML = renderEmptyCard('No hay proyectos activos', 'Activa un proyecto para esta temporada.');
+        return;
       }
+
+      container.innerHTML = eventProjectsCache.map(p => `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(p.name)}</div>
+              <div class="record-card__sub">Carrera preferida: ${escapeHTML(p.partner || '—')}</div>
+            </div>
+            <div>${statusBadge(p.status)}</div>
+          </div>
+
+          <div class="record-stack">
+            <div class="stack-row"><strong>Project ID:</strong><span>${p.project_id}</span></div>
+            <div class="stack-row"><strong>EventProject ID:</strong><span>${p.id}</span></div>
+            <div class="stack-row"><strong>Slots:</strong><span>${p.slots_total}</span></div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'ACTIVE')">Activar</button>
+            <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'HIDDEN')">Ocultar</button>
+            <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'CLOSED')">Cerrar</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      container.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar proyectos activos');
     }
+  }
 
-    async function generateProjectTokens() {
-      try {
-        const eventProjectId = document.getElementById('tokensEventProjectSelector').value;
-        const count = Number(document.getElementById('tokensCount').value || 0);
-        const length = Number(document.getElementById('tokensLength').value || 0);
+  async function quickUpdateEventProject(eventProjectId, currentSlots, status) {
+    try {
+      const data = await apiPatch(`/api/admin/event-projects/${eventProjectId}`, {
+        slots_total: currentSlots,
+        status: status
+      });
+      showMsg(data.message || 'Proyecto de temporada actualizado');
+      await loadEventProjects();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
 
-        if (!eventProjectId) return showMsg('Selecciona un proyecto en temporada', false);
+  async function generateProjectTokens() {
+    try {
+      const eventProjectId = document.getElementById('tokensEventProjectSelector')?.value;
+      const count = Number(document.getElementById('tokensCount')?.value || 0);
+      const length = Number(document.getElementById('tokensLength')?.value || 0);
 
-        const data = await apiPost(`/api/admin/event-projects/${eventProjectId}/tokens`, { count, length });
+      if (!eventProjectId) return showMsg('Selecciona un proyecto en temporada', false);
 
-        document.getElementById('tokensGenerationResult').innerHTML = `
+      const data = await apiPost(`/api/admin/event-projects/${eventProjectId}/tokens`, { count, length });
+
+      const result = document.getElementById('tokensGenerationResult');
+      if (result) {
+        result.innerHTML = `
           <div class="record-card">
             <div class="record-card__title">${escapeHTML(data.message || 'Tokens generados')}</div>
             <div class="record-card__sub">Creados: ${data.created || 0} · TTL: ${data.ttl_hours || '—'} horas</div>
             <div style="margin-top:12px;" class="mono">${(data.tokens || []).join(', ')}</div>
           </div>
         `;
-
-        showMsg(data.message || 'Tokens generados');
-        await loadProjectTokens();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
       }
+
+      showMsg(data.message || 'Tokens generados');
+      await loadProjectTokens();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function revokeProjectToken() {
+    try {
+      const token = document.getElementById('revokeTokenValue')?.value.trim().toUpperCase();
+      const reason = document.getElementById('revokeTokenReason')?.value.trim();
+
+      if (!token) return showMsg('Escribe un token', false);
+
+      const data = await apiPost('/api/admin/project-tokens/revoke', { token, reason });
+      showMsg(data.message || 'Token revocado');
+      await loadProjectTokens();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function loadProjectTokens() {
+    const eventProjectId = document.getElementById('tokensEventProjectSelector')?.value;
+    const status = document.getElementById('tokensStatusFilter')?.value || 'ALL';
+    const cards = document.getElementById('tokensCards');
+    const summary = document.getElementById('tokensSummary');
+
+    if (!cards || !summary) return;
+
+    if (!eventProjectId) {
+      cards.innerHTML = renderEmptyCard('Selecciona un proyecto', 'Después podrás ver el estado de sus tokens.');
+      summary.innerHTML = '';
+      return;
     }
 
-    async function revokeProjectToken() {
-      try {
-        const token = document.getElementById('revokeTokenValue').value.trim().toUpperCase();
-        const reason = document.getElementById('revokeTokenReason').value.trim();
+    try {
+      const data = await apiGet(`/api/admin/event-projects/${eventProjectId}/tokens?status=${encodeURIComponent(status)}`);
+      const s = data.summary || {};
 
-        if (!token) return showMsg('Escribe un token', false);
+      summary.innerHTML = `
+        <div class="kpi-card kpi-card--orange">
+          <div class="kpi-label">Available</div>
+          <div class="kpi-value">${s.available || 0}</div>
+          <div class="kpi-sub">Tokens libres</div>
+        </div>
+        <div class="kpi-card kpi-card--orange">
+          <div class="kpi-label">Reserved</div>
+          <div class="kpi-value">${s.reserved || 0}</div>
+          <div class="kpi-sub">En espera</div>
+        </div>
+        <div class="kpi-card kpi-card--green">
+          <div class="kpi-label">Used</div>
+          <div class="kpi-value">${s.used || 0}</div>
+          <div class="kpi-sub">Ya utilizados</div>
+        </div>
+        <div class="kpi-card kpi-card--pink">
+          <div class="kpi-label">Revocados + Expirados</div>
+          <div class="kpi-value">${(s.revoked || 0) + (s.expired || 0)}</div>
+          <div class="kpi-sub">Fuera de circulación</div>
+        </div>
+      `;
 
-        const data = await apiPost('/api/admin/project-tokens/revoke', { token, reason });
-        showMsg(data.message || 'Token revocado');
-        await loadProjectTokens();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
+      const items = data.items || [];
+      cards.innerHTML = items.length
+        ? items.map(t => `
+            <div class="record-card">
+              <div class="record-card__head">
+                <div>
+                  <div class="record-card__title">Token</div>
+                  <div class="record-card__sub"><span class="mono">${escapeHTML(t.token_value || '—')}</span></div>
+                </div>
+                <div>${statusBadge(t.status || '—')}</div>
+              </div>
+
+              <div class="record-stack">
+                <div class="stack-row"><strong>Reservado por:</strong><span>${escapeHTML(t.reserved_by_request_id || '—')}</span></div>
+                <div class="stack-row"><strong>Reserved until:</strong><span>${escapeHTML(t.reserved_until || '—')}</span></div>
+                <div class="stack-row"><strong>Usado por:</strong><span>${escapeHTML(t.used_by_request_id || '—')}</span></div>
+                <div class="stack-row"><strong>Usado:</strong><span>${escapeHTML(t.used_at || '—')}</span></div>
+                <div class="stack-row"><strong>Revocado:</strong><span>${escapeHTML(t.revoked_at || '—')}</span></div>
+                <div class="stack-row"><strong>Revocado por admin:</strong><span>${escapeHTML(t.revoked_by_admin_user_id || '—')}</span></div>
+                <div class="stack-row"><strong>Expira:</strong><span>${escapeHTML(t.expires_at || '—')}</span></div>
+              </div>
+            </div>
+          `).join('')
+        : renderEmptyCard('No hay tokens con ese filtro', 'Prueba otro estado o genera nuevos tokens.');
+    } catch (e) {
+      summary.innerHTML = '';
+      cards.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar tokens');
+    }
+  }
+
+  async function loadDashboard() {
+    const selector = document.getElementById('dashboardEventSelector');
+    const summaryBox = document.getElementById('dashboardSummary');
+    const body = document.getElementById('dashboardProjectsBody');
+
+    if (!selector || !summaryBox || !body) return;
+
+    const eventId = selector.value;
+    if (!eventId) {
+      summaryBox.innerHTML = '';
+      body.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás ver el dashboard.');
+      return;
     }
 
-    async function loadProjectTokens() {
-      const eventProjectId = document.getElementById('tokensEventProjectSelector').value;
-      const status = document.getElementById('tokensStatusFilter').value || 'ALL';
-      const cards = document.getElementById('tokensCards');
+    try {
+      const summary = await apiGet(`/api/admin/dashboard/summary?event_id=${eventId}`);
+      const projects = await apiGet(`/api/admin/dashboard/projects?event_id=${eventId}`);
 
-      if (!eventProjectId) {
-        cards.innerHTML = renderEmptyCard('Selecciona un proyecto', 'Después podrás ver el estado de sus tokens.');
+      const requests = summary.requests || {};
+      const incidents = summary.incidents || {};
+      const items = Array.isArray(projects) ? projects : [];
+
+      summaryBox.innerHTML = `
+        <div class="kpi-card kpi-card--green">
+          <div class="kpi-label">Total Inscritos</div>
+          <div class="kpi-value">${requests.registered || 0}</div>
+          <div class="kpi-sub">Alumnos con cierre final</div>
+        </div>
+        <div class="kpi-card kpi-card--orange">
+          <div class="kpi-label">Access Enabled</div>
+          <div class="kpi-value">${requests.access_enabled || 0}</div>
+          <div class="kpi-sub">Listos para registrar</div>
+        </div>
+        <div class="kpi-card kpi-card--purple">
+          <div class="kpi-label">Proyectos</div>
+          <div class="kpi-value">${items.length}</div>
+          <div class="kpi-sub">Activos en temporada</div>
+        </div>
+        <div class="kpi-card kpi-card--pink">
+          <div class="kpi-label">Incidentes</div>
+          <div class="kpi-value">${incidents.open || 0}</div>
+          <div class="kpi-sub">Pendientes de resolver</div>
+        </div>
+      `;
+
+      body.innerHTML = items.length
+        ? items.map(p => `
+            <div class="record-card">
+              <div class="record-card__head">
+                <div>
+                  <div class="record-card__title">${escapeHTML(p.project_name || '—')}</div>
+                  <div class="record-card__sub">${escapeHTML(p.partner_name || 'Sin carrera preferida')}</div>
+                </div>
+                <div>${statusBadge(p.event_project_status)}</div>
+              </div>
+
+              <div class="record-stack">
+                <div class="stack-row"><strong>Slots:</strong><span>${escapeHTML(p.slots_total || 0)}</span></div>
+                <div class="stack-row"><strong>Registrados:</strong><span>${escapeHTML(p.registered_count || 0)}</span></div>
+                <div class="stack-row"><strong>Disponibles:</strong><span>${escapeHTML(p.cupos_disponibles || 0)}</span></div>
+                <div class="stack-row"><strong>Tokens usados:</strong><span>${escapeHTML(p.tokens_used || 0)}</span></div>
+                <div class="stack-row"><strong>Revocados:</strong><span>${escapeHTML(p.tokens_revoked || 0)}</span></div>
+                <div class="stack-row"><strong>Expirados:</strong><span>${escapeHTML(p.tokens_expired || 0)}</span></div>
+              </div>
+
+              <div style="margin-top:12px;">
+                ${renderXPBar(p.registered_count || 0, p.slots_total || 0)}
+              </div>
+            </div>
+          `).join('')
+        : renderEmptyCard('No hay proyectos cargados en esta temporada', 'Activa proyectos para empezar a operar.');
+    } catch (e) {
+      summaryBox.innerHTML = '';
+      body.innerHTML = renderEmptyCard('No se pudo cargar dashboard', e.message || 'Error inesperado');
+      showMsg(e.message, false);
+    }
+  }
+
+  async function loadRegistrations() {
+    const eventId = document.getElementById('registrationsEventSelector')?.value;
+    const cards = document.getElementById('registrationsCards');
+
+    if (!cards) return;
+
+    if (!eventId) {
+      cards.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás consultar inscripciones cerradas.');
+      return;
+    }
+
+    try {
+      const rows = await apiGet(`/api/admin/registrations?event_id=${encodeURIComponent(eventId)}`);
+
+      if (!rows.length) {
+        cards.innerHTML = renderEmptyCard('No hay inscripciones', 'Todavía no hay registros para esta temporada.');
         return;
       }
 
-      try {
-        const data = await apiGet(`/api/admin/event-projects/${eventProjectId}/tokens?status=${encodeURIComponent(status)}`);
-        const s = data.summary || {};
-
-        document.getElementById('tokensSummary').innerHTML = `
-          <div class="kpi-card kpi-card--orange">
-            <div class="kpi-label">Available</div>
-            <div class="kpi-value">${s.available || 0}</div>
-            <div class="kpi-sub">Tokens libres</div>
-          </div>
-          <div class="kpi-card kpi-card--orange">
-            <div class="kpi-label">Reserved</div>
-            <div class="kpi-value">${s.reserved || 0}</div>
-            <div class="kpi-sub">En espera</div>
-          </div>
-          <div class="kpi-card kpi-card--green">
-            <div class="kpi-label">Used</div>
-            <div class="kpi-value">${s.used || 0}</div>
-            <div class="kpi-sub">Ya utilizados</div>
-          </div>
-          <div class="kpi-card kpi-card--pink">
-            <div class="kpi-label">Revocados + Expirados</div>
-            <div class="kpi-value">${(s.revoked || 0) + (s.expired || 0)}</div>
-            <div class="kpi-sub">Fuera de circulación</div>
-          </div>
-        `;
-
-        const items = data.items || [];
-        cards.innerHTML = items.length
-          ? items.map(t => `
-              <div class="record-card">
-                <div class="record-card__head">
-                  <div>
-                    <div class="record-card__title">Token</div>
-                    <div class="record-card__sub"><span class="mono">${escapeHTML(t.token_value || '—')}</span></div>
-                  </div>
-                  <div>${statusBadge(t.status || '—')}</div>
-                </div>
-
-                <div class="record-stack">
-                  <div class="stack-row"><strong>Reservado por:</strong><span>${escapeHTML(t.reserved_by_request_id || '—')}</span></div>
-                  <div class="stack-row"><strong>Reserved until:</strong><span>${escapeHTML(t.reserved_until || '—')}</span></div>
-                  <div class="stack-row"><strong>Usado por:</strong><span>${escapeHTML(t.used_by_request_id || '—')}</span></div>
-                  <div class="stack-row"><strong>Usado:</strong><span>${escapeHTML(t.used_at || '—')}</span></div>
-                  <div class="stack-row"><strong>Revocado:</strong><span>${escapeHTML(t.revoked_at || '—')}</span></div>
-                  <div class="stack-row"><strong>Revocado por admin:</strong><span>${escapeHTML(t.revoked_by_admin_user_id || '—')}</span></div>
-                  <div class="stack-row"><strong>Expira:</strong><span>${escapeHTML(t.expires_at || '—')}</span></div>
-                </div>
+      cards.innerHTML = rows.map(r => `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(r.student_name || r.student_full_name || '—')}</div>
+              <div class="record-card__sub">
+                <span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span>
               </div>
-            `).join('')
-          : renderEmptyCard('No hay tokens con ese filtro', 'Prueba otro estado o genera nuevos tokens.');
-      } catch (e) {
-        cards.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar tokens');
-      }
-    }
-
-    async function loadDashboard() {
-      const selector = document.getElementById('dashboardEventSelector');
-      const summaryBox = document.getElementById('dashboardSummary');
-      const body = document.getElementById('dashboardProjectsBody');
-
-      const eventId = selector.value;
-      if (!eventId) {
-        summaryBox.innerHTML = '';
-        body.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás ver el dashboard.');
-        return;
-      }
-
-      try {
-        const summary = await apiGet(`/api/admin/dashboard/summary?event_id=${eventId}`);
-        const projects = await apiGet(`/api/admin/dashboard/projects?event_id=${eventId}`);
-
-        const requests = summary.requests || {};
-        const incidents = summary.incidents || {};
-        const items = Array.isArray(projects) ? projects : [];
-
-        summaryBox.innerHTML = `
-          <div class="kpi-card kpi-card--green">
-            <div class="kpi-label">Total Inscritos</div>
-            <div class="kpi-value">${requests.registered || 0}</div>
-            <div class="kpi-sub">Alumnos con cierre final</div>
-          </div>
-          <div class="kpi-card kpi-card--orange">
-            <div class="kpi-label">Access Enabled</div>
-            <div class="kpi-value">${requests.access_enabled || 0}</div>
-            <div class="kpi-sub">Listos para registrar</div>
-          </div>
-          <div class="kpi-card kpi-card--purple">
-            <div class="kpi-label">Proyectos</div>
-            <div class="kpi-value">${items.length}</div>
-            <div class="kpi-sub">Activos en temporada</div>
-          </div>
-          <div class="kpi-card kpi-card--pink">
-            <div class="kpi-label">Incidentes</div>
-            <div class="kpi-value">${incidents.open || 0}</div>
-            <div class="kpi-sub">Pendientes de resolver</div>
-          </div>
-        `;
-
-        body.innerHTML = items.length
-          ? items.map(p => `
-              <div class="record-card">
-                <div class="record-card__head">
-                  <div>
-                    <div class="record-card__title">${escapeHTML(p.project_name || '—')}</div>
-                    <div class="record-card__sub">${escapeHTML(p.partner_name || 'Sin carrera preferida')}</div>
-                  </div>
-                  <div>${statusBadge(p.event_project_status)}</div>
-                </div>
-
-                <div class="record-stack">
-                  <div class="stack-row"><strong>Slots:</strong><span>${escapeHTML(p.slots_total || 0)}</span></div>
-                  <div class="stack-row"><strong>Registrados:</strong><span>${escapeHTML(p.registered_count || 0)}</span></div>
-                  <div class="stack-row"><strong>Disponibles:</strong><span>${escapeHTML(p.cupos_disponibles || 0)}</span></div>
-                  <div class="stack-row"><strong>Tokens usados:</strong><span>${escapeHTML(p.tokens_used || 0)}</span></div>
-                  <div class="stack-row"><strong>Revocados:</strong><span>${escapeHTML(p.tokens_revoked || 0)}</span></div>
-                  <div class="stack-row"><strong>Expirados:</strong><span>${escapeHTML(p.tokens_expired || 0)}</span></div>
-                </div>
-
-                <div style="margin-top:12px;">
-                  ${renderXPBar(p.registered_count || 0, p.slots_total || 0)}
-                </div>
-              </div>
-            `).join('')
-          : renderEmptyCard('No hay proyectos cargados en esta temporada', 'Activa proyectos para empezar a operar.');
-
-      } catch (e) {
-        summaryBox.innerHTML = '';
-        body.innerHTML = renderEmptyCard('No se pudo cargar dashboard', e.message || 'Error inesperado');
-        showMsg(e.message, false);
-      }
-    }
-
-    async function loadRegistrations() {
-      const eventId = document.getElementById('registrationsEventSelector').value;
-      const cards = document.getElementById('registrationsCards');
-
-      if (!eventId) {
-        cards.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás consultar inscripciones cerradas.');
-        return;
-      }
-
-      try {
-        const rows = await apiGet(`/api/admin/registrations?event_id=${encodeURIComponent(eventId)}`);
-
-        if (!rows.length) {
-          cards.innerHTML = renderEmptyCard('No hay inscripciones', 'Todavía no hay registros para esta temporada.');
-          return;
-        }
-
-        cards.innerHTML = rows.map(r => `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(r.student_name || r.student_full_name || '—')}</div>
-                <div class="record-card__sub">
-                  <span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span>
-                </div>
-              </div>
-              <div>${statusBadge(r.registration_status || r.status || '—')}</div>
             </div>
-
-            <div class="record-stack">
-              <div class="stack-row"><strong>Registration ID:</strong><span>${escapeHTML(r.registration_id || r.id || '—')}</span></div>
-              <div class="stack-row"><strong>Proyecto:</strong><span>${escapeHTML(r.project_name || '—')}</span></div>
-              <div class="stack-row"><strong>Organización:</strong><span>${escapeHTML(r.general_name || '—')}</span></div>
-              <div class="stack-row"><strong>Carrera preferida:</strong><span>${escapeHTML(r.partner_name || '—')}</span></div>
-              <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(r.folio || '—')}</span></div>
-              <div class="stack-row"><strong>Token:</strong><span class="mono">${escapeHTML(r.token_value || '—')}</span></div>
-              <div class="stack-row"><strong>Nombre aceptado:</strong><span>${escapeHTML(r.accepted_full_name || '—')}</span></div>
-              <div class="stack-row"><strong>Versión legal:</strong><span>${escapeHTML(r.legal_text_version || '—')}</span></div>
-              <div class="stack-row"><strong>Fecha cierre:</strong><span>${escapeHTML(r.accepted_at || '—')}</span></div>
-
-              ${
-                (r.registration_status || r.status) === 'CANCELLED'
-                  ? `
-                    <div class="stack-row"><strong>Fecha baja:</strong><span>${escapeHTML(r.cancelled_at || '—')}</span></div>
-                    <div class="stack-row"><strong>Motivo baja:</strong><span>${escapeHTML(r.cancel_reason || '—')}</span></div>
-                    <div class="stack-row"><strong>Cancelado por admin:</strong><span>${escapeHTML(r.cancelled_by_admin_user_id || '—')}</span></div>
-                  `
-                  : ''
-              }
-            </div>
-
-            <div class="actions">
-              <button type="button" class="btn-secondary" onclick="setEvidenceFromRegistration(${Number(r.registration_id || r.id || 0)})">Ver evidencia</button>
-
-              ${
-                (r.registration_status || r.status) === 'ACTIVE'
-                  ? `<button type="button" class="btn-danger" onclick="cancelRegistration(${Number(r.registration_id || r.id || 0)})">Dar de baja</button>`
-                  : ''
-              }
-            </div>
+            <div>${statusBadge(r.registration_status || r.status || '—')}</div>
           </div>
-        `).join('');
 
-        showMsg('Inscripciones cargadas correctamente');
-      } catch (e) {
-        cards.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar inscripciones');
-        showMsg(e.message, false);
-      }
+          <div class="record-stack">
+            <div class="stack-row"><strong>Registration ID:</strong><span>${escapeHTML(r.registration_id || r.id || '—')}</span></div>
+            <div class="stack-row"><strong>Proyecto:</strong><span>${escapeHTML(r.project_name || '—')}</span></div>
+            <div class="stack-row"><strong>Organización:</strong><span>${escapeHTML(r.general_name || '—')}</span></div>
+            <div class="stack-row"><strong>Carrera preferida:</strong><span>${escapeHTML(r.partner_name || '—')}</span></div>
+            <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(r.folio || '—')}</span></div>
+            <div class="stack-row"><strong>Token:</strong><span class="mono">${escapeHTML(r.token_value || '—')}</span></div>
+            <div class="stack-row"><strong>Nombre aceptado:</strong><span>${escapeHTML(r.accepted_full_name || '—')}</span></div>
+            <div class="stack-row"><strong>Versión legal:</strong><span>${escapeHTML(r.legal_text_version || '—')}</span></div>
+            <div class="stack-row"><strong>Fecha cierre:</strong><span>${escapeHTML(r.accepted_at || '—')}</span></div>
+
+            ${
+              (r.registration_status || r.status) === 'CANCELLED'
+                ? `
+                  <div class="stack-row"><strong>Fecha baja:</strong><span>${escapeHTML(r.cancelled_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Motivo baja:</strong><span>${escapeHTML(r.cancel_reason || '—')}</span></div>
+                  <div class="stack-row"><strong>Cancelado por admin:</strong><span>${escapeHTML(r.cancelled_by_admin_user_id || '—')}</span></div>
+                `
+                : ''
+            }
+          </div>
+
+          <div class="actions">
+            <button
+              type="button"
+              class="btn-secondary"
+              data-enrolment="${escapeHTML(r.enrolment_number || '')}"
+              data-event-id="${Number(r.event_id || eventId || 0)}"
+              onclick="openEvidenceFromButton(this)"
+            >
+              Ver evidencia
+            </button>
+
+            ${
+              (r.registration_status || r.status) === 'ACTIVE'
+                ? `
+                  <button
+                    type="button"
+                    class="btn-danger"
+                    onclick="cancelRegistration(${Number(r.registration_id || r.id || 0)})"
+                  >
+                    Dar de baja
+                  </button>
+                `
+                : ''
+            }
+          </div>
+        </div>
+      `).join('');
+
+      showMsg('Inscripciones cargadas correctamente');
+    } catch (e) {
+      cards.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar inscripciones');
+      showMsg(e.message, false);
+    }
+  }
+
+  function openEvidenceFromButton(btn) {
+    const enrolmentNumber = btn?.dataset?.enrolment || '';
+    const eventId = Number(btn?.dataset?.eventId || 0);
+    setEvidenceFromRegistration(enrolmentNumber, eventId);
+  }
+
+  function setEvidenceFromRegistration(enrolmentNumber, eventId) {
+    const enrolmentInput = document.getElementById('evidenceEnrolmentNumber');
+    const eventSelect = document.getElementById('evidenceEventSelector');
+    if (enrolmentInput) enrolmentInput.value = enrolmentNumber || '';
+    if (eventId && eventSelect) eventSelect.value = String(eventId);
+    showModule('evidenceModule');
+    loadEvidenceByEnrolment();
+  }
+
+  async function loadEvidenceByEnrolment() {
+    const enrolment = (document.getElementById('evidenceEnrolmentNumber')?.value || '').trim();
+    const eventId = document.getElementById('evidenceEventSelector')?.value;
+    const box = document.getElementById('evidenceResult');
+
+    if (!box) return;
+
+    if (!enrolment) {
+      return showMsg('Ingresa una matrícula válida', false);
     }
 
-    function setEvidenceFromRegistration(registrationId) {
-      document.getElementById('evidenceRegistrationId').value = registrationId;
-      showModule('evidenceModule');
-      loadEvidenceById();
-    }
+    try {
+      const params = new URLSearchParams();
+      params.set('enrolment_number', enrolment);
+      if (eventId) params.set('event_id', eventId);
 
-    async function loadEvidenceById() {
-      const registrationId = Number(document.getElementById('evidenceRegistrationId').value || 0);
-      const box = document.getElementById('evidenceResult');
+      const data = await apiGet(`/api/admin/registrations/evidence?${params.toString()}`);
 
-      if (!registrationId) {
-        return showMsg('Ingresa un registration_id válido', false);
-      }
+      const v = data.verification || {};
+      const legal = data.legal_confirmation || {};
+      const reg = data.registration || {};
+      const student = data.student || {};
+      const project = data.project || {};
+      const request = data.request || {};
+      const event = data.event || {};
+      const evidence = data.evidence || {};
 
-      try {
-        const data = await apiGet(`/api/admin/registrations/${registrationId}/evidence`);
-        const v = data.verification || {};
-        const legal = data.legal_confirmation || {};
-        const reg = data.registration || {};
-        const student = data.student || {};
-        const project = data.project || {};
-        const request = data.request || {};
-        const event = data.event || {};
-        const evidence = data.evidence || {};
-
-        box.innerHTML = `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(student.full_name || 'Alumno')}</div>
-                <div class="record-card__sub">Registration ID: ${escapeHTML(reg.id || '—')} · Folio: ${escapeHTML(request.folio || '—')}</div>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                ${v.verified ? '<span class="badge badge-success">FIRMA VERIFICADA</span>' : '<span class="badge badge-danger">FIRMA NO VÁLIDA</span>'}
-                ${v.hash_matches ? '<span class="badge badge-success">HASH OK</span>' : '<span class="badge badge-danger">HASH FAIL</span>'}
-                ${v.signature_matches ? '<span class="badge badge-success">SIGNATURE OK</span>' : '<span class="badge badge-danger">SIGNATURE FAIL</span>'}
+      box.innerHTML = `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(student.full_name || 'Alumno')}</div>
+              <div class="record-card__sub">
+                Matrícula: ${escapeHTML(student.enrolment_number || '—')} ·
+                Folio: ${escapeHTML(request.folio || '—')}
               </div>
             </div>
 
-            <div class="record-stack">
-              <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(event.display_name || '—')}</span></div>
-              <div class="stack-row"><strong>Proyecto:</strong><span>${escapeHTML(project.project_name || '—')}</span></div>
-              <div class="stack-row"><strong>Nombre aceptado:</strong><span>${escapeHTML(legal.accepted_full_name || '—')}</span></div>
-              <div class="stack-row"><strong>Versión legal:</strong><span>${escapeHTML(legal.legal_text_version || '—')}</span></div>
-              <div class="stack-row"><strong>Fecha aceptación:</strong><span>${escapeHTML(legal.accepted_at || '—')}</span></div>
-              <div class="stack-row"><strong>IP:</strong><span>${escapeHTML(legal.accepted_ip || '—')}</span></div>
-              <div class="stack-row"><strong>User agent:</strong><span>${escapeHTML(legal.accepted_user_agent || '—')}</span></div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              ${v.verified
+                ? '<span class="badge badge-success">VERIFICADO</span>'
+                : '<span class="badge badge-danger">NO VERIFICADO</span>'}
+              ${v.hash_matches
+                ? '<span class="badge badge-success">HASH OK</span>'
+                : '<span class="badge badge-danger">HASH FAIL</span>'}
+              ${v.signature_matches
+                ? '<span class="badge badge-success">SIGNATURE OK</span>'
+                : '<span class="badge badge-danger">SIGNATURE FAIL</span>'}
+              ${statusBadge(reg.status || '—')}
             </div>
           </div>
 
-          <div class="record-card">
-            <div class="record-card__title">Hash guardado</div>
-            <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.stored_hash || '—')}</span></div>
+          <div class="record-stack">
+            <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(event.display_name || '—')}</span></div>
+            <div class="stack-row"><strong>Proyecto:</strong><span>${escapeHTML(project.project_name || '—')}</span></div>
+            <div class="stack-row"><strong>Organización:</strong><span>${escapeHTML(project.general_name || '—')}</span></div>
+            <div class="stack-row"><strong>Nombre aceptado:</strong><span>${escapeHTML(legal.accepted_full_name || '—')}</span></div>
+            <div class="stack-row"><strong>Versión legal:</strong><span>${escapeHTML(legal.legal_text_version || '—')}</span></div>
+            <div class="stack-row"><strong>Fecha aceptación:</strong><span>${escapeHTML(legal.accepted_at || '—')}</span></div>
+            <div class="stack-row"><strong>IP:</strong><span>${escapeHTML(legal.accepted_ip || '—')}</span></div>
+            <div class="stack-row"><strong>User agent:</strong><span>${escapeHTML(legal.accepted_user_agent || '—')}</span></div>
+            <div class="stack-row"><strong>Fingerprint:</strong><span class="mono">${escapeHTML(student.student_fingerprint || '—')}</span></div>
           </div>
+        </div>
 
-          <div class="record-card">
-            <div class="record-card__title">Firma guardada</div>
-            <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.stored_signature || '—')}</span></div>
+        <div class="record-card">
+          <div class="record-card__title">Hash guardado</div>
+          <div class="record-card__sub" style="margin-top:8px;">
+            <span class="mono">${escapeHTML(evidence.stored_hash || '—')}</span>
           </div>
+        </div>
 
-          <div class="record-card">
-            <div class="record-card__title">Snapshot JSON</div>
-            <div class="json-box">${escapeHTML(evidence.snapshot_json || '')}</div>
+        <div class="record-card">
+          <div class="record-card__title">Hash recalculado</div>
+          <div class="record-card__sub" style="margin-top:8px;">
+            <span class="mono">${escapeHTML(evidence.recalculated_hash || '—')}</span>
           </div>
-        `;
+        </div>
 
-        showMsg('Evidencia legal cargada correctamente');
-      } catch (e) {
-        box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar evidencia');
-        showMsg(e.message, false);
-      }
+        <div class="record-card">
+          <div class="record-card__title">Firma guardada</div>
+          <div class="record-card__sub" style="margin-top:8px;">
+            <span class="mono">${escapeHTML(evidence.stored_signature || '—')}</span>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-card__title">Firma recalculada</div>
+          <div class="record-card__sub" style="margin-top:8px;">
+            <span class="mono">${escapeHTML(evidence.recalculated_signature || '—')}</span>
+          </div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-card__title">Snapshot parseado</div>
+          <div class="json-box">${escapeHTML(prettyJSON(evidence.snapshot_data || {}))}</div>
+        </div>
+
+        <div class="record-card">
+          <div class="record-card__title">Snapshot JSON original</div>
+          <div class="json-box">${escapeHTML(prettyJSON(evidence.snapshot_json || ''))}</div>
+        </div>
+      `;
+
+      showMsg('Evidencia legal cargada correctamente');
+    } catch (e) {
+      box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar evidencia');
+      showMsg(e.message, false);
     }
+  }
 
-    async function cancelRegistration(registrationId) {
-      try {
-        if (!registrationId) return showMsg('registrationId inválido', false);
+  async function cancelRegistration(registrationId) {
+    try {
+      if (!registrationId) return showMsg('registrationId inválido', false);
 
-        const reason = window.prompt('Escribe el motivo de baja:');
-        if (reason === null) return;
+      const reason = window.prompt('Escribe el motivo de baja:');
+      if (reason === null) return;
 
-        const cleanReason = reason.trim();
-        if (!cleanReason) return showMsg('El motivo es obligatorio', false);
+      const cleanReason = reason.trim();
+      if (!cleanReason) return showMsg('El motivo es obligatorio', false);
 
-        const data = await apiPatch(`/api/admin/registrations/${registrationId}/cancel`, { reason: cleanReason });
+      const data = await apiPatch(`/api/admin/registrations/${registrationId}/cancel`, {
+        reason: cleanReason
+      });
 
-        showMsg(data.message || 'Inscripción cancelada');
-        await loadRegistrations();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
+      showMsg(data.message || 'Inscripción cancelada');
+      await loadRegistrations();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    async function startQrScanner() {
-      try {
-        if (staffQrScanner) {
-          await stopQrScanner();
-        }
-
-        staffQrScanner = new Html5Qrcode('staffScanner');
-
-        await staffQrScanner.start(
-          { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          async (decodedText) => {
-            document.getElementById('staffScannedToken').value = decodedText;
-            await scanStaffQr();
-          },
-          () => {}
-        );
-
-        showMsg('Cámara activa para escaneo QR');
-      } catch (e) {
-        showMsg('No se pudo abrir la cámara: ' + e.message, false);
+  async function startQrScanner() {
+    try {
+      if (staffQrScanner) {
+        await stopQrScanner();
       }
-    }
 
-    async function stopQrScanner() {
-      try {
-        if (staffQrScanner) {
-          await staffQrScanner.stop();
-          await staffQrScanner.clear();
-          staffQrScanner = null;
-          showMsg('Cámara detenida');
-        }
-      } catch (e) {
-        showMsg('Error al detener cámara: ' + e.message, false);
+      staffQrScanner = new Html5Qrcode('staffScanner');
+
+      await staffQrScanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        async (decodedText) => {
+          const input = document.getElementById('staffScannedToken');
+          if (input) input.value = decodedText;
+          await scanStaffQr();
+        },
+        () => {}
+      );
+
+      showMsg('Cámara activa para escaneo QR');
+    } catch (e) {
+      showMsg('No se pudo abrir la cámara: ' + e.message, false);
+    }
+  }
+
+  async function stopQrScanner() {
+    try {
+      if (staffQrScanner) {
+        await staffQrScanner.stop();
+        await staffQrScanner.clear();
+        staffQrScanner = null;
+        showMsg('Cámara detenida');
       }
+    } catch (e) {
+      showMsg('Error al detener cámara: ' + e.message, false);
     }
+  }
 
-    async function scanStaffQr() {
-      try {
-        const token = document.getElementById('staffScannedToken').value.trim();
-        if (!token) return showMsg('Escanea o pega primero un QR/token', false);
+  async function scanStaffQr() {
+    try {
+      const token = document.getElementById('staffScannedToken')?.value.trim();
+      if (!token) return showMsg('Escanea o pega primero un QR/token', false);
 
-        const data = await apiPost('/api/staff/checkin/scan', { token });
-        lastScannedPassSession = data.pass_session?.id || null;
+      const data = await apiPost('/api/staff/checkin/scan', { token });
+      lastScannedPassSession = data.pass_session?.id || null;
 
-        document.getElementById('staffCheckinInfo').innerHTML = `
+      const info = document.getElementById('staffCheckinInfo');
+      if (info) {
+        info.innerHTML = `
           <div class="record-card">
             <div class="record-card__head">
               <div>
@@ -2607,231 +2746,241 @@ ADMIN_HTML = r"""
             </div>
           </div>
         `;
-
-        showMsg('QR válido. Verifica ahora la matrícula física.');
-      } catch (e) {
-        lastScannedPassSession = null;
-        document.getElementById('staffCheckinInfo').innerHTML = renderEmptyCard('QR inválido o no disponible', e.message || '');
-        showMsg(e.message, false);
       }
+
+      showMsg('QR válido. Verifica ahora la matrícula física.');
+    } catch (e) {
+      lastScannedPassSession = null;
+      const info = document.getElementById('staffCheckinInfo');
+      if (info) info.innerHTML = renderEmptyCard('QR inválido o no disponible', e.message || '');
+      showMsg(e.message, false);
     }
+  }
 
-    async function grantStaffAccess() {
-      try {
-        const passSessionId = lastScannedPassSession;
-        const enrolment = document.getElementById('staffPhysicalEnrolment').value.trim();
+  async function grantStaffAccess() {
+    try {
+      const passSessionId = lastScannedPassSession;
+      const enrolment = document.getElementById('staffPhysicalEnrolment')?.value.trim();
 
-        if (!passSessionId) return showMsg('Primero debes verificar el QR', false);
-        if (!enrolment) return showMsg('Falta capturar la matrícula física', false);
+      if (!passSessionId) return showMsg('Primero debes verificar el QR', false);
+      if (!enrolment) return showMsg('Falta capturar la matrícula física', false);
 
-        const data = await apiPost('/api/staff/checkin/grant-access', {
-          pass_session_id: passSessionId,
-          enrolment_number: enrolment
-        });
+      const data = await apiPost('/api/staff/checkin/grant-access', {
+        pass_session_id: passSessionId,
+        enrolment_number: enrolment
+      });
 
-        showMsg(data.message || 'Acceso habilitado');
-        document.getElementById('staffCheckinInfo').innerHTML += `
+      showMsg(data.message || 'Acceso habilitado');
+      const info = document.getElementById('staffCheckinInfo');
+      if (info) {
+        info.innerHTML += `
           <div class="record-card">
             <div class="record-card__title">Acceso habilitado correctamente</div>
             <div class="record-card__sub">El alumno ya puede entrar al catálogo y cerrar inscripción.</div>
           </div>
         `;
-      } catch (e) {
-        showMsg(e.message, false);
       }
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function createIncident() {
+    try {
+      const payload = {
+        event_id: Number(document.getElementById('incidentEventId')?.value),
+        request_id: document.getElementById('incidentRequestId')?.value || null,
+        id_user: document.getElementById('incidentUserId')?.value || null,
+        type: document.getElementById('incidentType')?.value,
+        severity: document.getElementById('incidentSeverity')?.value,
+        description: document.getElementById('incidentDescription')?.value.trim()
+      };
+
+      const data = await apiPost('/api/incidents', payload);
+      showMsg(data.message || 'Caso reportado');
+
+      if (document.getElementById('incidentDescription')) document.getElementById('incidentDescription').value = '';
+      if (document.getElementById('incidentRequestId')) document.getElementById('incidentRequestId').value = '';
+      if (document.getElementById('incidentUserId')) document.getElementById('incidentUserId').value = '';
+
+      await loadIncidents();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function loadIncidents() {
+    const eventId =
+      document.getElementById('eventSelector')?.value ||
+      document.getElementById('dashboardEventSelector')?.value ||
+      document.getElementById('eventProjectEventSelector')?.value ||
+      document.getElementById('registrationsEventSelector')?.value;
+
+    const list = document.getElementById('incidentsList');
+    if (!list) return;
+
+    if (!eventId) {
+      list.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás consultar incidentes.');
+      return;
     }
 
-    async function createIncident() {
-      try {
-        const payload = {
-          event_id: Number(document.getElementById('incidentEventId').value),
-          request_id: document.getElementById('incidentRequestId').value || null,
-          id_user: document.getElementById('incidentUserId').value || null,
-          type: document.getElementById('incidentType').value,
-          severity: document.getElementById('incidentSeverity').value,
-          description: document.getElementById('incidentDescription').value.trim()
-        };
+    const params = new URLSearchParams();
+    params.set('event_id', eventId);
 
-        const data = await apiPost('/api/incidents', payload);
-        showMsg(data.message || 'Caso reportado');
-        document.getElementById('incidentDescription').value = '';
-        document.getElementById('incidentRequestId').value = '';
-        document.getElementById('incidentUserId').value = '';
-        await loadIncidents();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
+    const status = document.getElementById('incidentFilterStatus')?.value;
+    const severity = document.getElementById('incidentFilterSeverity')?.value;
+    if (status) params.set('status', status);
+    if (severity) params.set('severity', severity);
 
-    async function loadIncidents() {
-      const eventId =
-        document.getElementById('eventSelector').value ||
-        document.getElementById('dashboardEventSelector').value ||
-        document.getElementById('eventProjectEventSelector').value ||
-        document.getElementById('registrationsEventSelector').value;
+    try {
+      const response = await apiGet(`/api/incidents?${params.toString()}`);
+      const data = Array.isArray(response) ? response : (response.items || []);
 
-      const list = document.getElementById('incidentsList');
-
-      if (!eventId) {
-        list.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás consultar incidentes.');
+      if (!data.length) {
+        list.innerHTML = renderEmptyCard('No hay incidentes con esos filtros', 'Prueba otro estado o severidad.');
         return;
       }
 
-      const params = new URLSearchParams();
-      params.set('event_id', eventId);
-
-      const status = document.getElementById('incidentFilterStatus').value;
-      const severity = document.getElementById('incidentFilterSeverity').value;
-      if (status) params.set('status', status);
-      if (severity) params.set('severity', severity);
-
-      try {
-        const response = await apiGet(`/api/incidents?${params.toString()}`);
-        const data = Array.isArray(response) ? response : (response.items || []);
-
-        if (!data.length) {
-          list.innerHTML = renderEmptyCard('No hay incidentes con esos filtros', 'Prueba otro estado o severidad.');
-          return;
-        }
-
-        list.innerHTML = data.map(i => `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(i.type)}</div>
-                <div class="record-card__sub">Incident ID: ${i.id} · Request ID: ${i.request_id ?? '—'} · User ID: ${i.id_user ?? '—'}</div>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                ${statusBadge(i.status)}
-                <span class="${i.severity === 'HIGH' ? 'badge badge-danger' : i.severity === 'MEDIUM' ? 'badge badge-warn' : 'badge badge-success'}">${i.severity}</span>
-              </div>
+      list.innerHTML = data.map(i => `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(i.type)}</div>
+              <div class="record-card__sub">Incident ID: ${i.id} · Request ID: ${i.request_id ?? '—'} · User ID: ${i.id_user ?? '—'}</div>
             </div>
-
-            <div class="record-stack">
-              <div class="stack-row"><strong>Descripción:</strong><span>${escapeHTML(i.description || 'Sin descripción')}</span></div>
-              <div class="stack-row"><strong>Creado:</strong><span>${escapeHTML(i.created_at || '—')}</span></div>
-              <div class="stack-row"><strong>Resuelto:</strong><span>${escapeHTML(i.resolved_at || '—')}</span></div>
-              <div class="stack-row"><strong>Actor admin:</strong><span>${escapeHTML(i.performed_by_admin_user_id || '—')}</span></div>
-            </div>
-
-            <div class="actions">
-              <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'IN_PROGRESS')">Marcar en proceso</button>
-              <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'RESOLVED')">Resolver</button>
-              <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'DISMISSED')">Descartar</button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              ${statusBadge(i.status)}
+              <span class="${i.severity === 'HIGH' ? 'badge badge-danger' : i.severity === 'MEDIUM' ? 'badge badge-warn' : 'badge badge-success'}">${i.severity}</span>
             </div>
           </div>
-        `).join('');
-      } catch (e) {
-        list.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar incidentes');
-      }
-    }
 
-    async function updateIncidentStatus(incidentId, status) {
-      try {
-        const data = await apiPatch(`/api/incidents/${incidentId}`, { status });
-        showMsg(data.message || 'Caso actualizado');
-        await loadIncidents();
-        await loadDashboard();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
-    }
-
-    async function loadStaff() {
-      const list = document.getElementById('staffList');
-      if (!list) return;
-
-      try {
-        const status = document.getElementById('staffStatusFilter')?.value || '';
-        const query = status ? `?status=${encodeURIComponent(status)}` : '';
-        const response = await apiGet('/api/admin/staff' + query);
-        const items = response.items || response || [];
-
-        if (!items.length) {
-          list.innerHTML = renderEmptyCard('No hay cuentas staff', 'Crea la primera cuenta operativa.');
-          return;
-        }
-
-        list.innerHTML = items.map(s => `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(s.full_name || '—')}</div>
-                <div class="record-card__sub">${escapeHTML(s.email || '—')}</div>
-              </div>
-              <div>${statusBadge(s.status)}</div>
-            </div>
-
-            <div class="record-stack">
-              <div class="stack-row"><strong>ID:</strong><span>${escapeHTML(s.id || '—')}</span></div>
-              <div class="stack-row"><strong>Último login:</strong><span>${escapeHTML(s.last_login_at || '—')}</span></div>
-              <div class="stack-row"><strong>Creado:</strong><span>${escapeHTML(s.created_at || '—')}</span></div>
-            </div>
-
-            <div class="actions">
-              <button type="button" class="btn-secondary" onclick="updateStaffStatus(${s.id}, 'ACTIVE')">Activar</button>
-              <button type="button" class="btn-danger" onclick="updateStaffStatus(${s.id}, 'DISABLED')">Desactivar</button>
-            </div>
+          <div class="record-stack">
+            <div class="stack-row"><strong>Descripción:</strong><span>${escapeHTML(i.description || 'Sin descripción')}</span></div>
+            <div class="stack-row"><strong>Creado:</strong><span>${escapeHTML(i.created_at || '—')}</span></div>
+            <div class="stack-row"><strong>Resuelto:</strong><span>${escapeHTML(i.resolved_at || '—')}</span></div>
+            <div class="stack-row"><strong>Actor admin:</strong><span>${escapeHTML(i.performed_by_admin_user_id || '—')}</span></div>
           </div>
-        `).join('');
-      } catch (e) {
-        list.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar staff');
-      }
+
+          <div class="actions">
+            <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'IN_PROGRESS')">Marcar en proceso</button>
+            <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'RESOLVED')">Resolver</button>
+            <button type="button" class="btn-secondary" onclick="updateIncidentStatus(${i.id}, 'DISMISSED')">Descartar</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      list.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar incidentes');
     }
+  }
 
-    async function createStaff() {
-      try {
-        const full_name = document.getElementById('staffFullName').value.trim();
-        const email = document.getElementById('staffEmail').value.trim().toLowerCase();
-        const password = document.getElementById('staffPassword').value;
-
-        if (!full_name) return showMsg('Falta nombre completo', false);
-        if (!email) return showMsg('Falta correo', false);
-        if (!password) return showMsg('Falta contraseña', false);
-
-        const data = await apiPost('/api/admin/staff', { full_name, email, password });
-        showMsg(data.message || 'Staff creado');
-
-        document.getElementById('staffFullName').value = '';
-        document.getElementById('staffEmail').value = '';
-        document.getElementById('staffPassword').value = '';
-
-        await loadStaff();
-      } catch (e) {
-        showMsg(e.message, false);
-      }
+  async function updateIncidentStatus(incidentId, status) {
+    try {
+      const data = await apiPatch(`/api/incidents/${incidentId}`, { status });
+      showMsg(data.message || 'Caso actualizado');
+      await loadIncidents();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    async function updateStaffStatus(userId, status) {
-      try {
-        const data = await apiPatch(`/api/admin/staff/${userId}/status`, { status });
-        showMsg(data.message || 'Estado de staff actualizado');
-        await loadStaff();
-      } catch (e) {
-        showMsg(e.message, false);
+  async function loadStaff() {
+    const list = document.getElementById('staffList');
+    if (!list) return;
+
+    try {
+      const status = document.getElementById('staffStatusFilter')?.value || '';
+      const query = status ? `?status=${encodeURIComponent(status)}` : '';
+      const response = await apiGet('/api/admin/staff' + query);
+      const items = response.items || response || [];
+
+      if (!items.length) {
+        list.innerHTML = renderEmptyCard('No hay cuentas staff', 'Crea la primera cuenta operativa.');
+        return;
       }
+
+      list.innerHTML = items.map(s => `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(s.full_name || '—')}</div>
+              <div class="record-card__sub">${escapeHTML(s.email || '—')}</div>
+            </div>
+            <div>${statusBadge(s.status)}</div>
+          </div>
+
+          <div class="record-stack">
+            <div class="stack-row"><strong>ID:</strong><span>${escapeHTML(s.id || '—')}</span></div>
+            <div class="stack-row"><strong>Último login:</strong><span>${escapeHTML(s.last_login_at || '—')}</span></div>
+            <div class="stack-row"><strong>Creado:</strong><span>${escapeHTML(s.created_at || '—')}</span></div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-secondary" onclick="updateStaffStatus(${s.id}, 'ACTIVE')">Activar</button>
+            <button type="button" class="btn-danger" onclick="updateStaffStatus(${s.id}, 'DISABLED')">Desactivar</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      list.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar staff');
     }
+  }
 
-    async function importProjects() {
-      try {
-        const fileInput = document.getElementById('importProjectsFile');
-        const file = fileInput.files?.[0];
-        if (!file) return showMsg('Selecciona un archivo Excel', false);
+  async function createStaff() {
+    try {
+      const full_name = document.getElementById('staffFullName')?.value.trim();
+      const email = document.getElementById('staffEmail')?.value.trim().toLowerCase();
+      const password = document.getElementById('staffPassword')?.value;
 
-        const formData = new FormData();
-        formData.append('file', file);
+      if (!full_name) return showMsg('Falta nombre completo', false);
+      if (!email) return showMsg('Falta correo', false);
+      if (!password) return showMsg('Falta contraseña', false);
 
-        const r = await fetch('/api/admin/projects/import', {
-          method: 'POST',
-          credentials: 'include',
-          body: formData
-        });
+      const data = await apiPost('/api/admin/staff', { full_name, email, password });
+      showMsg(data.message || 'Staff creado');
 
-        const data = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+      if (document.getElementById('staffFullName')) document.getElementById('staffFullName').value = '';
+      if (document.getElementById('staffEmail')) document.getElementById('staffEmail').value = '';
+      if (document.getElementById('staffPassword')) document.getElementById('staffPassword').value = '';
 
-        document.getElementById('importProjectsResult').innerHTML = `
+      await loadStaff();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function updateStaffStatus(userId, status) {
+    try {
+      const data = await apiPatch(`/api/admin/staff/${userId}/status`, { status });
+      showMsg(data.message || 'Estado de staff actualizado');
+      await loadStaff();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function importProjects() {
+    try {
+      const fileInput = document.getElementById('importProjectsFile');
+      const file = fileInput?.files?.[0];
+      if (!file) return showMsg('Selecciona un archivo Excel', false);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const r = await fetch('/api/admin/projects/import', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
+
+      const result = document.getElementById('importProjectsResult');
+      if (result) {
+        result.innerHTML = `
           <div class="record-card">
             <div class="record-card__title">${escapeHTML(data.message || 'Importación completada')}</div>
             <div class="record-card__sub">Insertados: ${data.inserted || 0} · Fallidos: ${data.failed || 0}</div>
@@ -2845,107 +2994,113 @@ ADMIN_HTML = r"""
             `).join('')
             : ''}
         `;
-
-        showMsg(data.message || 'Importación completada');
-        await loadMasterProjects();
-      } catch (e) {
-        showMsg(e.message, false);
       }
+
+      showMsg(data.message || 'Importación completada');
+      await loadMasterProjects();
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    async function exportProjects() {
-      try {
-        const r = await fetch('/api/admin/projects/export', {
-          credentials: 'include'
-        });
+  async function exportProjects() {
+    try {
+      const r = await fetch('/api/admin/projects/export', {
+        credentials: 'include'
+      });
 
-        if (!r.ok) {
-          const data = await r.json().catch(() => ({}));
-          throw new Error(data.error || ('Error ' + r.status));
-        }
-
-        const blob = await r.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'projects_export.xlsx';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-
-        showMsg('Exportación iniciada correctamente');
-      } catch (e) {
-        showMsg(e.message, false);
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        throw new Error(data.error || ('Error ' + r.status));
       }
+
+      const blob = await r.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'projects_export.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      showMsg('Exportación iniciada correctamente');
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    async function exportEventReport() {
-      const eventId = document.getElementById('exportEventSelector').value;
-      if (!eventId) return showMsg('Selecciona una temporada para exportar', false);
+  async function exportEventReport() {
+    const eventId = document.getElementById('exportEventSelector')?.value;
+    if (!eventId) return showMsg('Selecciona una temporada para exportar', false);
 
-      try {
-        const r = await fetch(`/api/admin/events/${eventId}/export`, {
-          credentials: 'include'
-        });
+    try {
+      const r = await fetch(`/api/admin/events/${eventId}/export`, {
+        credentials: 'include'
+      });
 
-        if (!r.ok) {
-          const data = await r.json().catch(() => ({}));
-          throw new Error(data.error || ('Error ' + r.status));
-        }
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        throw new Error(data.error || ('Error ' + r.status));
+      }
 
-        const blob = await r.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = '';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
+      const blob = await r.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
 
-        document.getElementById('exportHint').innerHTML = `
+      const hint = document.getElementById('exportHint');
+      if (hint) {
+        hint.innerHTML = `
           <div class="record-card">
             <div class="record-card__title">Exportación iniciada</div>
             <div class="record-card__sub">El reporte completo de la temporada se descargó correctamente.</div>
           </div>
         `;
-
-        showMsg('Exportación iniciada correctamente');
-      } catch (e) {
-        showMsg(e.message, false);
       }
+
+      showMsg('Exportación iniciada correctamente');
+    } catch (e) {
+      showMsg(e.message, false);
     }
+  }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await bootstrapAdmin();
+  document.addEventListener('DOMContentLoaded', async () => {
+    await bootstrapAdmin();
 
-      document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') loginAdmin();
-      });
-
-      document.getElementById('eventSelector')?.addEventListener('change', async () => {
-        await loadSelectedEventInfo();
-        document.getElementById('incidentEventId').value = document.getElementById('eventSelector').value || '';
-      });
-
-      document.getElementById('dashboardEventSelector')?.addEventListener('change', async () => {
-        await loadDashboard();
-      });
-
-      document.getElementById('eventProjectEventSelector')?.addEventListener('change', async () => {
-        await loadEventProjects();
-      });
-
-      document.getElementById('tokensEventProjectSelector')?.addEventListener('change', async () => {
-        await loadProjectTokens();
-      });
-
-      document.getElementById('registrationsEventSelector')?.addEventListener('change', async () => {
-        await loadRegistrations();
-      });
+    document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') loginAdmin();
     });
-  </script>
+
+    document.getElementById('eventSelector')?.addEventListener('change', async () => {
+      await loadSelectedEventInfo();
+      const incidentEventId = document.getElementById('incidentEventId');
+      if (incidentEventId) incidentEventId.value = document.getElementById('eventSelector').value || '';
+    });
+
+    document.getElementById('dashboardEventSelector')?.addEventListener('change', async () => {
+      await loadDashboard();
+    });
+
+    document.getElementById('eventProjectEventSelector')?.addEventListener('change', async () => {
+      await loadEventProjects();
+    });
+
+    document.getElementById('tokensEventProjectSelector')?.addEventListener('change', async () => {
+      await loadProjectTokens();
+    });
+
+    document.getElementById('registrationsEventSelector')?.addEventListener('change', async () => {
+      await loadRegistrations();
+    });
+  });
+</script>
 </body>
 </html>
 """
+
