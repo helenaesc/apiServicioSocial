@@ -79,6 +79,348 @@ def _get_visible_event_by_season(cur, season: str):
     )
     return cur.fetchone()
 
+@student_requests_bp.post("/api/student/requests")
+def create_student_request():
+    payload = request.get_json(silent=True) or {}
+
+    full_name = str(payload.get("full_name") or "").strip()
+    enrolment_number = str(payload.get("enrolment_number") or "").strip().lower()
+    email = str(payload.get("email") or "").strip().lower()
+    secondary_email = str(payload.get("second_email") or payload.get("secondary_email") or "").strip().lower() or None
+    phone_number = str(payload.get("phone_number") or "").strip()
+    degree = str(payload.get("degree") or "").strip()
+    semester_raw = payload.get("semester")
+    season = _normalize_season(payload.get("season") or payload.get("temporada"))
+
+    if not full_name:
+        return jsonify({"error": "full_name es obligatorio"}), 400
+
+    if not enrolment_number:
+        return jsonify({"error": "enrolment_number es obligatorio"}), 400
+
+    if not email:
+        return jsonify({"error": "email es obligatorio"}), 400
+
+    if not phone_number:
+        return jsonify({"error": "phone_number es obligatorio"}), 400
+
+    if not degree:
+        return jsonify({"error": "degree es obligatorio"}), 400
+
+    if not season:
+        return jsonify({"error": "Temporada inválida o faltante"}), 400
+
+    try:
+        semester = int(semester_raw)
+        if semester < 1 or semester > 20:
+            return jsonify({"error": "semester debe estar entre 1 y 20"}), 400
+    except:
+        return jsonify({"error": "semester debe ser numérico"}), 400
+
+    first_name, second_name, p_last_name, m_last_name = _split_full_name(full_name)
+
+    def tx(conn, cur):
+        # 1) buscar evento visible para alumnos en esa temporada
+        event_row = _get_visible_event_by_season(cur, season)
+        if not event_row:
+            return {
+                "error": "No hay temporada visible para alumnos en esa temporada",
+                "status": 404
+            }
+
+        event_id = event_row["id"]
+
+        # 2) buscar usuario por matrícula
+        cur.execute(
+            """
+            SELECT
+                id,
+                enrolment_number
+            FROM users
+            WHERE enrolment_number = %s
+            LIMIT 1
+            FOR UPDATE
+            """,
+            [enrolment_number]
+        )
+        user_row = cur.fetchone()
+
+        if user_row:
+            user_id = user_row["id"]
+
+            # actualizar datos del alumno con la info más reciente
+            cur.execute(
+                """
+                UPDATE users
+                SET
+                    first_name = %s,
+                    second_name = %s,
+                    p_last_name = %s,
+                    m_last_name = %s,
+                    email = %s,
+                    secondary_email = %s,
+                    phone_number = %s,
+                    degree = %s,
+                    semester = %s
+                WHERE id = %s
+                """,
+                [
+                    first_name,
+                    second_name,
+                    p_last_name,
+                    m_last_name,
+                    email,
+                    secondary_email,
+                    phone_number,
+                    degree,
+                    semester,
+                    user_id
+                ]
+            )
+        else:
+            password_hash, salt = _make_temp_password_hash()
+
+            cur.execute(
+                """
+                INSERT INTO users
+                (
+                    first_name,
+                    second_name,
+                    p_last_name,
+                    m_last_name,
+                    email,
+                    secondary_email,
+                    phone_number,
+                    enrolment_number,
+                    degree,
+                    semester,
+                    password,
+                    salt
+                )
+                VALUES
+                (
+                    %s, %s, %s, %s,
+                    %s, %s, %s, %s,
+                    %s, %s, %s, %s
+                )
+                """,
+                [
+                    first_name,
+                    second_name,
+                    p_last_name,
+                    m_last_name,
+                    email,
+                    secondary_email,
+                    phone_number,
+                    enrolment_number,
+                    degree,
+                    semester,
+                    password_hash,
+                    salt
+                ]
+            )
+            user_id = cur.lastrowid
+
+        # 3) revisar si ya existe solicitud para ese usuario en ese evento
+        cur.execute(
+            """
+            SELECT
+                ser.id AS request_id,
+                ser.folio,
+                ser.status AS request_status
+            FROM student_event_requests ser
+            WHERE ser.id_user = %s
+              AND ser.event_id = %s
+            LIMIT 1
+            FOR UPDATE
+            """,
+            [user_id, event_id]
+        )
+        existing_request = cur.fetchone()
+
+        if existing_request:
+            # devolver la solicitud ya existente para evitar duplicados accidentales
+            cur.execute(
+                """
+                SELECT
+                    ser.id AS request_id,
+                    ser.folio,
+                    ser.status AS request_status,
+                    ser.requested_at,
+                    ser.validated_at,
+                    ser.access_enabled_at,
+                    ser.registered_at,
+                    ev.id AS event_id,
+                    ev.year,
+                    ev.season,
+                    ev.display_name,
+                    ev.status AS event_status,
+                    u.id AS user_id,
+                    CONCAT_WS(' ', u.first_name, u.second_name, u.p_last_name, u.m_last_name) AS full_name,
+                    u.email,
+                    u.secondary_email,
+                    u.phone_number,
+                    u.enrolment_number,
+                    u.degree,
+                    u.semester
+                FROM student_event_requests ser
+                JOIN events ev ON ev.id = ser.event_id
+                JOIN users u ON u.id = ser.id_user
+                WHERE ser.id = %s
+                LIMIT 1
+                """,
+                [existing_request["request_id"]]
+            )
+            row = cur.fetchone()
+
+            return {
+                "status": 200,
+                "message": "Ya existía una solicitud para esta temporada",
+                "event": {
+                    "id": row["event_id"],
+                    "year": row["year"],
+                    "season": row["season"],
+                    "display_name": row["display_name"],
+                    "status": row["event_status"],
+                },
+                "student": {
+                    "id": row["user_id"],
+                    "full_name": row["full_name"],
+                    "email": row["email"],
+                    "secondary_email": row["secondary_email"],
+                    "phone_number": row["phone_number"],
+                    "enrolment_number": row["enrolment_number"],
+                    "degree": row["degree"],
+                    "semester": row["semester"],
+                },
+                "request": {
+                    "id": row["request_id"],
+                    "folio": row["folio"],
+                    "status": row["request_status"],
+                    "requested_at": row["requested_at"],
+                    "validated_at": row["validated_at"],
+                    "access_enabled_at": row["access_enabled_at"],
+                    "registered_at": row["registered_at"],
+                }
+            }
+
+        # 4) crear nueva solicitud
+        folio = None
+        for _ in range(8):
+            candidate = _build_folio()
+            cur.execute(
+                """
+                SELECT id
+                FROM student_event_requests
+                WHERE folio = %s
+                LIMIT 1
+                """,
+                [candidate]
+            )
+            if not cur.fetchone():
+                folio = candidate
+                break
+
+        if not folio:
+            return {"error": "No se pudo generar un folio único", "status": 500}
+
+        cur.execute(
+            """
+            INSERT INTO student_event_requests
+            (
+                id_user,
+                event_id,
+                folio,
+                status,
+                requested_at
+            )
+            VALUES
+            (
+                %s, %s, %s, 'REQUESTED', NOW()
+            )
+            """,
+            [user_id, event_id, folio]
+        )
+        request_id = cur.lastrowid
+
+        cur.execute(
+            """
+            SELECT
+                ser.id AS request_id,
+                ser.folio,
+                ser.status AS request_status,
+                ser.requested_at,
+                ser.validated_at,
+                ser.access_enabled_at,
+                ser.registered_at,
+                ev.id AS event_id,
+                ev.year,
+                ev.season,
+                ev.display_name,
+                ev.status AS event_status,
+                u.id AS user_id,
+                CONCAT_WS(' ', u.first_name, u.second_name, u.p_last_name, u.m_last_name) AS full_name,
+                u.email,
+                u.secondary_email,
+                u.phone_number,
+                u.enrolment_number,
+                u.degree,
+                u.semester
+            FROM student_event_requests ser
+            JOIN events ev ON ev.id = ser.event_id
+            JOIN users u ON u.id = ser.id_user
+            WHERE ser.id = %s
+            LIMIT 1
+            """,
+            [request_id]
+        )
+        row = cur.fetchone()
+
+        return {
+            "status": 201,
+            "message": "Solicitud creada correctamente",
+            "event": {
+                "id": row["event_id"],
+                "year": row["year"],
+                "season": row["season"],
+                "display_name": row["display_name"],
+                "status": row["event_status"],
+            },
+            "student": {
+                "id": row["user_id"],
+                "full_name": row["full_name"],
+                "email": row["email"],
+                "secondary_email": row["secondary_email"],
+                "phone_number": row["phone_number"],
+                "enrolment_number": row["enrolment_number"],
+                "degree": row["degree"],
+                "semester": row["semester"],
+            },
+            "request": {
+                "id": row["request_id"],
+                "folio": row["folio"],
+                "status": row["request_status"],
+                "requested_at": row["requested_at"],
+                "validated_at": row["validated_at"],
+                "access_enabled_at": row["access_enabled_at"],
+                "registered_at": row["registered_at"],
+            }
+        }
+
+    try:
+        result = execute_tx(tx)
+
+        if result.get("status") not in (200, 201):
+            return jsonify({"error": result["error"]}), result["status"]
+
+        return jsonify(result), result["status"]
+
+    except Error as e:
+        return jsonify({"error": f"Error de base de datos: {e.msg}"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @student_requests_bp.get("/api/student/requests")
 def get_student_request():
     enrolment_number = (request.args.get("enrolment_number") or "").strip().lower()

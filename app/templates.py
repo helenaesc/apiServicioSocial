@@ -6,35 +6,29 @@ INDEX_HTML = r"""
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Registro de Proyectos</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
   <style>
     :root {
       --bg: #f4f7fa;
       --bg-soft: #fbfcfe;
       --panel: #ffffff;
       --panel-soft: #f8fbff;
-
-      --text: #1f2937;
-      --text-soft: #667085;
+      --text: #111827;
+      --text-soft: #6b7280;
       --muted: #98a2b3;
+      --line: #e5e7eb;
+      --line-strong: #d1d5db;
 
-      --line: #e4e7ec;
-      --line-strong: #d0d5dd;
+      --blue: #3B82F6;
+      --orange: #FF8C42;
+      --green: #43AA8B;
+      --pink: #F25C78;
+      --purple: #7D5BA6;
 
-      --primary: #7d5ba6;
-      --primary-soft: #f5f0fb;
-
-      --green: #43aa8b;
-      --green-soft: #ecfdf7;
-
-      --orange: #ff8c42;
-      --orange-soft: #fff4ec;
-
-      --pink: #f25c78;
-      --pink-soft: #fff1f5;
-
-      --blue: #4f7cff;
-      --blue-soft: #eef4ff;
+      --blue-soft: #EFF6FF;
+      --orange-soft: #FFF3EA;
+      --green-soft: #ECFDF7;
+      --pink-soft: #FFF1F5;
+      --purple-soft: #F5F0FB;
 
       --shadow-sm: 0 4px 16px rgba(16, 24, 40, 0.05);
       --shadow-md: 0 12px 28px rgba(16, 24, 40, 0.08);
@@ -53,8 +47,7 @@ INDEX_HTML = r"""
       margin: 0;
       padding: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, #ffffff 0%, #f7f9fd 28%, #f4f7fa 100%);
+      background: radial-gradient(circle at top left, #ffffff 0%, #f7f9fd 28%, #f4f7fa 100%);
       color: var(--text);
       min-height: 100vh;
     }
@@ -62,7 +55,7 @@ INDEX_HTML = r"""
     .hidden { display: none !important; }
 
     .page-shell {
-      max-width: 1440px;
+      max-width: 1460px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -118,6 +111,31 @@ INDEX_HTML = r"""
       box-shadow: var(--shadow-md);
     }
 
+    .msg {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: .94rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .msg.ok {
+      display: block;
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: #cdeee4;
+    }
+
+    .msg.err {
+      display: block;
+      background: var(--pink-soft);
+      color: var(--pink);
+      border-color: #ffd7df;
+    }
+
     .hero {
       position: relative;
       overflow: hidden;
@@ -125,7 +143,7 @@ INDEX_HTML = r"""
       border-radius: var(--r-xl);
       background:
         radial-gradient(circle at top right, rgba(125,91,166,0.15) 0%, rgba(125,91,166,0) 30%),
-        radial-gradient(circle at bottom left, rgba(79,124,255,0.10) 0%, rgba(79,124,255,0) 24%),
+        radial-gradient(circle at bottom left, rgba(59,130,246,0.10) 0%, rgba(59,130,246,0) 24%),
         linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
       box-shadow: var(--shadow-lg);
       padding: 24px;
@@ -143,7 +161,7 @@ INDEX_HTML = r"""
       font-size: .76rem;
       text-transform: uppercase;
       letter-spacing: .1em;
-      color: var(--primary);
+      color: var(--purple);
       font-weight: 900;
       margin-bottom: 8px;
     }
@@ -177,7 +195,7 @@ INDEX_HTML = r"""
 
     .hero-panel {
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.82);
+      background: rgba(255,255,255,0.84);
       backdrop-filter: blur(8px);
       border-radius: var(--r-lg);
       padding: 16px;
@@ -206,34 +224,59 @@ INDEX_HTML = r"""
       line-height: 1.45;
     }
 
-    .steps {
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: var(--r-pill);
+      font-size: .8rem;
+      font-weight: 900;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .chip-primary { background: var(--purple-soft); color: var(--purple); border-color: #e6dbf3; }
+    .chip-green { background: var(--green-soft); color: var(--green); border-color: #cdeee4; }
+    .chip-orange { background: var(--orange-soft); color: var(--orange); border-color: #ffe1cf; }
+    .chip-pink { background: var(--pink-soft); color: var(--pink); border-color: #ffd7df; }
+    .chip-blue { background: var(--blue-soft); color: var(--blue); border-color: #d6e4ff; }
+    .chip-neutral { background: #f2f4f7; color: #475467; border-color: #eaecf0; }
+
+    .nav-strip {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin-bottom: 18px;
     }
 
-    .step-card {
+    .nav-card {
       border: 1px solid var(--line);
       background: white;
       border-radius: var(--r-lg);
       padding: 16px;
       box-shadow: var(--shadow-sm);
+      cursor: pointer;
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
-    .step-card.active {
-      border-color: #d9c6f0;
-      background: linear-gradient(135deg, var(--primary-soft) 0%, white 100%);
+    .nav-card:hover {
+      transform: translateY(-2px);
       box-shadow: var(--shadow-md);
     }
 
-    .step-card.done {
+    .nav-card.active {
+      border-color: #d6e4ff;
+      background: linear-gradient(135deg, var(--blue-soft) 0%, white 100%);
+      box-shadow: var(--shadow-md);
+    }
+
+    .nav-card.done {
       border-color: #bee7da;
       background: linear-gradient(135deg, var(--green-soft) 0%, white 100%);
     }
 
-    .step-index {
+    .nav-index {
       font-size: .72rem;
       text-transform: uppercase;
       letter-spacing: .08em;
@@ -242,13 +285,13 @@ INDEX_HTML = r"""
       margin-bottom: 6px;
     }
 
-    .step-title {
+    .nav-title {
       font-size: .98rem;
       font-weight: 900;
       margin-bottom: 4px;
     }
 
-    .step-desc {
+    .nav-desc {
       color: var(--text-soft);
       font-size: .84rem;
       line-height: 1.45;
@@ -256,7 +299,7 @@ INDEX_HTML = r"""
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 350px;
+      grid-template-columns: 1fr 360px;
       gap: 18px;
       align-items: start;
     }
@@ -271,6 +314,14 @@ INDEX_HTML = r"""
       top: 20px;
       display: grid;
       gap: 18px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
     }
 
     .card {
@@ -303,25 +354,6 @@ INDEX_HTML = r"""
       line-height: 1.55;
       margin-bottom: 14px;
     }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: var(--r-pill);
-      font-size: .8rem;
-      font-weight: 900;
-      white-space: nowrap;
-      border: 1px solid transparent;
-    }
-
-    .chip-primary { background: var(--primary-soft); color: var(--primary); border-color: #e6dbf3; }
-    .chip-green { background: var(--green-soft); color: var(--green); border-color: #cdeee4; }
-    .chip-orange { background: var(--orange-soft); color: var(--orange); border-color: #ffe1cf; }
-    .chip-pink { background: var(--pink-soft); color: var(--pink); border-color: #ffd7df; }
-    .chip-blue { background: var(--blue-soft); color: var(--blue); border-color: #d6e4ff; }
-    .chip-neutral { background: #f2f4f7; color: #475467; border-color: #eaecf0; }
 
     .form-grid {
       display: grid;
@@ -370,7 +402,7 @@ INDEX_HTML = r"""
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--blue);
-      box-shadow: 0 0 0 4px rgba(79,124,255,0.10);
+      box-shadow: 0 0 0 4px rgba(59,130,246,0.10);
     }
 
     .actions {
@@ -396,7 +428,7 @@ INDEX_HTML = r"""
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary) 0%, #9b79c6 100%);
+      background: linear-gradient(135deg, var(--purple) 0%, #9b79c6 100%);
       color: white;
       box-shadow: 0 10px 20px rgba(125,91,166,0.20);
     }
@@ -413,36 +445,17 @@ INDEX_HTML = r"""
       box-shadow: 0 10px 20px rgba(255,140,66,0.18);
     }
 
+    .btn-blue {
+      background: linear-gradient(135deg, var(--blue) 0%, #60A5FA 100%);
+      color: white;
+      box-shadow: 0 10px 20px rgba(59,130,246,0.18);
+    }
+
     .btn-secondary {
       background: white;
       color: var(--text-soft);
       border: 1px solid var(--line);
       box-shadow: var(--shadow-sm);
-    }
-
-    .msg {
-      display: none;
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-size: .94rem;
-      font-weight: 800;
-      border: 1px solid transparent;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .msg.ok {
-      display: block;
-      background: var(--green-soft);
-      color: var(--green);
-      border-color: #cdeee4;
-    }
-
-    .msg.err {
-      display: block;
-      background: var(--pink-soft);
-      color: var(--pink);
-      border-color: #ffd7df;
     }
 
     .catalog-toolbar {
@@ -482,7 +495,7 @@ INDEX_HTML = r"""
       border: 1px solid var(--line);
       border-radius: 24px;
       background:
-        radial-gradient(circle at top right, rgba(79,124,255,0.10) 0%, rgba(79,124,255,0.00) 30%),
+        radial-gradient(circle at top right, rgba(59,130,246,0.10) 0%, rgba(59,130,246,0.00) 30%),
         radial-gradient(circle at bottom left, rgba(125,91,166,0.10) 0%, rgba(125,91,166,0.00) 28%),
         linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
       box-shadow: var(--shadow-md);
@@ -618,7 +631,7 @@ INDEX_HTML = r"""
 
     .selected-banner-title {
       font-size: .88rem;
-      color: var(--primary);
+      color: var(--purple);
       font-weight: 900;
       margin-bottom: 4px;
     }
@@ -799,7 +812,11 @@ INDEX_HTML = r"""
       margin-bottom: 6px;
     }
 
-    @media (max-width: 1220px) {
+    @media (max-width: 1280px) {
+      .nav-strip {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
       .layout {
         grid-template-columns: 1fr;
       }
@@ -818,7 +835,7 @@ INDEX_HTML = r"""
     }
 
     @media (max-width: 820px) {
-      .steps {
+      .nav-strip {
         grid-template-columns: repeat(2, 1fr);
       }
 
@@ -845,7 +862,7 @@ INDEX_HTML = r"""
         padding: 14px;
       }
 
-      .steps {
+      .nav-strip {
         grid-template-columns: 1fr;
       }
 
@@ -872,7 +889,6 @@ INDEX_HTML = r"""
         <strong>Registro de Proyectos</strong>
         <span>Explora el catálogo, solicita tu pase y cierra tu inscripción.</span>
       </div>
-
       <div class="top-actions">
         <a href="/admin" class="link-btn">Admin</a>
         <a href="/health" class="link-btn">Health</a>
@@ -883,13 +899,12 @@ INDEX_HTML = r"""
       <div class="hero-grid">
         <div>
           <div class="hero-kicker">Ruta del alumno</div>
-          <h1>Elige tu proyecto y completa tu registro sin perderte.</h1>
+          <h1>Explora primero. Decide bien. Regístrate solo cuando ya tengas acceso.</h1>
           <p>
-            Primero revisa el catálogo. Después solicita tu pase. Cuando el staff te habilite acceso, podrás cerrar tu inscripción con el token del proyecto.
+            Puedes revisar el catálogo antes de solicitar tu pase. Cuando el staff te habilite acceso, podrás cerrar tu inscripción con el token del proyecto.
           </p>
-
           <div class="hero-badges">
-            <span class="chip chip-primary">Catálogo premium</span>
+            <span class="chip chip-primary">Catálogo visible</span>
             <span class="chip chip-green">Flujo guiado</span>
             <span class="chip chip-blue">Credencial viva</span>
           </div>
@@ -901,7 +916,6 @@ INDEX_HTML = r"""
             <div class="hero-panel-value" id="heroRouteStatus">Explorando catálogo</div>
             <div class="hero-panel-sub">Tu progreso se actualiza conforme completas cada paso.</div>
           </div>
-
           <div class="hero-panel">
             <div class="hero-panel-label">Proyecto actual</div>
             <div class="hero-panel-value" id="heroProjectStatus">Sin proyecto seleccionado</div>
@@ -911,224 +925,275 @@ INDEX_HTML = r"""
       </div>
     </section>
 
-    <section class="steps" id="stepsBar">
-      <div class="step-card active" data-step="1">
-        <div class="step-index">Paso 1</div>
-        <div class="step-title">Explorar catálogo</div>
-        <div class="step-desc">Busca, compara y elige el proyecto correcto.</div>
+    <section class="nav-strip" id="stepsBar">
+      <div class="nav-card active" data-step="1" onclick="showStudentSection('catalogSection')">
+        <div class="nav-index">Paso 1</div>
+        <div class="nav-title">Explorar catálogo</div>
+        <div class="nav-desc">Busca, compara y elige un proyecto con intención.</div>
       </div>
-
-      <div class="step-card" data-step="2">
-        <div class="step-index">Paso 2</div>
-        <div class="step-title">Solicitar pase</div>
-        <div class="step-desc">Genera tu folio y captura tus datos completos.</div>
+      <div class="nav-card" data-step="2" onclick="showStudentSection('requestSection')">
+        <div class="nav-index">Paso 2</div>
+        <div class="nav-title">Solicitar pase</div>
+        <div class="nav-desc">Genera tu folio con tus datos completos.</div>
       </div>
-
-      <div class="step-card" data-step="3">
-        <div class="step-index">Paso 3</div>
-        <div class="step-title">Mostrar QR</div>
-        <div class="step-desc">Presenta tu credencial viva para habilitar acceso.</div>
+      <div class="nav-card" data-step="3" onclick="showStudentSection('passSection')">
+        <div class="nav-index">Paso 3</div>
+        <div class="nav-title">Mostrar QR</div>
+        <div class="nav-desc">Presenta tu credencial viva al staff.</div>
       </div>
-
-      <div class="step-card" data-step="4">
-        <div class="step-index">Paso 4</div>
-        <div class="step-title">Cerrar inscripción</div>
-        <div class="step-desc">Usa el token del proyecto y confirma legalmente.</div>
+      <div class="nav-card" data-step="4" onclick="showStudentSection('registrationSection')">
+        <div class="nav-index">Paso 4</div>
+        <div class="nav-title">Cerrar inscripción</div>
+        <div class="nav-desc">Haz preview y confirma legalmente.</div>
+      </div>
+      <div class="nav-card" data-step="5" onclick="showStudentSection('statusSection')">
+        <div class="nav-index">Mi estado</div>
+        <div class="nav-title">Seguimiento</div>
+        <div class="nav-desc">Consulta folio, pase y progreso actual.</div>
       </div>
     </section>
 
     <div class="layout">
       <main class="main-column">
-        <section class="card">
-          <div class="card-title-row">
-            <div>
-              <h2>Catálogo de proyectos</h2>
-            </div>
-            <span class="chip chip-primary">Explorar</span>
-          </div>
-
-          <div class="card-subtitle">
-            Elige la temporada, filtra el catálogo y selecciona el proyecto que mejor se adapte a ti.
-          </div>
-
-          <div class="catalog-toolbar">
-            <div class="field">
-              <label>Temporada</label>
-              <select id="seasonSelector">
-                <option value="PRIMAVERA">Primavera</option>
-                <option value="INVIERNO">Invierno</option>
-              </select>
+        <section id="catalogSection" class="section active">
+          <div class="card">
+            <div class="card-title-row">
+              <div>
+                <h2>Catálogo de proyectos</h2>
+              </div>
+              <span class="chip chip-primary">Explorar</span>
             </div>
 
-            <div class="field">
-              <label>Buscar</label>
-              <input id="catalogSearch" placeholder="Nombre, responsables, comentarios">
+            <div class="card-subtitle">
+              Revisa la temporada, filtra el catálogo y elige el proyecto que más te interese. Ver catálogo no te registra todavía.
             </div>
 
-            <div class="field">
-              <label>Carrera preferida</label>
-              <select id="filterPartner">
-                <option value="">Todas</option>
-              </select>
+            <div class="catalog-toolbar">
+              <div class="field">
+                <label>Temporada</label>
+                <select id="seasonSelector">
+                  <option value="PRIMAVERA">Primavera</option>
+                  <option value="INVIERNO">Invierno</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Buscar</label>
+                <input id="catalogSearch" placeholder="Nombre, responsables, comentarios">
+              </div>
+              <div class="field">
+                <label>Carrera preferida</label>
+                <select id="filterPartner">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Modalidad</label>
+                <select id="filterModality">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Días</label>
+                <select id="filterWeekDays">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Horario</label>
+                <select id="filterSchedule">
+                  <option value="">Todos</option>
+                </select>
+              </div>
             </div>
 
-            <div class="field">
-              <label>Modalidad</label>
-              <select id="filterModality">
-                <option value="">Todas</option>
-              </select>
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="loadCatalog()">Cargar catálogo</button>
+              <button type="button" class="btn-secondary" onclick="resetCatalogFilters()">Limpiar filtros</button>
+              <button type="button" class="btn-blue" onclick="goToSectionAndStep('requestSection', 2)">Ya elegí proyecto</button>
             </div>
 
-            <div class="field">
-              <label>Días</label>
-              <select id="filterWeekDays">
-                <option value="">Todos</option>
-              </select>
+            <div class="catalog-stats">
+              <div class="catalog-count" id="catalogCountLabel">Sin catálogo cargado</div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <span class="chip chip-blue" id="catalogSeasonChip">Temporada</span>
+                <span class="chip chip-neutral" id="catalogProjectsChip">0 proyectos</span>
+              </div>
             </div>
 
-            <div class="field">
-              <label>Horario</label>
-              <select id="filterSchedule">
-                <option value="">Todos</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn-primary" onclick="loadCatalog()">Cargar catálogo</button>
-            <button type="button" class="btn-secondary" onclick="resetCatalogFilters()">Limpiar filtros</button>
-          </div>
-
-          <div class="catalog-stats">
-            <div class="catalog-count" id="catalogCountLabel">Sin catálogo cargado</div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <span class="chip chip-blue" id="catalogSeasonChip">Temporada</span>
-              <span class="chip chip-neutral" id="catalogProjectsChip">0 proyectos</span>
-            </div>
-          </div>
-
-          <div id="selectedProjectBanner" class="selected-banner hidden">
-            <div class="selected-banner-title">Proyecto seleccionado</div>
-            <div id="selectedProjectBannerText" class="selected-banner-text">Aún no seleccionas proyecto.</div>
-          </div>
-
-          <div id="catalogList" class="catalog-grid"></div>
-        </section>
-
-        <section class="card">
-          <div class="card-title-row">
-            <div>
-              <h2>Solicitar pase</h2>
-            </div>
-            <span class="chip chip-orange">Paso 2</span>
-          </div>
-
-          <div class="card-subtitle">
-            El pase no te registra todavía. Solo genera tu solicitud y tu folio para validación presencial.
-          </div>
-
-          <div class="form-grid">
-            <div class="field">
-              <label>Nombre completo</label>
-              <input id="fullNameInput" placeholder="Nombre completo">
+            <div id="selectedProjectBanner" class="selected-banner hidden">
+              <div class="selected-banner-title">Proyecto seleccionado</div>
+              <div id="selectedProjectBannerText" class="selected-banner-text">Aún no seleccionas proyecto.</div>
             </div>
 
-            <div class="field">
-              <label>Matrícula</label>
-              <input id="enrolmentInput" placeholder="Ej: A01234567">
-            </div>
-
-            <div class="field">
-              <label>Correo principal</label>
-              <input id="emailInput" type="email" placeholder="correo@ejemplo.com">
-            </div>
-
-            <div class="field">
-              <label>Segundo correo</label>
-              <input id="secondEmailInput" type="email" placeholder="Opcional">
-            </div>
-
-            <div class="field">
-              <label>Teléfono</label>
-              <input id="phoneInput" placeholder="10 dígitos o similar">
-            </div>
-
-            <div class="field">
-              <label>Carrera</label>
-              <input id="degreeInput" placeholder="Ej: LAF, LAE, NEG">
-            </div>
-
-            <div class="field">
-              <label>Semestre</label>
-              <input id="semesterInput" type="number" min="1" max="20" placeholder="Ej: 5">
-            </div>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn-orange" onclick="createStudentRequest()">Solicitar pase</button>
-            <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Consultar solicitud</button>
+            <div id="catalogList" class="catalog-grid"></div>
           </div>
         </section>
 
-        <section class="card">
-          <div class="card-title-row">
-            <div>
-              <h2>Cierre de inscripción</h2>
+        <section id="requestSection" class="section">
+          <div class="card">
+            <div class="card-title-row">
+              <div>
+                <h2>Solicitar pase</h2>
+              </div>
+              <span class="chip chip-orange">Paso 2</span>
             </div>
-            <span class="chip chip-green">Paso 4</span>
+
+            <div class="card-subtitle">
+              Esto no te registra todavía. Solo crea tu solicitud y tu folio para que el staff pueda validarte presencialmente.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Nombre completo</label>
+                <input id="fullNameInput" placeholder="Nombre completo">
+              </div>
+              <div class="field">
+                <label>Matrícula</label>
+                <input id="enrolmentInput" placeholder="Ej: A01234567">
+              </div>
+              <div class="field">
+                <label>Correo principal</label>
+                <input id="emailInput" type="email" placeholder="correo@ejemplo.com">
+              </div>
+              <div class="field">
+                <label>Segundo correo</label>
+                <input id="secondEmailInput" type="email" placeholder="Opcional">
+              </div>
+              <div class="field">
+                <label>Teléfono</label>
+                <input id="phoneInput" placeholder="10 dígitos o similar">
+              </div>
+              <div class="field">
+                <label>Carrera</label>
+                <input id="degreeInput" placeholder="Ej: LAF, LAE, NEG">
+              </div>
+              <div class="field">
+                <label>Semestre</label>
+                <input id="semesterInput" type="number" min="1" max="20" placeholder="Ej: 5">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-orange" onclick="createStudentRequest()">Solicitar pase</button>
+              <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Consultar solicitud</button>
+              <button type="button" class="btn-blue" onclick="goToSectionAndStep('passSection', 3)">Ir a mi QR</button>
+            </div>
           </div>
+        </section>
 
-          <div class="card-subtitle">
-            Cuando el staff ya te haya habilitado acceso y tengas el token del proyecto, primero haz preview y luego confirma.
+        <section id="passSection" class="section">
+          <div class="card">
+            <div class="card-title-row">
+              <div>
+                <h2>Credencial viva</h2>
+              </div>
+              <span class="chip chip-blue">Paso 3</span>
+            </div>
+
+            <div class="card-subtitle">
+              Refresca tu QR cuando el staff te lo pida. El QR cambia y el anterior deja de servir.
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-blue" onclick="refreshStudentPass()">Refrescar credencial</button>
+              <button type="button" class="btn-secondary" onclick="loadStudentPass()">Consultar pase</button>
+              <button type="button" class="btn-green" onclick="goToSectionAndStep('registrationSection', 4)">Ya tengo acceso</button>
+            </div>
+
+            <div id="passInfo" class="info-stack" style="margin-top:14px;"></div>
+
+            <div class="qr-shell" style="margin-top:14px;">
+              <div class="qr-head">
+                <div>
+                  <div style="font-weight:900; margin-bottom:3px;">QR vigente del pase</div>
+                  <div style="font-size:.86rem; color:var(--text-soft);">
+                    Este código cambia al refrescarse y deja de servir al expirar o cuando el staff lo usa.
+                  </div>
+                </div>
+                <div id="qrStatusBadge" class="chip chip-neutral">Sin sesión</div>
+              </div>
+              <div class="qr-canvas-wrap">
+                <div id="qrCanvas"></div>
+              </div>
+              <div id="qrPlainToken" class="qr-plain">Genera tu código</div>
+            </div>
           </div>
+        </section>
 
-          <div class="form-grid">
-            <div class="field">
-              <label>Proyecto seleccionado</label>
-              <input id="selectedProjectName" placeholder="Elige un proyecto del catálogo" readonly>
+        <section id="registrationSection" class="section">
+          <div class="card">
+            <div class="card-title-row">
+              <div>
+                <h2>Cierre de inscripción</h2>
+              </div>
+              <span class="chip chip-green">Paso 4</span>
             </div>
 
-            <div class="field">
-              <label>ID del proyecto</label>
-              <input id="selectedProjectId" placeholder="Se llena al elegir un proyecto" readonly>
+            <div class="card-subtitle">
+              Solo cuando el staff ya te haya habilitado acceso y tengas el token del proyecto, primero haz preview y luego confirma.
             </div>
 
-            <div class="field">
-              <label>Token del proyecto</label>
-              <input id="projectTokenInput" placeholder="Token que te entrega el proyecto">
+            <div class="form-grid">
+              <div class="field">
+                <label>Proyecto seleccionado</label>
+                <input id="selectedProjectName" placeholder="Elige un proyecto del catálogo" readonly>
+              </div>
+              <div class="field">
+                <label>ID del proyecto</label>
+                <input id="selectedProjectId" placeholder="Se llena al elegir un proyecto" readonly>
+              </div>
+              <div class="field">
+                <label>Token del proyecto</label>
+                <input id="projectTokenInput" placeholder="Token que te entrega el proyecto">
+              </div>
+              <div class="field">
+                <label>Nombre completo para aceptación</label>
+                <input id="acceptanceFullNameInput" placeholder="Debe coincidir con tu nombre">
+              </div>
+              <div class="field">
+                <label>Versión legal</label>
+                <input id="legalVersionInput" value="v1">
+              </div>
             </div>
 
-            <div class="field">
-              <label>Nombre completo para aceptación</label>
-              <input id="acceptanceFullNameInput" placeholder="Debe coincidir con tu nombre">
+            <div class="legal-box">
+              <div style="font-size:.84rem; font-weight:900; margin-bottom:8px; color:var(--text);">
+                Confirmación legal
+              </div>
+              <label style="display:flex; gap:10px; align-items:flex-start; font-size:.92rem; line-height:1.55; color:var(--text);">
+                <input id="acceptanceCheckbox" type="checkbox" style="width:auto; min-height:auto; margin-top:3px;">
+                <span>
+                  Confirmo que realicé esta inscripción de manera personal, que acepto el proyecto seleccionado y que entiendo que el cierre queda auditado con token y registro digital.
+                </span>
+              </label>
             </div>
 
-            <div class="field">
-              <label>Versión legal</label>
-              <input id="legalVersionInput" value="v1">
+            <div class="actions">
+              <button type="button" class="btn-secondary" onclick="previewRegistration()">Ver preview</button>
+              <button type="button" class="btn-green" id="confirmRegistrationBtn" onclick="confirmRegistration()">Confirmar inscripción</button>
+              <button type="button" class="btn-blue" onclick="goToSectionAndStep('statusSection', 5)">Ver mi estado</button>
             </div>
+
+            <div id="registrationPreview" class="preview-box"></div>
+            <div id="registrationSuccessBox" class="preview-box hidden"></div>
           </div>
+        </section>
 
-          <div class="legal-box">
-            <div style="font-size:.84rem; font-weight:900; margin-bottom:8px; color:var(--text);">
-              Confirmación legal
+        <section id="statusSection" class="section">
+          <div class="card">
+            <div class="card-title-row">
+              <div>
+                <h2>Mi estado actual</h2>
+              </div>
+              <span class="chip chip-primary">Seguimiento</span>
             </div>
 
-            <label style="display:flex; gap:10px; align-items:flex-start; font-size:.92rem; line-height:1.55; color:var(--text);">
-              <input id="acceptanceCheckbox" type="checkbox" style="width:auto; min-height:auto; margin-top:3px;">
-              <span>
-                Confirmo que realicé esta inscripción de manera personal, que acepto el proyecto seleccionado y que entiendo que el cierre queda auditado con token y registro digital.
-              </span>
-            </label>
-          </div>
+            <div class="card-subtitle">
+              Aquí puedes revisar tu folio, el estado de tu solicitud y tu progreso general dentro del flujo.
+            </div>
 
-          <div class="actions">
-            <button type="button" class="btn-secondary" onclick="previewRegistration()">Ver preview</button>
-            <button type="button" class="btn-green" id="confirmRegistrationBtn" onclick="confirmRegistration()">Confirmar inscripción</button>
+            <div id="requestInfo" class="info-stack"></div>
           </div>
-
-          <div id="registrationPreview" class="preview-box"></div>
-          <div id="registrationSuccessBox" class="preview-box hidden"></div>
         </section>
       </main>
 
@@ -1136,54 +1201,45 @@ INDEX_HTML = r"""
         <section class="card">
           <div class="card-title-row">
             <div>
-              <h2>Mi solicitud</h2>
+              <h2>Resumen de avance</h2>
             </div>
-            <span class="chip chip-primary">Folio</span>
+            <span class="chip chip-neutral">Ruta</span>
           </div>
 
-          <div class="card-subtitle">
-            Aquí puedes consultar el estado actual de tu solicitud para la temporada elegida.
-          </div>
-
-          <div id="requestInfo" class="info-stack"></div>
-        </section>
-
-        <section class="card">
-          <div class="card-title-row">
-            <div>
-              <h2>Credencial viva</h2>
-            </div>
-            <span class="chip chip-blue">Paso 3</span>
-          </div>
-
-          <div class="card-subtitle">
-            Refresca tu credencial cuando el staff te lo pida. El QR cambia y el anterior deja de servir.
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn-primary" onclick="refreshStudentPass()">Refrescar credencial</button>
-            <button type="button" class="btn-secondary" onclick="loadStudentPass()">Consultar pase</button>
-          </div>
-
-          <div id="passInfo" class="info-stack"></div>
-
-          <div class="qr-shell">
-            <div class="qr-head">
-              <div>
-                <div style="font-weight:900; margin-bottom:3px;">QR vigente del pase</div>
-                <div style="font-size:.86rem; color:var(--text-soft);">
-                  Este código cambia al refrescarse y deja de servir al expirar o cuando el staff lo usa.
+          <div class="info-stack">
+            <div class="info-card">
+              <div class="info-head">
+                <div>
+                  <div class="info-title">Estado actual</div>
+                  <div class="info-sub">Lectura rápida de tu progreso</div>
                 </div>
               </div>
-
-              <div id="qrStatusBadge" class="chip chip-neutral">Sin sesión</div>
+              <div class="meta-grid">
+                <div class="meta-box">
+                  <span class="meta-label">Ruta</span>
+                  <div class="meta-value" id="sideRouteStatus">Explorando catálogo</div>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Proyecto</span>
+                  <div class="meta-value" id="sideProjectStatus">Sin selección</div>
+                </div>
+              </div>
             </div>
 
-            <div class="qr-canvas-wrap">
-              <div id="qrCanvas"></div>
+            <div class="info-card">
+              <div class="info-head">
+                <div>
+                  <div class="info-title">Atajos</div>
+                  <div class="info-sub">Muévete rápido según tu estado</div>
+                </div>
+              </div>
+              <div class="actions" style="margin-top:0;">
+                <button type="button" class="btn-secondary" onclick="showStudentSection('catalogSection')">Catálogo</button>
+                <button type="button" class="btn-secondary" onclick="showStudentSection('requestSection')">Pase</button>
+                <button type="button" class="btn-secondary" onclick="showStudentSection('passSection')">QR</button>
+                <button type="button" class="btn-secondary" onclick="showStudentSection('registrationSection')">Registro</button>
+              </div>
             </div>
-
-            <div id="qrPlainToken" class="qr-plain">Genera tu código</div>
           </div>
         </section>
       </aside>
@@ -1210,6 +1266,7 @@ INDEX_HTML = r"""
 
     function showMsg(text, ok = true) {
       const el = document.getElementById('msg');
+      if (!el) return;
       el.textContent = text || '';
       el.className = 'msg ' + (ok ? 'ok' : 'err');
     }
@@ -1223,68 +1280,74 @@ INDEX_HTML = r"""
       return (document.getElementById('enrolmentInput')?.value || '').trim().toLowerCase();
     }
 
+    function showStudentSection(sectionId) {
+      document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+      document.getElementById(sectionId)?.classList.add('active');
+    }
+
+    function setCurrentStep(step) {
+      document.querySelectorAll('.nav-card').forEach(el => {
+        const n = Number(el.getAttribute('data-step'));
+        el.classList.remove('active', 'done');
+        if (n < step) el.classList.add('done');
+        else if (n === step) el.classList.add('active');
+      });
+    }
+
+    function goToSectionAndStep(sectionId, step) {
+      showStudentSection(sectionId);
+      setCurrentStep(step);
+    }
+
     async function getJSON(url) {
-      console.log('[GET]', url);
       const r = await fetch(url);
       const data = await r.json().catch(() => ({}));
-      console.log('[GET RESPONSE]', url, r.status, data);
       if (!r.ok) throw new Error(data.error || data.message || ('Error ' + r.status));
       return data;
     }
 
     async function postJSON(url, body) {
-      console.log('[POST]', url, body);
       const r = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       const data = await r.json().catch(() => ({}));
-      console.log('[POST RESPONSE]', url, r.status, data);
       if (!r.ok) throw new Error(data.error || data.message || ('Error ' + r.status));
       return data;
     }
 
     async function tryGet(urls) {
       let lastError = null;
-
       for (const url of urls) {
         try {
           return await getJSON(url);
         } catch (e) {
-          console.warn('Falló GET:', url, e.message);
           lastError = e;
         }
       }
-
       throw lastError || new Error('No se pudo completar la consulta');
     }
 
     async function tryPost(candidates) {
       let lastError = null;
-
       for (const item of candidates) {
         try {
           return await postJSON(item.url, item.body);
         } catch (e) {
-          console.warn('Falló POST:', item.url, e.message);
           lastError = e;
         }
       }
-
       throw lastError || new Error('No se pudo completar la operación');
     }
 
     function fillSelect(id, items, labelKey = 'description') {
       const el = document.getElementById(id);
       if (!el) return;
-
       const firstOption = el.querySelector('option')
         ? el.querySelector('option').outerHTML
         : '<option value="">Todas</option>';
-
       el.innerHTML = firstOption;
-
       for (const item of (items || [])) {
         const opt = document.createElement('option');
         opt.value = item.id ?? item.value ?? item.name ?? '';
@@ -1299,34 +1362,28 @@ INDEX_HTML = r"""
       }
     }
 
-    function setCurrentStep(step) {
-      document.querySelectorAll('.step-card').forEach(el => {
-        const n = Number(el.getAttribute('data-step'));
-        el.classList.remove('active', 'done');
-        if (n < step) el.classList.add('done');
-        else if (n === step) el.classList.add('active');
-      });
-    }
-
     function updateHeroState() {
       const route = document.getElementById('heroRouteStatus');
       const project = document.getElementById('heroProjectStatus');
+      const sideRoute = document.getElementById('sideRouteStatus');
+      const sideProject = document.getElementById('sideProjectStatus');
 
-      if (route) {
-        if (currentRegistration) route.textContent = 'Inscripción completada';
-        else if (currentPreview) route.textContent = 'Preview listo para confirmar';
-        else if (currentPass && (currentPass.pass_session || currentPass.active_session)) route.textContent = 'Pase activo para validación';
-        else if (currentRequest) route.textContent = 'Solicitud creada';
-        else route.textContent = 'Explorando catálogo';
+      let routeText = 'Explorando catálogo';
+
+      if (currentRegistration) routeText = 'Inscripción completada';
+      else if (currentPreview) routeText = 'Preview listo para confirmar';
+      else if (currentPass && (currentPass.pass_session || currentPass.active_session)) routeText = 'Pase activo para validación';
+      else if (currentRequest) routeText = 'Solicitud creada';
+
+      let projectText = 'Sin proyecto seleccionado';
+      if (currentSelectedProject) {
+        projectText = `${currentSelectedProject.general_name || currentSelectedProject.organization || 'Proyecto'} | ${currentSelectedProject.name || currentSelectedProject.project_name || 'Sin nombre'}`;
       }
 
-      if (project) {
-        if (currentSelectedProject) {
-          project.textContent = `${currentSelectedProject.general_name || currentSelectedProject.organization || 'Proyecto'} | ${currentSelectedProject.name || currentSelectedProject.project_name || 'Sin nombre'}`;
-        } else {
-          project.textContent = 'Sin proyecto seleccionado';
-        }
-      }
+      if (route) route.textContent = routeText;
+      if (project) project.textContent = projectText;
+      if (sideRoute) sideRoute.textContent = routeText;
+      if (sideProject) sideProject.textContent = currentSelectedProject ? (currentSelectedProject.name || currentSelectedProject.project_name || 'Proyecto') : 'Sin selección';
     }
 
     function renderEmptyState(title, subtitle) {
@@ -1350,7 +1407,6 @@ INDEX_HTML = r"""
     function renderSelectedProjectBanner() {
       const banner = document.getElementById('selectedProjectBanner');
       const text = document.getElementById('selectedProjectBannerText');
-
       if (!banner || !text) return;
 
       if (!currentSelectedProject) {
@@ -1367,14 +1423,12 @@ INDEX_HTML = r"""
         · ${escapeHTML(currentSelectedProject.modalidad || currentSelectedProject.modality || currentSelectedProject.modality_name || '—')}
         · ${escapeHTML(currentSelectedProject.horario || currentSelectedProject.schedule || currentSelectedProject.schedule_name || '—')}
       `;
-
       updateHeroState();
     }
 
     function renderCatalogHeader(projects, eventInfo = null) {
       const season = eventInfo?.season || getSeason();
       const displayName = eventInfo?.display_name || season;
-
       const countLabel = document.getElementById('catalogCountLabel');
       const seasonChip = document.getElementById('catalogSeasonChip');
       const projectsChip = document.getElementById('catalogProjectsChip');
@@ -1409,7 +1463,6 @@ INDEX_HTML = r"""
         const duracion = p.duration ?? '—';
         const location = p.location ?? '—';
         const competencies = p.competencies ?? '—';
-
         const isSelected =
           currentSelectedProject &&
           Number(currentSelectedProject.id ?? currentSelectedProject.project_id) === Number(projectId);
@@ -1422,10 +1475,7 @@ INDEX_HTML = r"""
                 <div class="project-title">${escapeHTML(projectName)}</div>
                 <div class="project-subtitle">Carrera preferida: ${escapeHTML(partnerName)}</div>
               </div>
-
-              <div class="project-rank">
-                CARD<br>#${idx + 1}
-              </div>
+              <div class="project-rank">CARD<br>#${idx + 1}</div>
             </div>
 
             <div class="project-hero">
@@ -1439,17 +1489,14 @@ INDEX_HTML = r"""
                 <span class="project-stat-label">Modalidad</span>
                 <div class="project-stat-value">${escapeHTML(modalidad)}</div>
               </div>
-
               <div class="project-stat">
                 <span class="project-stat-label">Días</span>
                 <div class="project-stat-value">${escapeHTML(dias)}</div>
               </div>
-
               <div class="project-stat">
                 <span class="project-stat-label">Horario</span>
                 <div class="project-stat-value">${escapeHTML(horario)}</div>
               </div>
-
               <div class="project-stat">
                 <span class="project-stat-label">Cupos</span>
                 <div class="project-stat-value">${escapeHTML(cupos)}</div>
@@ -1464,6 +1511,7 @@ INDEX_HTML = r"""
 
             <div class="actions">
               <button type="button" class="btn-primary" onclick="selectProject(${Number(projectId)})">Elegir proyecto</button>
+              <button type="button" class="btn-blue" onclick="selectProjectAndContinue(${Number(projectId)})">Elegir y seguir</button>
             </div>
           </article>
         `;
@@ -1475,58 +1523,39 @@ INDEX_HTML = r"""
       if (!project) return;
 
       currentSelectedProject = project;
-
       document.getElementById('selectedProjectId').value = String(project.id ?? project.project_id ?? '');
       document.getElementById('selectedProjectName').value =
         `${project.general_name ?? project.organization ?? 'Sin nombre general'} | ${project.name ?? project.project_name ?? 'Sin nombre'}`;
 
       renderCatalog(currentCatalog);
       renderSelectedProjectBanner();
-      setCurrentStep(2);
+      updateHeroState();
       showMsg('Proyecto seleccionado para el cierre de inscripción');
+    }
+
+    function selectProjectAndContinue(projectId) {
+      selectProject(projectId);
+      goToSectionAndStep('requestSection', 2);
     }
 
     async function loadCatalogsForSeason() {
       try {
         const season = getSeason();
-
         const data = await tryGet([
           `/api/catalogs?temporada=${encodeURIComponent(season)}`,
           `/api/catalogs?season=${encodeURIComponent(season)}`,
           `/api/catalogs`
         ]);
 
-        const partners =
-          data.socio ||
-          data.partner ||
-          data.partners ||
-          data.carreras ||
-          [];
-
-        const modalities =
-          data.modalidad ||
-          data.modality ||
-          data.modalities ||
-          [];
-
-        const weekDays =
-          data.dias ||
-          data.week_days ||
-          data.weekDays ||
-          data.days ||
-          [];
-
-        const schedules =
-          data.horario ||
-          data.schedule ||
-          data.schedules ||
-          [];
+        const partners = data.socio || data.partner || data.partners || data.carreras || [];
+        const modalities = data.modalidad || data.modality || data.modalities || [];
+        const weekDays = data.dias || data.week_days || data.weekDays || data.days || [];
+        const schedules = data.horario || data.schedule || data.schedules || [];
 
         fillSelect('filterPartner', partners, 'name');
         fillSelect('filterModality', modalities, 'description');
         fillSelect('filterWeekDays', weekDays, 'description');
         fillSelect('filterSchedule', schedules, 'description');
-
       } catch (e) {
         showMsg('No se pudieron cargar los catálogos: ' + e.message, false);
       }
@@ -1563,16 +1592,8 @@ INDEX_HTML = r"""
           `/api/projects`
         ]);
 
-        currentCatalog =
-          data.items ||
-          data.projects ||
-          data.rows ||
-          (Array.isArray(data) ? data : []);
-
-        const eventInfo =
-          data.event ||
-          data.current_event ||
-          null;
+        currentCatalog = data.items || data.projects || data.rows || (Array.isArray(data) ? data : []);
+        const eventInfo = data.event || data.current_event || null;
 
         renderCatalogHeader(currentCatalog, eventInfo);
         renderCatalog(currentCatalog);
@@ -1583,7 +1604,6 @@ INDEX_HTML = r"""
         } else {
           showMsg('Catálogo cargado correctamente');
         }
-
       } catch (e) {
         currentCatalog = [];
         renderCatalogHeader([], null);
@@ -1615,7 +1635,6 @@ INDEX_HTML = r"""
 
     function renderRequestInfo(data) {
       const box = document.getElementById('requestInfo');
-
       if (!box) return;
 
       if (!data) {
@@ -1653,27 +1672,22 @@ INDEX_HTML = r"""
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(event.display_name || getSeason())}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Correo principal</span>
               <div class="meta-value">${escapeHTML(user.email || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Segundo correo</span>
               <div class="meta-value">${escapeHTML(user.second_email || user.secondary_email || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Matrícula</span>
               <div class="meta-value">${escapeHTML(user.enrolment_number || getEnrolment() || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Carrera</span>
               <div class="meta-value">${escapeHTML(user.degree || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Semestre</span>
               <div class="meta-value">${escapeHTML(user.semester || '—')}</div>
@@ -1681,7 +1695,6 @@ INDEX_HTML = r"""
           </div>
         </div>
       `;
-
       updateHeroState();
     }
 
@@ -1703,11 +1716,7 @@ INDEX_HTML = r"""
           return showMsg('Faltan campos obligatorios para solicitar pase', false);
         }
 
-        const data = await tryPost([
-          { url: '/api/student/requests', body: payload },
-          { url: '/api/student/request', body: payload },
-          { url: '/api/student_requests', body: payload }
-        ]);
+        const data = await postJSON('/api/student/requests', payload);
 
         currentRequest = data;
         renderRequestInfo(data);
@@ -1726,11 +1735,10 @@ INDEX_HTML = r"""
         if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
 
         const season = getSeason();
-        const data = await tryGet([
-          `/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`,
-          `/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&temporada=${encodeURIComponent(season)}`,
-          `/api/student/request?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`
-        ]);
+
+        const data = await getJSON(
+          `/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`
+        );
 
         currentRequest = data;
         renderRequestInfo(data);
@@ -1741,12 +1749,11 @@ INDEX_HTML = r"""
         renderRequestInfo(null);
         showMsg(e.message, false);
       }
-    }
+    } 
 
     function renderStudentQR(plainToken) {
       const qrCanvas = document.getElementById('qrCanvas');
       const qrPlainToken = document.getElementById('qrPlainToken');
-
       if (!qrCanvas || !qrPlainToken) return;
 
       qrCanvas.innerHTML = '';
@@ -1765,7 +1772,6 @@ INDEX_HTML = r"""
     function renderPassInfo(data) {
       const box = document.getElementById('passInfo');
       const statusBadge = document.getElementById('qrStatusBadge');
-
       if (!box || !statusBadge) return;
 
       if (!data) {
@@ -1800,22 +1806,18 @@ INDEX_HTML = r"""
               <span class="meta-label">Folio</span>
               <div class="meta-value">${escapeHTML(request.folio || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Sesión activa</span>
               <div class="meta-value">${session ? escapeHTML(session.status || 'ACTIVE') : 'Sin sesión activa'}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Expira</span>
               <div class="meta-value">${session ? escapeHTML(session.expires_at || '—') : '—'}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Refresh count</span>
               <div class="meta-value">${session ? escapeHTML(session.refresh_count || 0) : 0}</div>
@@ -1854,8 +1856,8 @@ INDEX_HTML = r"""
 
         currentPass = data;
         renderPassInfo(data);
-        setCurrentStep(3);
         updateHeroState();
+        goToSectionAndStep('passSection', 3);
         showMsg('Estado del pase cargado correctamente');
       } catch (e) {
         currentPass = null;
@@ -1875,10 +1877,7 @@ INDEX_HTML = r"""
           temporada: getSeason()
         };
 
-        const data = await tryPost([
-          { url: '/api/student/pass/refresh', body: payload },
-          { url: '/api/student_pass/refresh', body: payload }
-        ]);
+        const data = await postJSON('/api/student/pass/refresh', payload);
 
         currentPass = data;
         renderPassInfo(data);
@@ -1922,27 +1921,22 @@ INDEX_HTML = r"""
               <span class="meta-label">Alumno</span>
               <div class="meta-value">${escapeHTML(student.full_name || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Proyecto</span>
               <div class="meta-value">${escapeHTML(project.general_name || '—')} | ${escapeHTML(project.project_name || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Carrera preferida</span>
               <div class="meta-value">${escapeHTML(project.partner_name || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Token</span>
               <div class="meta-value">${escapeHTML(token.token_value || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Token expira</span>
               <div class="meta-value">${escapeHTML(token.expires_at || '—')}</div>
@@ -1955,7 +1949,6 @@ INDEX_HTML = r"""
     function renderRegistrationSuccess(data) {
       const box = document.getElementById('registrationSuccessBox');
       const btn = document.getElementById('confirmRegistrationBtn');
-
       if (!box || !btn) return;
 
       if (!data) {
@@ -1968,37 +1961,30 @@ INDEX_HTML = r"""
 
       btn.disabled = true;
       box.classList.remove('hidden');
-
       box.innerHTML = `
         <div class="success-card">
           <div class="success-title">🎉 Inscripción completada</div>
-
           <div class="meta-grid">
             <div class="meta-box">
               <span class="meta-label">Proyecto</span>
               <div class="meta-value">${escapeHTML(data.project_name || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Organización</span>
               <div class="meta-value">${escapeHTML(data.general_name || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(data.season || getSeason())}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Token usado</span>
               <div class="meta-value">${escapeHTML(data.token_value || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Fecha</span>
               <div class="meta-value">${escapeHTML(data.accepted_at || '—')}</div>
             </div>
-
             <div class="meta-box">
               <span class="meta-label">Estado</span>
               <div class="meta-value">REGISTRADO</div>
@@ -2006,7 +1992,6 @@ INDEX_HTML = r"""
           </div>
         </div>
       `;
-
       updateHeroState();
     }
 
@@ -2085,9 +2070,10 @@ INDEX_HTML = r"""
         };
 
         renderRegistrationSuccess(currentRegistration);
-        setCurrentStep(4);
+        setCurrentStep(5);
         updateHeroState();
         showMsg(data.message || 'Registro completado');
+        showStudentSection('statusSection');
       } catch (e) {
         showMsg(e.message, false);
       }
@@ -2116,8 +2102,8 @@ INDEX_HTML = r"""
         renderRegistrationSuccess(null);
         setCurrentStep(1);
         updateHeroState();
+        showStudentSection('catalogSection');
       } catch (e) {
-        console.error('Error al inicializar alumno:', e);
         showMsg('Error al inicializar la página: ' + e.message, false);
       }
     });

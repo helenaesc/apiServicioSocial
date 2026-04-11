@@ -1192,7 +1192,7 @@ ADMIN_HTML = r"""
         <div class="module-grid">
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>Proyectos activos</h2>
+              <h2>Activar proyecto en temporada</h2>
               <span class="screen-chip">Operación</span>
             </div>
 
@@ -1206,14 +1206,23 @@ ADMIN_HTML = r"""
                 <select id="projectSelector"></select>
               </div>
               <div class="field">
-                <label>Slots / cupo total</label>
+                <label>Cupo inicial para esta temporada</label>
                 <input id="slotsInput" type="number" min="0" placeholder="Ej: 10">
               </div>
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-primary" onclick="addProjectToEvent()">Activar proyecto</button>
-              <button type="button" class="btn-secondary" onclick="loadEventProjects()">Recargar proyectos</button>
+              <button type="button" class="btn-primary" onclick="addProjectToEvent()">Agregar a temporada</button>
+              <button type="button" class="btn-secondary" onclick="loadEventProjects()">Actualizar lista</button>
+            </div>
+
+            <div class="module-card-title" style="margin-top:18px;">
+              <h2>Administrar proyectos activos</h2>
+              <span class="screen-chip">Edición y operación</span>
+            </div>
+
+            <div class="muted" style="margin-bottom:8px;">
+              Aquí puedes cambiar el cupo de cada proyecto activo, revisar sus tokens y actualizar su estado.
             </div>
 
             <div id="eventProjectsList" class="record-grid"></div>
@@ -1645,9 +1654,7 @@ ADMIN_HTML = r"""
 
   function prettyJSON(value) {
     try {
-      if (typeof value === 'string') {
-        return JSON.stringify(JSON.parse(value), null, 2);
-      }
+      if (typeof value === 'string') return JSON.stringify(JSON.parse(value), null, 2);
       return JSON.stringify(value ?? {}, null, 2);
     } catch {
       return String(value ?? '');
@@ -1675,8 +1682,7 @@ ADMIN_HTML = r"""
 
   function showModule(moduleId) {
     document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-    const moduleEl = document.getElementById(moduleId);
-    if (moduleEl) moduleEl.classList.add('active');
+    document.getElementById(moduleId)?.classList.add('active');
 
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     document.querySelectorAll(`.nav-item[data-module="${moduleId}"]`).forEach(x => x.classList.add('active'));
@@ -1686,6 +1692,7 @@ ADMIN_HTML = r"""
     document.getElementById('moduleSubtitle').textContent = meta.subtitle;
     document.getElementById('moduleKicker').textContent = meta.kicker;
     document.getElementById('headerAccentBadge').textContent = meta.title;
+
     setModuleAccent(meta.accent, meta.accentSoft);
   }
 
@@ -1697,15 +1704,9 @@ ADMIN_HTML = r"""
     const sidebarRoleBox = document.getElementById('sidebarRoleBox');
     const headerRoleBadge = document.getElementById('headerRoleBadge');
 
-    if (loginHint) {
-      loginHint.textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: no iniciada';
-    }
-    if (sidebarRoleBox) {
-      sidebarRoleBox.textContent = role ? `Rol actual: ${role} · ${user.full_name || user.email || ''}` : 'Rol actual: —';
-    }
-    if (headerRoleBadge) {
-      headerRoleBadge.textContent = role || 'Panel';
-    }
+    if (loginHint) loginHint.textContent = role ? `Sesión activa como: ${role}` : 'Sesión actual: no iniciada';
+    if (sidebarRoleBox) sidebarRoleBox.textContent = role ? `Rol actual: ${role} · ${user.full_name || user.email || ''}` : 'Rol actual: —';
+    if (headerRoleBadge) headerRoleBadge.textContent = role || 'Panel';
 
     document.getElementById('loginWrap')?.classList.toggle('hidden', !!role);
     document.getElementById('appShell')?.classList.toggle('hidden', !role);
@@ -1774,6 +1775,39 @@ ADMIN_HTML = r"""
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || ('Error ' + r.status));
     return data;
+  }
+
+  async function loginAdmin() {
+    try {
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email) return showMsg('Escribe tu correo', false, true);
+      if (!password) return showMsg('Escribe tu contraseña', false, true);
+
+      const data = await apiPost('/api/admin-auth/login', { email, password });
+      showMsg(data.message || 'Login correcto', true, true);
+      await bootstrapAdmin();
+    } catch (e) {
+      showMsg(e.message, false, true);
+    }
+  }
+
+  async function logoutAdmin() {
+    try { await apiPost('/api/admin-auth/logout', {}); } catch (e) {}
+    currentUser = null;
+    applyRoleUI(null);
+    clearLoginFields();
+    showMsg('Sesión cerrada', true, true);
+  }
+
+  async function fetchSessionUser() {
+    try {
+      const data = await apiGet('/api/admin-auth/me');
+      return data.user || null;
+    } catch {
+      return null;
+    }
   }
 
   function statusBadge(status) {
@@ -1868,39 +1902,15 @@ ADMIN_HTML = r"""
     `;
   }
 
-  async function loginAdmin() {
-    try {
-      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-      const password = document.getElementById('loginPassword').value;
+  function syncBaseProjectSlotsToEventSlots() {
+    const projectId = Number(document.getElementById('projectSelector')?.value || 0);
+    const slotsInput = document.getElementById('slotsInput');
+    if (!projectId || !slotsInput) return;
 
-      if (!email) return showMsg('Escribe tu correo', false, true);
-      if (!password) return showMsg('Escribe tu contraseña', false, true);
+    const project = (masterProjectsCache || []).find(p => Number(p.id) === projectId);
+    if (!project) return;
 
-      const data = await apiPost('/api/admin-auth/login', { email, password });
-      showMsg(data.message || 'Login correcto', true, true);
-      await bootstrapAdmin();
-    } catch (e) {
-      showMsg(e.message, false, true);
-    }
-  }
-
-  async function logoutAdmin() {
-    try {
-      await apiPost('/api/admin-auth/logout', {});
-    } catch (e) {}
-    currentUser = null;
-    applyRoleUI(null);
-    clearLoginFields();
-    showMsg('Sesión cerrada', true, true);
-  }
-
-  async function fetchSessionUser() {
-    try {
-      const data = await apiGet('/api/admin-auth/me');
-      return data.user || null;
-    } catch (e) {
-      return null;
-    }
+    slotsInput.value = Number(project.slots || 0);
   }
 
   async function bootstrapAdmin() {
@@ -1920,7 +1930,9 @@ ADMIN_HTML = r"""
       const status = document.getElementById('eventStatus').value;
       const isVisible = boolFromString(document.getElementById('eventVisible').value);
 
-      if (!year || year < 2020 || year > 2100) return showMsg('Año inválido', false);
+      if (!year || year < 2020 || year > 2100) {
+        return showMsg('Año inválido', false);
+      }
 
       const payload = {
         year,
@@ -1965,15 +1977,10 @@ ADMIN_HTML = r"""
       const eventsList = document.getElementById('eventsList');
 
       if (!allEvents.length) {
-        if (eventsList) {
-          eventsList.innerHTML = renderEmptyCard('No hay temporadas creadas', 'Crea la primera temporada para comenzar.');
-        }
-        const selectedInfo = document.getElementById('selectedEventInfo');
-        const dashboardSummary = document.getElementById('dashboardSummary');
-        const dashboardProjectsBody = document.getElementById('dashboardProjectsBody');
-        if (selectedInfo) selectedInfo.innerHTML = '';
-        if (dashboardSummary) dashboardSummary.innerHTML = '';
-        if (dashboardProjectsBody) dashboardProjectsBody.innerHTML = renderEmptyCard('Sin temporadas', 'No hay nada que mostrar todavía.');
+        if (eventsList) eventsList.innerHTML = renderEmptyCard('No hay temporadas creadas', 'Crea la primera temporada para comenzar.');
+        document.getElementById('selectedEventInfo').innerHTML = '';
+        document.getElementById('dashboardSummary').innerHTML = '';
+        document.getElementById('dashboardProjectsBody').innerHTML = renderEmptyCard('Sin temporadas', 'No hay nada que mostrar todavía.');
         return;
       }
 
@@ -2019,27 +2026,24 @@ ADMIN_HTML = r"""
 
     try {
       const e = await apiGet(`/api/admin/events/${eventId}`);
-      if (box) {
-        box.innerHTML = `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(e.display_name)}</div>
-                <div class="record-card__sub">${e.season} ${e.year}</div>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                ${statusBadge(e.status)}
-                ${e.is_visible_to_students ? '<span class="badge badge-success">VISIBLE ALUMNO</span>' : '<span class="badge badge-neutral">NO VISIBLE</span>'}
-              </div>
+      box.innerHTML = `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(e.display_name)}</div>
+              <div class="record-card__sub">${e.season} ${e.year}</div>
             </div>
-            <div class="stack-row"><strong>ID:</strong><span>${e.id}</span></div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              ${statusBadge(e.status)}
+              ${e.is_visible_to_students ? '<span class="badge badge-success">VISIBLE ALUMNO</span>' : '<span class="badge badge-neutral">NO VISIBLE</span>'}
+            </div>
           </div>
-        `;
-      }
-      const incidentEventId = document.getElementById('incidentEventId');
-      if (incidentEventId) incidentEventId.value = e.id;
+          <div class="stack-row"><strong>ID:</strong><span>${e.id}</span></div>
+        </div>
+      `;
+      document.getElementById('incidentEventId').value = e.id;
     } catch (e) {
-      if (box) box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar la temporada');
+      box.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar la temporada');
     }
   }
 
@@ -2129,6 +2133,7 @@ ADMIN_HTML = r"""
 
       masterProjectsCache = data || [];
       fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto base', p => `${p.general_name || 'Sin nombre general'} | ${p.name}`);
+      syncBaseProjectSlotsToEventSlots();
 
       const list = document.getElementById('masterProjectsList');
       if (!list) return;
@@ -2155,6 +2160,7 @@ ADMIN_HTML = r"""
             <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(p.partner_name || '—')}</span></div>
             <div class="stack-row"><strong>Horario:</strong><span>${escapeHTML(p.schedule_description || '—')}</span></div>
             <div class="stack-row"><strong>Duración:</strong><span>${escapeHTML(p.duration || '—')}</span></div>
+            <div class="stack-row"><strong>Cupo base:</strong><span>${escapeHTML(p.slots ?? '—')}</span></div>
             <div class="stack-row"><strong>Clave:</strong><span>${escapeHTML(p.clave || '—')}</span></div>
           </div>
         </div>
@@ -2167,11 +2173,13 @@ ADMIN_HTML = r"""
   async function addProjectToEvent() {
     const eventId = document.getElementById('eventProjectEventSelector')?.value;
     const projectId = document.getElementById('projectSelector')?.value;
-    const slots = Number(document.getElementById('slotsInput')?.value);
+    const rawSlots = document.getElementById('slotsInput')?.value;
+    const slots = Number(rawSlots);
 
     if (!eventId) return showMsg('Selecciona una temporada', false);
     if (!projectId) return showMsg('Selecciona un proyecto base', false);
-    if (Number.isNaN(slots) || slots < 0) return showMsg('Slots inválidos', false);
+    if (rawSlots === '' || Number.isNaN(slots)) return showMsg('Debes capturar el cupo para esta temporada', false);
+    if (slots <= 0) return showMsg('El cupo para esta temporada debe ser mayor a 0', false);
 
     try {
       const data = await apiPost(`/api/admin/events/${eventId}/projects`, {
@@ -2201,7 +2209,12 @@ ADMIN_HTML = r"""
       const data = await apiGet(`/api/admin/events/${eventId}/projects`);
       eventProjectsCache = data || [];
 
-      fillSelect('tokensEventProjectSelector', eventProjectsCache, 'Selecciona proyecto en temporada', p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`);
+      fillSelect(
+        'tokensEventProjectSelector',
+        eventProjectsCache,
+        'Selecciona proyecto en temporada',
+        p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`
+      );
 
       if (!eventProjectsCache.length) {
         container.innerHTML = renderEmptyCard('No hay proyectos activos', 'Activa un proyecto para esta temporada.');
@@ -2221,13 +2234,40 @@ ADMIN_HTML = r"""
           <div class="record-stack">
             <div class="stack-row"><strong>Project ID:</strong><span>${p.project_id}</span></div>
             <div class="stack-row"><strong>EventProject ID:</strong><span>${p.id}</span></div>
-            <div class="stack-row"><strong>Slots:</strong><span>${p.slots_total}</span></div>
+            <div class="stack-row"><strong>Cupo actual:</strong><span>${p.slots_total}</span></div>
+          </div>
+
+          <div class="form-grid" style="margin-top:12px;">
+            <div class="field">
+              <label>Nuevo cupo para esta temporada</label>
+              <input id="slots_edit_${p.id}" type="number" min="1" value="${p.slots_total}">
+            </div>
           </div>
 
           <div class="actions">
-            <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'ACTIVE')">Activar</button>
-            <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'HIDDEN')">Ocultar</button>
-            <button type="button" class="btn-secondary" onclick="quickUpdateEventProject(${p.id}, ${p.slots_total}, 'CLOSED')">Cerrar</button>
+            <button type="button" class="btn-primary" onclick="saveEventProjectSlots(${p.id})">Guardar cupo</button>
+            <button type="button" class="btn-secondary" onclick="goToTokensModule(${p.id})">Ver tokens</button>
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${p.slots_total}), 'ACTIVE')"
+            >
+              Activar
+            </button>
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${p.slots_total}), 'HIDDEN')"
+            >
+              Ocultar
+            </button>
+            <button
+              type="button"
+              class="btn-secondary"
+              onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${p.slots_total}), 'CLOSED')"
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       `).join('');
@@ -2240,7 +2280,7 @@ ADMIN_HTML = r"""
     try {
       const data = await apiPatch(`/api/admin/event-projects/${eventProjectId}`, {
         slots_total: currentSlots,
-        status: status
+        status
       });
       showMsg(data.message || 'Proyecto de temporada actualizado');
       await loadEventProjects();
@@ -2248,6 +2288,45 @@ ADMIN_HTML = r"""
     } catch (e) {
       showMsg(e.message, false);
     }
+  }
+
+  async function saveEventProjectSlots(eventProjectId) {
+    try {
+      const input = document.getElementById(`slots_edit_${eventProjectId}`);
+      if (!input) return showMsg('No se encontró el input de cupo', false);
+
+      const rawValue = input.value;
+      const slots = Number(rawValue);
+
+      if (rawValue === '' || Number.isNaN(slots)) {
+        return showMsg('Captura un cupo válido', false);
+      }
+
+      if (slots <= 0) {
+        return showMsg('El cupo debe ser mayor a 0', false);
+      }
+
+      const data = await apiPatch(`/api/admin/event-projects/${eventProjectId}`, {
+        slots_total: slots
+      });
+
+      showMsg(data.message || 'Cupo actualizado');
+      await loadEventProjects();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  function goToTokensModule(eventProjectId) {
+    showModule('tokensModule');
+
+    const selector = document.getElementById('tokensEventProjectSelector');
+    if (selector) {
+      selector.value = String(eventProjectId);
+    }
+
+    loadProjectTokens();
   }
 
   async function generateProjectTokens() {
@@ -2468,9 +2547,7 @@ ADMIN_HTML = r"""
           <div class="record-card__head">
             <div>
               <div class="record-card__title">${escapeHTML(r.student_name || r.student_full_name || '—')}</div>
-              <div class="record-card__sub">
-                <span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span>
-              </div>
+              <div class="record-card__sub"><span class="mono-soft">${escapeHTML(r.enrolment_number || '—')}</span></div>
             </div>
             <div>${statusBadge(r.registration_status || r.status || '—')}</div>
           </div>
@@ -2553,10 +2630,7 @@ ADMIN_HTML = r"""
     const box = document.getElementById('evidenceResult');
 
     if (!box) return;
-
-    if (!enrolment) {
-      return showMsg('Ingresa una matrícula válida', false);
-    }
+    if (!enrolment) return showMsg('Ingresa una matrícula válida', false);
 
     try {
       const params = new URLSearchParams();
@@ -2586,15 +2660,9 @@ ADMIN_HTML = r"""
             </div>
 
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              ${v.verified
-                ? '<span class="badge badge-success">VERIFICADO</span>'
-                : '<span class="badge badge-danger">NO VERIFICADO</span>'}
-              ${v.hash_matches
-                ? '<span class="badge badge-success">HASH OK</span>'
-                : '<span class="badge badge-danger">HASH FAIL</span>'}
-              ${v.signature_matches
-                ? '<span class="badge badge-success">SIGNATURE OK</span>'
-                : '<span class="badge badge-danger">SIGNATURE FAIL</span>'}
+              ${v.verified ? '<span class="badge badge-success">VERIFICADO</span>' : '<span class="badge badge-danger">NO VERIFICADO</span>'}
+              ${v.hash_matches ? '<span class="badge badge-success">HASH OK</span>' : '<span class="badge badge-danger">HASH FAIL</span>'}
+              ${v.signature_matches ? '<span class="badge badge-success">SIGNATURE OK</span>' : '<span class="badge badge-danger">SIGNATURE FAIL</span>'}
               ${statusBadge(reg.status || '—')}
             </div>
           </div>
@@ -2614,30 +2682,22 @@ ADMIN_HTML = r"""
 
         <div class="record-card">
           <div class="record-card__title">Hash guardado</div>
-          <div class="record-card__sub" style="margin-top:8px;">
-            <span class="mono">${escapeHTML(evidence.stored_hash || '—')}</span>
-          </div>
+          <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.stored_hash || '—')}</span></div>
         </div>
 
         <div class="record-card">
           <div class="record-card__title">Hash recalculado</div>
-          <div class="record-card__sub" style="margin-top:8px;">
-            <span class="mono">${escapeHTML(evidence.recalculated_hash || '—')}</span>
-          </div>
+          <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.recalculated_hash || '—')}</span></div>
         </div>
 
         <div class="record-card">
           <div class="record-card__title">Firma guardada</div>
-          <div class="record-card__sub" style="margin-top:8px;">
-            <span class="mono">${escapeHTML(evidence.stored_signature || '—')}</span>
-          </div>
+          <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.stored_signature || '—')}</span></div>
         </div>
 
         <div class="record-card">
           <div class="record-card__title">Firma recalculada</div>
-          <div class="record-card__sub" style="margin-top:8px;">
-            <span class="mono">${escapeHTML(evidence.recalculated_signature || '—')}</span>
-          </div>
+          <div class="record-card__sub" style="margin-top:8px;"><span class="mono">${escapeHTML(evidence.recalculated_signature || '—')}</span></div>
         </div>
 
         <div class="record-card">
@@ -2682,9 +2742,7 @@ ADMIN_HTML = r"""
 
   async function startQrScanner() {
     try {
-      if (staffQrScanner) {
-        await stopQrScanner();
-      }
+      if (staffQrScanner) await stopQrScanner();
 
       staffQrScanner = new Html5Qrcode('staffScanner');
 
@@ -2726,33 +2784,29 @@ ADMIN_HTML = r"""
       const data = await apiPost('/api/staff/checkin/scan', { token });
       lastScannedPassSession = data.pass_session?.id || null;
 
-      const info = document.getElementById('staffCheckinInfo');
-      if (info) {
-        info.innerHTML = `
-          <div class="record-card">
-            <div class="record-card__head">
-              <div>
-                <div class="record-card__title">${escapeHTML(data.student?.full_name || 'Alumno')}</div>
-                <div class="record-card__sub">Matrícula registrada: ${escapeHTML(data.student?.enrolment_number || '—')}</div>
-              </div>
-              <div>${statusBadge(data.request?.status || 'REQUESTED')}</div>
+      document.getElementById('staffCheckinInfo').innerHTML = `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(data.student?.full_name || 'Alumno')}</div>
+              <div class="record-card__sub">Matrícula registrada: ${escapeHTML(data.student?.enrolment_number || '—')}</div>
             </div>
-
-            <div class="record-stack">
-              <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(data.request?.folio || '—')}</span></div>
-              <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(data.event?.display_name || '—')}</span></div>
-              <div class="stack-row"><strong>QR expira:</strong><span>${escapeHTML(data.pass_session?.expires_at || '—')}</span></div>
-              <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(data.student?.degree || '—')}</span></div>
-            </div>
+            <div>${statusBadge(data.request?.status || 'REQUESTED')}</div>
           </div>
-        `;
-      }
+
+          <div class="record-stack">
+            <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(data.request?.folio || '—')}</span></div>
+            <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(data.event?.display_name || '—')}</span></div>
+            <div class="stack-row"><strong>QR expira:</strong><span>${escapeHTML(data.pass_session?.expires_at || '—')}</span></div>
+            <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(data.student?.degree || '—')}</span></div>
+          </div>
+        </div>
+      `;
 
       showMsg('QR válido. Verifica ahora la matrícula física.');
     } catch (e) {
       lastScannedPassSession = null;
-      const info = document.getElementById('staffCheckinInfo');
-      if (info) info.innerHTML = renderEmptyCard('QR inválido o no disponible', e.message || '');
+      document.getElementById('staffCheckinInfo').innerHTML = renderEmptyCard('QR inválido o no disponible', e.message || '');
       showMsg(e.message, false);
     }
   }
@@ -2771,15 +2825,12 @@ ADMIN_HTML = r"""
       });
 
       showMsg(data.message || 'Acceso habilitado');
-      const info = document.getElementById('staffCheckinInfo');
-      if (info) {
-        info.innerHTML += `
-          <div class="record-card">
-            <div class="record-card__title">Acceso habilitado correctamente</div>
-            <div class="record-card__sub">El alumno ya puede entrar al catálogo y cerrar inscripción.</div>
-          </div>
-        `;
-      }
+      document.getElementById('staffCheckinInfo').innerHTML += `
+        <div class="record-card">
+          <div class="record-card__title">Acceso habilitado correctamente</div>
+          <div class="record-card__sub">El alumno ya puede entrar al catálogo y cerrar inscripción.</div>
+        </div>
+      `;
     } catch (e) {
       showMsg(e.message, false);
     }
@@ -2798,11 +2849,9 @@ ADMIN_HTML = r"""
 
       const data = await apiPost('/api/incidents', payload);
       showMsg(data.message || 'Caso reportado');
-
-      if (document.getElementById('incidentDescription')) document.getElementById('incidentDescription').value = '';
-      if (document.getElementById('incidentRequestId')) document.getElementById('incidentRequestId').value = '';
-      if (document.getElementById('incidentUserId')) document.getElementById('incidentUserId').value = '';
-
+      document.getElementById('incidentDescription').value = '';
+      document.getElementById('incidentRequestId').value = '';
+      document.getElementById('incidentUserId').value = '';
       await loadIncidents();
       await loadDashboard();
     } catch (e) {
@@ -2940,9 +2989,9 @@ ADMIN_HTML = r"""
       const data = await apiPost('/api/admin/staff', { full_name, email, password });
       showMsg(data.message || 'Staff creado');
 
-      if (document.getElementById('staffFullName')) document.getElementById('staffFullName').value = '';
-      if (document.getElementById('staffEmail')) document.getElementById('staffEmail').value = '';
-      if (document.getElementById('staffPassword')) document.getElementById('staffPassword').value = '';
+      document.getElementById('staffFullName').value = '';
+      document.getElementById('staffEmail').value = '';
+      document.getElementById('staffPassword').value = '';
 
       await loadStaff();
     } catch (e) {
@@ -3079,8 +3128,7 @@ ADMIN_HTML = r"""
 
     document.getElementById('eventSelector')?.addEventListener('change', async () => {
       await loadSelectedEventInfo();
-      const incidentEventId = document.getElementById('incidentEventId');
-      if (incidentEventId) incidentEventId.value = document.getElementById('eventSelector').value || '';
+      document.getElementById('incidentEventId').value = document.getElementById('eventSelector').value || '';
     });
 
     document.getElementById('dashboardEventSelector')?.addEventListener('change', async () => {
@@ -3098,6 +3146,8 @@ ADMIN_HTML = r"""
     document.getElementById('registrationsEventSelector')?.addEventListener('change', async () => {
       await loadRegistrations();
     });
+
+    document.getElementById('projectSelector')?.addEventListener('change', syncBaseProjectSlotsToEventSlots);
   });
 </script>
 </body>
