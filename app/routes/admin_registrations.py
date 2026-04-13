@@ -37,6 +37,55 @@ def _sign_snapshot(snapshot_json: str) -> str:
         hashlib.sha256
     ).hexdigest()
 
+def _insert_registration_audit(
+    cur,
+    registration_id: int,
+    event_id: int,
+    id_user: int,
+    action_type: str,
+    old_status: str | None,
+    new_status: str | None,
+    actor_type: str,
+    actor_admin_user_id: int | None = None,
+    reason: str | None = None,
+    snapshot: dict | None = None,
+):
+    snapshot_json = json.dumps(snapshot, ensure_ascii=False, sort_keys=True) if snapshot is not None else None
+
+    cur.execute(
+        """
+        INSERT INTO registration_audit_log
+        (
+            registration_id,
+            event_id,
+            id_user,
+            action_type,
+            old_status,
+            new_status,
+            actor_type,
+            actor_admin_user_id,
+            reason,
+            snapshot_json
+        )
+        VALUES
+        (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        )
+        """,
+        [
+            registration_id,
+            event_id,
+            id_user,
+            action_type,
+            old_status,
+            new_status,
+            actor_type,
+            actor_admin_user_id,
+            reason,
+            snapshot_json,
+        ]
+    )
+
 
 @admin_registrations_bp.get("/api/admin/registrations")
 def list_registrations():
@@ -181,6 +230,24 @@ def cancel_registration(registration_id: int):
             WHERE id = %s
             """,
             [reason, admin_user_id, registration_id]
+        )
+        
+        _insert_registration_audit(
+            cur=cur,
+            registration_id=registration_id,
+            event_id=reg["event_id"],
+            id_user=reg["id_user"],
+            action_type="REGISTER_CANCELLED",
+            old_status="ACTIVE",
+            new_status="CANCELLED",
+            actor_type="ADMIN",
+            actor_admin_user_id=admin_user_id,
+            reason=reason,
+            snapshot={
+                "request_id": reg["request_id"],
+                "event_project_id": reg["event_project_id"],
+                "project_token_id": reg["project_token_id"],
+            }
         )
 
         # 3) revocar cualquier pase ACTIVO vigente para obligar nuevo flujo presencial

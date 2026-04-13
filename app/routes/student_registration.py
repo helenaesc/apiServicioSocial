@@ -80,6 +80,54 @@ def _build_acceptance_snapshot(
         "legal_text_version": legal_text_version,
     }
 
+def _insert_registration_audit(
+    cur,
+    registration_id: int,
+    event_id: int,
+    id_user: int,
+    action_type: str,
+    old_status: str | None,
+    new_status: str | None,
+    actor_type: str,
+    actor_admin_user_id: int | None = None,
+    reason: str | None = None,
+    snapshot: dict | None = None,
+):
+    snapshot_json = json.dumps(snapshot, ensure_ascii=False, sort_keys=True) if snapshot is not None else None
+
+    cur.execute(
+        """
+        INSERT INTO registration_audit_log
+        (
+            registration_id,
+            event_id,
+            id_user,
+            action_type,
+            old_status,
+            new_status,
+            actor_type,
+            actor_admin_user_id,
+            reason,
+            snapshot_json
+        )
+        VALUES
+        (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        )
+        """,
+        [
+            registration_id,
+            event_id,
+            id_user,
+            action_type,
+            old_status,
+            new_status,
+            actor_type,
+            actor_admin_user_id,
+            reason,
+            snapshot_json,
+        ]
+    )
 
 @student_registration_bp.post("/api/student/registration/preview")
 def preview_registration():
@@ -301,27 +349,51 @@ def confirm_registration():
         if not req_row:
             return {"error": "No existe solicitud para esa temporada", "status": 404}
 
+        if req_row["request_status"] == "REGISTERED":
+            return {
+                "error": "Ya cuentas con una inscripción activa en esta temporada",
+                "status": 409
+            }
+
+        if req_row["request_status"] in ("CANCELLED", "CLOSED"):
+            return {
+                "error": "Tu solicitud está cerrada. Acércate con staff o administración",
+                "status": 409
+            }
+
+        if req_row["request_status"] in ("REQUESTED", "VALIDATED"):
+            return {
+                "error": "Aún no tienes acceso habilitado. Primero muestra tu QR al staff",
+                "status": 409
+            }
+
         if req_row["request_status"] != "ACCESS_ENABLED":
             return {
                 "error": f"La solicitud no está habilitada para registro ({req_row['request_status']})",
                 "status": 409
             }
 
-        # 2) evitar doble registro
+        # 2) revisar si ya existe registro previo en esta temporada
         cur.execute(
             """
-            SELECT id
+            SELECT
+                id,
+                status
             FROM registrations
             WHERE event_id = %s
               AND id_user = %s
-              AND status = 'ACTIVE'
             LIMIT 1
             FOR UPDATE
             """,
             [req_row["event_id"], req_row["user_id"]]
         )
-        if cur.fetchone():
-            return {"error": "El alumno ya tiene un registro activo en esta temporada", "status": 409}
+        existing_registration = cur.fetchone()
+
+        if existing_registration and existing_registration["status"] == "ACTIVE":
+            return {
+                "error": "El alumno ya tiene un registro activo en esta temporada",
+                "status": 409
+            }
 
         # 3) proyecto en temporada
         cur.execute(
@@ -447,51 +519,140 @@ def confirm_registration():
         acceptance_hash = _sha256_text(snapshot_json)
         acceptance_signature = _sign_snapshot(snapshot_json)
 
-        # 8) crear registration
-        cur.execute(
-            """
-            INSERT INTO registrations
-            (
-                event_id,
-                event_project_id,
-                id_user,
-                request_id,
-                project_token_id,
-                accepted_checkbox,
-                accepted_full_name,
-                legal_text_version,
-                accepted_at,
-                acceptance_snapshot_json,
-                acceptance_hash,
-                acceptance_signature,
-                accepted_ip,
-                accepted_user_agent,
-                status
+        # 8) crear o reactivar registration
+        if existing_registration and existing_registration["status"] == "CANCELLED":
+            cur.execute(
+                """
+                UPDATE registrations
+                SET
+                    event_project_id = %s,
+                    request_id = %s,
+                    project_token_id = %s,
+                    accepted_checkbox = %s,
+                    accepted_full_name = %s,
+                    legal_text_version = %s,
+                    accepted_at = NOW(),
+                    acceptance_snapshot_json = %s,
+                    acceptance_hash = %s,
+                    acceptance_signature = %s,
+                    accepted_ip = %s,
+                    accepted_user_agent = %s,
+                    status = 'ACTIVE',
+                    cancelled_at = NULL,
+                    cancel_reason = NULL,
+                    cancelled_by_admin_user_id = NULL
+                WHERE id = %s
+                """,
+                [
+                    ep_row["event_project_id"],
+                    req_row["request_id"],
+                    tk_row["id"],
+                    True,
+                    accepted_full_name,
+                    legal_text_version,
+                    snapshot_json,
+                    acceptance_hash,
+                    acceptance_signature,
+                    accepted_ip,
+                    accepted_user_agent,
+                    existing_registration["id"]
+                ]
             )
-            VALUES (
-                %s, %s, %s, %s, %s,
-                %s, %s, %s, NOW(),
-                %s, %s, %s, %s, %s,
-                'ACTIVE'
+            registration_id = existing_registration["id"]
+
+            _insert_registration_audit(
+                cur=cur,
+                registration_id=registration_id,
+                event_id=req_row["event_id"],
+                id_user=req_row["user_id"],
+                action_type="REGISTER_REACTIVATED",
+                old_status="CANCELLED",
+                new_status="ACTIVE",
+                actor_type="STUDENT",
+                actor_admin_user_id=None,
+                reason="Reactivación después de baja",
+                snapshot={
+                    "request_id": req_row["request_id"],
+                    "event_project_id": ep_row["event_project_id"],
+                    "project_id": ep_row["project_id"],
+                    "project_token_id": tk_row["id"],
+                    "token_value": tk_row["token_value"],
+                    "accepted_full_name": accepted_full_name,
+                    "legal_text_version": legal_text_version,
+                    "student_fingerprint": student_fingerprint,
+                    "acceptance_hash": acceptance_hash,
+                }
             )
-            """,
-            [
-                req_row["event_id"],
-                ep_row["event_project_id"],
-                req_row["user_id"],
-                req_row["request_id"],
-                tk_row["id"],
-                True,
-                accepted_full_name,
-                legal_text_version,
-                snapshot_json,
-                acceptance_hash,
-                acceptance_signature,
-                accepted_ip,
-                accepted_user_agent,
-            ]
-        )
-        registration_id = cur.lastrowid
+
+        else:
+            cur.execute(
+                """
+                INSERT INTO registrations
+                (
+                    event_id,
+                    event_project_id,
+                    id_user,
+                    request_id,
+                    project_token_id,
+                    accepted_checkbox,
+                    accepted_full_name,
+                    legal_text_version,
+                    accepted_at,
+                    acceptance_snapshot_json,
+                    acceptance_hash,
+                    acceptance_signature,
+                    accepted_ip,
+                    accepted_user_agent,
+                    status
+                )
+                VALUES (
+                    %s, %s, %s, %s, %s,
+                    %s, %s, %s, NOW(),
+                    %s, %s, %s, %s, %s,
+                    'ACTIVE'
+                )
+                """,
+                [
+                    req_row["event_id"],
+                    ep_row["event_project_id"],
+                    req_row["user_id"],
+                    req_row["request_id"],
+                    tk_row["id"],
+                    True,
+                    accepted_full_name,
+                    legal_text_version,
+                    snapshot_json,
+                    acceptance_hash,
+                    acceptance_signature,
+                    accepted_ip,
+                    accepted_user_agent,
+                ]
+            )
+            registration_id = cur.lastrowid
+
+            _insert_registration_audit(
+                cur=cur,
+                registration_id=registration_id,
+                event_id=req_row["event_id"],
+                id_user=req_row["user_id"],
+                action_type="REGISTER_CREATED",
+                old_status=None,
+                new_status="ACTIVE",
+                actor_type="STUDENT",
+                actor_admin_user_id=None,
+                reason="Registro inicial",
+                snapshot={
+                    "request_id": req_row["request_id"],
+                    "event_project_id": ep_row["event_project_id"],
+                    "project_id": ep_row["project_id"],
+                    "project_token_id": tk_row["id"],
+                    "token_value": tk_row["token_value"],
+                    "accepted_full_name": accepted_full_name,
+                    "legal_text_version": legal_text_version,
+                    "student_fingerprint": student_fingerprint,
+                    "acceptance_hash": acceptance_hash,
+                }
+            )
 
         # 9) consumir token
         cur.execute(

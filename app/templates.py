@@ -878,6 +878,254 @@ INDEX_HTML = r"""
         width: 100%;
       }
     }
+
+    .journey-card {
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top right, rgba(125,91,166,0.10) 0%, rgba(125,91,166,0) 26%),
+        radial-gradient(circle at bottom left, rgba(79,124,255,0.08) 0%, rgba(79,124,255,0) 24%),
+        linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 18px;
+    }
+
+    .journey-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .journey-kicker {
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 900;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .journey-title {
+      font-size: 1.18rem;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .journey-subtitle {
+      margin-top: 6px;
+      color: var(--text-soft);
+      font-size: .92rem;
+      line-height: 1.45;
+      max-width: 760px;
+    }
+
+    .journey-badge {
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: .82rem;
+      font-weight: 900;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--text-soft);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .journey-track {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .journey-line {
+      position: absolute;
+      top: 22px;
+      left: 9%;
+      right: 9%;
+      height: 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      z-index: 0;
+    }
+
+    .journey-progress {
+      position: absolute;
+      top: 22px;
+      left: 9%;
+      width: 0%;
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--green) 100%);
+      z-index: 1;
+      transition: width .35s ease;
+    }
+
+    .journey-step {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .journey-dot {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: .95rem;
+      background: white;
+      border: 2px solid #d0d5dd;
+      color: var(--text-soft);
+      transition: all .25s ease;
+    }
+
+    .journey-label {
+      font-size: .9rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .journey-meta {
+      margin-top: 4px;
+      font-size: .78rem;
+      color: var(--text-soft);
+      line-height: 1.35;
+    }
+
+    .journey-step.done .journey-dot {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+      box-shadow: 0 10px 20px rgba(67,170,139,0.18);
+    }
+
+    .journey-step.active .journey-dot {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      box-shadow: 0 10px 22px rgba(125,91,166,0.24);
+      transform: scale(1.08);
+      animation: journeyPulse 1.5s infinite;
+    }
+
+    .journey-step.locked .journey-dot {
+      background: #f8fafc;
+      border-color: #d0d5dd;
+      color: #98a2b3;
+    }
+
+    .journey-step.locked .journey-label,
+    .journey-step.locked .journey-meta {
+      color: #98a2b3;
+    }
+
+    .journey-step.error .journey-dot {
+      background: var(--pink);
+      border-color: var(--pink);
+      color: white;
+      box-shadow: 0 10px 20px rgba(242,92,120,0.18);
+    }
+
+
+    @keyframes journeyPulse {
+      0% { box-shadow: 0 0 0 0 rgba(125,91,166,0.26); }
+      70% { box-shadow: 0 0 0 14px rgba(125,91,166,0); }
+      100% { box-shadow: 0 0 0 0 rgba(125,91,166,0); }
+    }
+
+    .journey-bottom {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .journey-alert {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 13px 15px;
+      color: var(--text-soft);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    .journey-alert.ok {
+      background: var(--green-soft);
+      border-color: #cdeee4;
+      color: var(--green);
+    }
+
+    .journey-alert.warn {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: #c2410c;
+    }
+
+    .journey-alert.err {
+      background: var(--pink-soft);
+      border-color: #ffd7df;
+      color: var(--pink);
+    }
+
+    .journey-timer {
+      border: 1px solid #dbeafe;
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .journey-timer-label {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .journey-timer-value {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: var(--blue);
+      line-height: 1;
+      margin-bottom: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .journey-timer-sub {
+      font-size: .82rem;
+      color: var(--text-soft);
+      line-height: 1.4;
+    }
+
+    @media (max-width: 900px) {
+      .journey-bottom {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .journey-track {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 22px;
+      }
+
+      .journey-line,
+      .journey-progress {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -925,6 +1173,62 @@ INDEX_HTML = r"""
       </div>
     </section>
 
+    <section class="journey-card" id="studentJourneyCard">
+      <div class="journey-top">
+        <div>
+          <div class="journey-kicker">Ruta inteligente del alumno</div>
+          <div class="journey-title" id="journeyTitle">Esperando solicitud</div>
+          <div class="journey-subtitle" id="journeySubtitle">
+            Completa tu solicitud para comenzar el flujo.
+          </div>
+        </div>
+        <div class="journey-badge" id="journeyBadge">INACTIVO</div>
+      </div>
+
+      <div class="journey-track">
+        <div class="journey-line"></div>
+        <div class="journey-progress" id="journeyProgress"></div>
+
+        <div class="journey-step locked" id="journeyStep1">
+          <div class="journey-dot">1</div>
+          <div class="journey-label">Solicitud</div>
+          <div class="journey-meta" id="journeyMeta1">Pendiente</div>
+        </div>
+
+        <div class="journey-step locked" id="journeyStep2">
+          <div class="journey-dot">2</div>
+          <div class="journey-label">QR activo</div>
+          <div class="journey-meta" id="journeyMeta2">Sin pase</div>
+        </div>
+
+        <div class="journey-step locked" id="journeyStep3">
+          <div class="journey-dot">3</div>
+          <div class="journey-label">Validación</div>
+          <div class="journey-meta" id="journeyMeta3">Pendiente</div>
+        </div>
+
+        <div class="journey-step locked" id="journeyStep4">
+          <div class="journey-dot">4</div>
+          <div class="journey-label">Inscripción</div>
+          <div class="journey-meta" id="journeyMeta4">Bloqueada</div>
+        </div>
+      </div>
+
+      <div class="journey-bottom">
+        <div class="journey-alert" id="journeyAlert">
+          Aún no has iniciado tu proceso.
+        </div>
+
+        <div class="journey-timer hidden" id="journeyTimerBox">
+          <div class="journey-timer-label">Vida del QR</div>
+          <div class="journey-timer-value" id="journeyTimerValue">--:--</div>
+          <div class="journey-timer-sub" id="journeyTimerSub">
+            Tu código cambia cuando se refresca.
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="nav-strip" id="stepsBar">
       <div class="nav-card active" data-step="1" onclick="showStudentSection('catalogSection')">
         <div class="nav-index">Paso 1</div>
@@ -941,7 +1245,7 @@ INDEX_HTML = r"""
         <div class="nav-title">Mostrar QR</div>
         <div class="nav-desc">Presenta tu credencial viva al staff.</div>
       </div>
-      <div class="nav-card" data-step="4" onclick="showStudentSection('registrationSection')">
+      <div class="nav-card" data-step="4" onclick="validateAccessAndShowRegistration()">
         <div class="nav-index">Paso 4</div>
         <div class="nav-title">Cerrar inscripción</div>
         <div class="nav-desc">Haz preview y confirma legalmente.</div>
@@ -1097,7 +1401,7 @@ INDEX_HTML = r"""
             <div class="actions">
               <button type="button" class="btn-blue" onclick="refreshStudentPass()">Refrescar credencial</button>
               <button type="button" class="btn-secondary" onclick="loadStudentPass()">Consultar pase</button>
-              <button type="button" class="btn-green" onclick="goToSectionAndStep('registrationSection', 4)">Ya tengo acceso</button>
+              <button type="button" class="btn-green" onclick="validateAccessAndGoStep4()">Ya tengo acceso</button>
             </div>
 
             <div id="passInfo" class="info-stack" style="margin-top:14px;"></div>
@@ -1132,6 +1436,14 @@ INDEX_HTML = r"""
             <div class="card-subtitle">
               Solo cuando el staff ya te haya habilitado acceso y tengas el token del proyecto, primero haz preview y luego confirma.
             </div>
+
+            <div id="step4GateBox" class="selected-banner" style="margin-bottom:14px;">
+              <div class="selected-banner-title">Estado del paso 4</div>
+              <div id="step4GateText" class="selected-banner-text">
+                Todavía no disponible. Primero solicita tu pase y completa la validación presencial.
+              </div>
+            </div>
+
 
             <div class="form-grid">
               <div class="field">
@@ -1169,7 +1481,7 @@ INDEX_HTML = r"""
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-secondary" onclick="previewRegistration()">Ver preview</button>
+              <button type="button" class="btn-secondary" id="previewRegistrationBtn" onclick="previewRegistration()">Ver preview</button>
               <button type="button" class="btn-green" id="confirmRegistrationBtn" onclick="confirmRegistration()">Confirmar inscripción</button>
               <button type="button" class="btn-blue" onclick="goToSectionAndStep('statusSection', 5)">Ver mi estado</button>
             </div>
@@ -1198,7 +1510,7 @@ INDEX_HTML = r"""
       </main>
 
       <aside class="side-column">
-        <section class="card" id="studentRegistrationSection">
+        <section class="card" id="step4card">
           <div class="card-title-row">
             <div>
               <h2>Resumen de avance</h2>
@@ -1237,7 +1549,7 @@ INDEX_HTML = r"""
                 <button type="button" class="btn-secondary" onclick="showStudentSection('catalogSection')">Catálogo</button>
                 <button type="button" class="btn-secondary" onclick="showStudentSection('requestSection')">Pase</button>
                 <button type="button" class="btn-secondary" onclick="showStudentSection('passSection')">QR</button>
-                <button type="button" class="btn-secondary" onclick="showStudentSection('registrationSection')">Registro</button>
+                <button type="button" class="btn-secondary" onclick="validateAccessAndShowRegistration()">Registro</button>
               </div>
             </div>
           </div>
@@ -1255,6 +1567,9 @@ INDEX_HTML = r"""
     let currentRegistration = null;
     let catalogSearchTimer = null;
     let canStudentRegister = false;
+    let currentRequestStatus = null;
+    let journeyTimerInterval = null;
+    let currentAccessUnlocked = false;
     
     function humanizeErrorMessage(err) {
       const raw =
@@ -1362,7 +1677,7 @@ INDEX_HTML = r"""
 
     function syncRegistrationLock() {
       const step4Card = document.querySelector('.nav-card[data-step="4"]');
-      const previewBtn = document.querySelector('button[onclick="previewRegistration()"]');
+      const previewBtn = document.getElementById('previewRegistrationBtn');
       const confirmBtn = document.getElementById('confirmRegistrationBtn');
       const tokenInput = document.getElementById('projectTokenInput');
       const nameInput = document.getElementById('acceptanceFullNameInput');
@@ -1372,8 +1687,7 @@ INDEX_HTML = r"""
       canStudentRegister =
         !!currentRegistration ||
         currentRequest?.request?.status === 'ACCESS_ENABLED' ||
-        currentRequest?.status === 'ACCESS_ENABLED' ||
-        currentPass?.flow?.can_register === true;
+        currentRequest?.status === 'ACCESS_ENABLED';
 
       if (step4Card) {
         step4Card.style.opacity = canStudentRegister ? '1' : '.55';
@@ -1400,6 +1714,266 @@ INDEX_HTML = r"""
         .replace(/'/g, '&#39;');
     }
 
+    function setJourneyStepState(stepNumber, state, metaText) {
+      const step = document.getElementById(`journeyStep${stepNumber}`);
+      const meta = document.getElementById(`journeyMeta${stepNumber}`);
+      if (!step || !meta) return;
+
+      step.classList.remove('done', 'active', 'locked', 'error');
+      if (state) step.classList.add(state);
+      meta.textContent = metaText || '';
+    }
+
+    function setJourneyProgress(percent) {
+      const bar = document.getElementById('journeyProgress');
+      if (bar) bar.style.width = `${percent}%`;
+    }
+
+    function setJourneyBadge(text, variant = 'neutral') {
+      const badge = document.getElementById('journeyBadge');
+      if (!badge) return;
+
+      badge.textContent = text || '—';
+      badge.style.background = '';
+      badge.style.color = '';
+      badge.style.borderColor = '';
+
+      if (variant === 'ok') {
+        badge.style.background = 'var(--green-soft)';
+        badge.style.color = 'var(--green)';
+        badge.style.borderColor = '#cdeee4';
+      } else if (variant === 'warn') {
+        badge.style.background = '#fff7ed';
+        badge.style.color = '#c2410c';
+        badge.style.borderColor = '#fed7aa';
+      } else if (variant === 'err') {
+        badge.style.background = 'var(--pink-soft)';
+        badge.style.color = 'var(--pink)';
+        badge.style.borderColor = '#ffd7df';
+      } else if (variant === 'brand') {
+        badge.style.background = 'var(--primary-soft)';
+        badge.style.color = 'var(--primary)';
+        badge.style.borderColor = '#e6dbf3';
+      }
+    }
+
+    function lockStep4UI(locked = true) {
+      const section = document.getElementById('registrationSection');
+      const tokenInput = document.getElementById('projectTokenInput');
+      const nameInput = document.getElementById('acceptanceFullNameInput');
+      const legalInput = document.getElementById('legalVersionInput');
+      const checkbox = document.getElementById('acceptanceCheckbox');
+      const previewBtn = document.getElementById('previewRegistrationBtn');
+      const confirmBtn = document.getElementById('confirmRegistrationBtn');
+
+      if (section) {
+        section.style.opacity = locked ? '0.65' : '1';
+        section.style.pointerEvents = locked ? 'none' : 'auto';
+      }
+
+      if (tokenInput) tokenInput.disabled = locked;
+      if (nameInput) nameInput.disabled = locked;
+      if (legalInput) legalInput.disabled = locked;
+      if (checkbox) checkbox.disabled = locked;
+      if (previewBtn) previewBtn.disabled = locked;
+      if (confirmBtn) confirmBtn.disabled = locked;
+
+      currentAccessUnlocked = !locked;
+    }
+
+    function formatCountdown(totalSeconds) {
+      const safe = Math.max(0, totalSeconds);
+      const minutes = Math.floor(safe / 60);
+      const seconds = safe % 60;
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function stopJourneyTimer() {
+      if (journeyTimerInterval) {
+        clearInterval(journeyTimerInterval);
+        journeyTimerInterval = null;
+      }
+    }
+
+    function startJourneyTimer(expiresAt) {
+      stopJourneyTimer();
+
+      const box = document.getElementById('journeyTimerBox');
+      const value = document.getElementById('journeyTimerValue');
+      const sub = document.getElementById('journeyTimerSub');
+
+      if (!box || !value || !sub || !expiresAt) {
+        if (box) box.classList.add('hidden');
+        return;
+      }
+
+      const targetTime = new Date(expiresAt.replace(' ', 'T')).getTime();
+      if (Number.isNaN(targetTime)) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      box.classList.remove('hidden');
+
+      function tick() {
+        const now = Date.now();
+        const diffMs = targetTime - now;
+        const seconds = Math.floor(diffMs / 1000);
+
+        if (seconds <= 0) {
+          value.textContent = '00:00';
+          sub.textContent = 'Tu QR ya expiró. Refresca tu credencial.';
+          box.style.borderColor = '#ffd7df';
+          value.style.color = 'var(--pink)';
+          stopJourneyTimer();
+          return;
+        }
+
+        value.textContent = formatCountdown(seconds);
+
+        if (seconds <= 60) {
+          sub.textContent = 'Tu QR está por expirar. Refresca si el staff te lo pide.';
+          box.style.borderColor = '#fed7aa';
+          value.style.color = '#c2410c';
+        } else {
+          sub.textContent = 'Tu QR vive 5 minutos y cambia al refrescarse.';
+          box.style.borderColor = '#dbeafe';
+          value.style.color = 'var(--blue)';
+        }
+      }
+
+      tick();
+      journeyTimerInterval = setInterval(tick, 1000);
+    }
+
+    function computeStudentJourneyState() {
+      const requestStatus = currentRequest?.request?.status || currentRequest?.status || null;
+      const passSession = currentPass?.pass_session || currentPass?.active_session || null;
+      const hasPass = !!passSession;
+      const hasPreview = !!currentPreview;
+      const isRegistered = !!currentRegistration || requestStatus === 'REGISTERED';
+
+      return {
+        requestStatus,
+        passSession,
+        hasPass,
+        hasPreview,
+        isRegistered
+      };
+    }
+
+    function renderJourneyState() {
+      const title = document.getElementById('journeyTitle');
+      const subtitle = document.getElementById('journeySubtitle');
+      const alert = document.getElementById('journeyAlert');
+
+      if (!title || !subtitle || !alert) return;
+
+      const state = computeStudentJourneyState();
+      const requestStatus = state.requestStatus;
+      const passSession = state.passSession;
+      const hasPass = state.hasPass;
+      const hasPreview = state.hasPreview;
+      const isRegistered = state.isRegistered;
+
+      setJourneyStepState(1, 'locked', 'Pendiente');
+      setJourneyStepState(2, 'locked', 'Sin pase');
+      setJourneyStepState(3, 'locked', 'Pendiente');
+      setJourneyStepState(4, 'locked', 'Bloqueada');
+      setJourneyProgress(0);
+      lockStep4UI(true);
+      stopJourneyTimer();
+      document.getElementById('journeyTimerBox')?.classList.add('hidden');
+
+      if (!requestStatus) {
+        title.textContent = 'Esperando solicitud';
+        subtitle.textContent = 'Completa tus datos para generar folio y comenzar el flujo.';
+        setJourneyBadge('INACTIVO', 'neutral');
+        alert.className = 'journey-alert';
+        alert.textContent = 'Primero crea tu solicitud. Después podrás generar tu QR y continuar.';
+        return;
+      }
+
+      setJourneyStepState(1, 'done', 'Solicitud creada');
+
+      if (requestStatus === 'REQUESTED') {
+        title.textContent = 'Solicitud creada';
+        subtitle.textContent = 'Tu folio ya existe. Ahora debes generar tu QR y mostrarlo al staff.';
+        setJourneyBadge('REQUESTED', 'warn');
+        setJourneyStepState(2, hasPass ? 'active' : 'locked', hasPass ? 'QR vigente' : 'Genera tu pase');
+        setJourneyStepState(3, 'locked', 'Esperando staff');
+        setJourneyStepState(4, 'locked', 'Bloqueada');
+        setJourneyProgress(hasPass ? 38 : 25);
+        alert.className = 'journey-alert warn';
+        alert.textContent = hasPass
+          ? 'Ya tienes un QR activo. Muéstralo al staff para seguir.'
+          : 'Genera tu QR. Sin ese paso no puedes avanzar.';
+        if (hasPass) startJourneyTimer(passSession.expires_at);
+        return;
+      }
+
+      if (requestStatus === 'VALIDATED') {
+        title.textContent = 'Validado por staff';
+        subtitle.textContent = 'Tu identidad fue validada, pero todavía no tienes acceso habilitado para cerrar inscripción.';
+        setJourneyBadge('VALIDATED', 'brand');
+        setJourneyStepState(2, 'done', passSession?.status === 'USED' ? 'QR usado' : 'QR revisado');
+        setJourneyStepState(3, 'active', 'Validado');
+        setJourneyStepState(4, 'locked', 'Aún sin acceso');
+        setJourneyProgress(60);
+        alert.className = 'journey-alert warn';
+        alert.textContent = 'Aún no puedes usar el paso 4. Necesitas que el flujo quede en ACCESS_ENABLED.';
+        return;
+      }
+
+      if (requestStatus === 'ACCESS_ENABLED') {
+        title.textContent = 'Acceso habilitado';
+        subtitle.textContent = 'Ya puedes capturar el token del proyecto, revisar preview y confirmar tu inscripción.';
+        setJourneyBadge('ACCESS ENABLED', 'ok');
+        setJourneyStepState(2, 'done', passSession?.status === 'USED' ? 'QR consumido' : 'Paso completado');
+        setJourneyStepState(3, 'done', 'Acceso autorizado');
+        setJourneyStepState(4, 'active', hasPreview ? 'Preview listo' : 'Listo para token');
+        setJourneyProgress(hasPreview ? 92 : 82);
+        lockStep4UI(false);
+        alert.className = 'journey-alert ok';
+        alert.textContent = hasPreview
+          ? 'Tu preview es válido. Ya puedes confirmar la inscripción.'
+          : 'El paso 4 ya está desbloqueado. Escribe el token del proyecto.';
+        return;
+      }
+
+      if (requestStatus === 'REGISTERED' || isRegistered) {
+        title.textContent = 'Inscripción completada';
+        subtitle.textContent = 'Tu lugar quedó registrado correctamente.';
+        setJourneyBadge('REGISTERED', 'ok');
+        setJourneyStepState(2, 'done', 'QR completado');
+        setJourneyStepState(3, 'done', 'Validación correcta');
+        setJourneyStepState(4, 'done', 'Inscripción cerrada');
+        setJourneyProgress(100);
+        lockStep4UI(true);
+        alert.className = 'journey-alert ok';
+        alert.textContent = 'Proceso finalizado. Ya estás inscrito.';
+        return;
+      }
+
+      if (requestStatus === 'CANCELLED' || requestStatus === 'CLOSED') {
+        title.textContent = 'Proceso detenido';
+        subtitle.textContent = 'Tu solicitud necesita revisión con staff o administración.';
+        setJourneyBadge(requestStatus, 'err');
+        setJourneyStepState(2, 'error', 'Revisión requerida');
+        setJourneyStepState(3, 'error', 'Proceso detenido');
+        setJourneyStepState(4, 'locked', 'No disponible');
+        setJourneyProgress(25);
+        alert.className = 'journey-alert err';
+        alert.textContent = 'Tu solicitud fue cerrada o cancelada. Debes acudir con administración.';
+        return;
+      }
+
+      title.textContent = `Estado actual: ${requestStatus}`;
+      subtitle.textContent = 'Tu proceso tiene un estado no contemplado explícitamente.';
+      setJourneyBadge(requestStatus, 'neutral');
+      alert.className = 'journey-alert';
+      alert.textContent = 'Revisa tu situación con staff si el proceso no avanza.';
+    }
     function showMsg(text, ok = true) {
       const el = document.getElementById('msg');
       if (!el) return;
@@ -1433,6 +2007,29 @@ INDEX_HTML = r"""
     function goToSectionAndStep(sectionId, step) {
       showStudentSection(sectionId);
       setCurrentStep(step);
+    }
+
+    function validateAccessAndGoStep4() {
+      const status = currentRequest?.request?.status || currentRequest?.status || currentRequestStatus;
+
+      if (status !== 'ACCESS_ENABLED') {
+        showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
+        return;
+      }
+
+      goToSectionAndStep('registrationSection', 4);
+    }
+
+    function validateAccessAndShowRegistration() {
+      const status = currentRequest?.request?.status || currentRequest?.status || currentRequestStatus;
+
+      if (status !== 'ACCESS_ENABLED' && !currentRegistration) {
+        showMsg('El paso 4 sigue bloqueado. Primero muestra tu QR al staff.', false);
+        return;
+      }
+
+      showStudentSection('registrationSection');
+      setCurrentStep(4);
     }
 
     async function getJSON(url) {
@@ -1882,7 +2479,7 @@ INDEX_HTML = r"""
 
         currentRequest = data;
         renderRequestInfo(data);
-        setCurrentStep(3);
+        setCurrentStep(2);
         updateHeroState();
         showMsg(data.message || 'Solicitud procesada correctamente');
       } catch (e) {
@@ -1943,6 +2540,7 @@ INDEX_HTML = r"""
         statusBadge.className = 'chip chip-neutral';
         statusBadge.textContent = 'Sin sesión';
         renderStudentQR('');
+        renderJourneyState();
         updateHeroState();
         syncRegistrationLock();
         return;
@@ -1953,6 +2551,8 @@ INDEX_HTML = r"""
       const student = data.student || {};
       const session = data.pass_session || data.active_session || null;
 
+      const ttlText = session?.expires_at || '—';
+
       box.innerHTML = `
         <div class="info-card">
           <div class="info-head">
@@ -1962,7 +2562,6 @@ INDEX_HTML = r"""
             </div>
             <div>${renderRequestStatus(request.status)}</div>
           </div>
-
           <div class="meta-grid">
             <div class="meta-box">
               <span class="meta-label">Folio</span>
@@ -1978,7 +2577,7 @@ INDEX_HTML = r"""
             </div>
             <div class="meta-box">
               <span class="meta-label">Expira</span>
-              <div class="meta-value">${session ? escapeHTML(session.expires_at || '—') : '—'}</div>
+              <div class="meta-value">${session ? escapeHTML(ttlText) : '—'}</div>
             </div>
             <div class="meta-box">
               <span class="meta-label">Refresh count</span>
@@ -2002,6 +2601,7 @@ INDEX_HTML = r"""
       }
 
       renderStudentQR(currentToken);
+      renderJourneyState();
       updateHeroState();
       syncRegistrationLock();
     }
@@ -2012,12 +2612,15 @@ INDEX_HTML = r"""
         if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
 
         const season = getSeason();
+
         const data = await tryGet([
           `/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`,
           `/api/student/pass?enrolment_number=${encodeURIComponent(enrolment)}&temporada=${encodeURIComponent(season)}`
         ]);
 
         currentPass = data;
+        currentRequestStatus = data.request?.status || currentRequestStatus || null;
+
         renderPassInfo(data);
         updateHeroState();
         goToSectionAndStep('passSection', 3);
@@ -2039,15 +2642,22 @@ INDEX_HTML = r"""
           temporada: getSeason()
         };
 
-        const data = await postJSON('/api/student/pass/refresh', payload);
+        const data = await tryPost([
+          { url: '/api/student/pass/refresh', body: payload }
+        ]);
 
         currentPass = data;
+        currentRequestStatus = data.request?.status || currentRequestStatus || null;
+
         renderPassInfo(data);
-        setCurrentStep(3);
+        await loadStudentRequest().catch(() => {});
         updateHeroState();
+        setCurrentStep(3);
+
         showMsg(data.message || 'Credencial actualizada');
       } catch (e) {
-        showMsg(e.message, false);
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
     }
 
@@ -2182,8 +2792,7 @@ INDEX_HTML = r"""
         };
 
         const data = await tryPost([
-          { url: '/api/student/registration/preview', body: payload },
-          { url: '/api/student_registration/preview', body: payload }
+          { url: '/api/student/registration/preview', body: payload }
         ]);
 
         currentPreview = data;
@@ -2228,8 +2837,7 @@ INDEX_HTML = r"""
         };
 
         const data = await tryPost([
-          { url: '/api/student/registration/confirm', body: payload },
-          { url: '/api/student_registration/confirm', body: payload }
+          { url: '/api/student/registration/confirm', body: payload }
         ]);
 
         currentRegistration = {
@@ -2241,6 +2849,10 @@ INDEX_HTML = r"""
         };
 
         renderRegistrationSuccess(currentRegistration);
+
+        await loadStudentRequest().catch(() => {});
+        await loadStudentPass().catch(() => {});
+
         setCurrentStep(5);
         updateHeroState();
         showMsg(data.message || 'Registro completado');
@@ -2276,6 +2888,12 @@ INDEX_HTML = r"""
         updateHeroState();
         syncRegistrationLock();
         showStudentSection('catalogSection');
+        const enrolment = getEnrolment();
+        if (enrolment) {
+          currentRequestStatus = null;
+          await loadStudentRequest().catch(() => {});
+          await loadStudentPass().catch(() => {});
+        }
       } catch (e) {
         console.error('Error al inicializar alumno:', e);
         showMsg('Error al inicializar la página: ' + e.message, false);
