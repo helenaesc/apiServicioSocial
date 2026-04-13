@@ -128,6 +128,21 @@ def preview_registration():
     if not req_row:
         return jsonify({"error": "No existe solicitud para esa temporada"}), 404
 
+    if req_row["request_status"] == "REGISTERED":
+        return jsonify({
+            "error": "Ya cuentas con una inscripción activa en esta temporada"
+        }), 409
+
+    if req_row["request_status"] in ("CANCELLED", "CLOSED"):
+        return jsonify({
+            "error": "Tu solicitud está cerrada. Acércate con staff o administración"
+        }), 409
+
+    if req_row["request_status"] in ("REQUESTED", "VALIDATED"):
+        return jsonify({
+            "error": "Aún no tienes acceso habilitado. Primero muestra tu QR al staff"
+        }), 409
+
     if req_row["request_status"] != "ACCESS_ENABLED":
         return jsonify({
             "error": f"La solicitud no está habilitada para registro ({req_row['request_status']})"

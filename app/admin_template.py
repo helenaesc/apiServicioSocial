@@ -861,10 +861,11 @@ ADMIN_HTML = r"""
               <div class="nav-group-title">Estrategia</div>
               <span class="nav-group-pill pill-purple">Morado</span>
             </div>
-            <div class="nav-list">
+             <div class="nav-list">
               <button class="nav-item active" data-module="summaryModule" onclick="showModule('summaryModule')">Dashboard</button>
               <button class="nav-item" data-module="eventsModule" onclick="showModule('eventsModule')">Temporadas</button>
               <button class="nav-item" data-module="masterProjectsModule" onclick="showModule('masterProjectsModule')">Proyectos Base</button>
+              <button class="nav-item" data-module="studentSupportModule" onclick="showModule('studentSupportModule')">Solicitudes y Pases</button>
             </div>
           </div>
 
@@ -964,6 +965,131 @@ ADMIN_HTML = r"""
 
             <div id="dashboardSummary" class="stats-grid"></div>
             <div id="dashboardProjectsBody" class="record-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module" id="studentSupportModule">
+        <div class="module-grid">
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Solicitudes y Pases</h2>
+              <span class="screen-chip">Mesa de corrección</span>
+            </div>
+
+            <div class="muted">
+              Busca alumnos por matrícula, folio, nombre o correo. Corrige datos, revisa solicitud, revoca pase, genera nuevo pase o habilita acceso manualmente.
+            </div>
+
+            <div class="form-grid" style="margin-top:14px;">
+              <div class="field">
+                <label>Temporada</label>
+                <select id="studentSupportEventSelector"></select>
+              </div>
+              <div class="field">
+                <label>Buscar</label>
+                <input id="studentSupportSearch" placeholder="Matrícula, folio, nombre o correo">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="searchStudentSupport()">Buscar</button>
+              <button type="button" class="btn-secondary" onclick="clearStudentSupportSearch()">Limpiar</button>
+            </div>
+          </div>
+
+          <div class="card span-7">
+            <div class="module-card-title">
+              <h2>Resultados</h2>
+              <span class="screen-chip">Consulta</span>
+            </div>
+            <div id="studentSupportResults" class="record-grid"></div>
+          </div>
+
+          <div class="card span-5">
+            <div class="module-card-title">
+              <h2>Editar alumno</h2>
+              <span class="screen-chip">Corrección</span>
+            </div>
+
+            <div class="small" id="studentSupportSelectedHint" style="margin-bottom:12px;">
+              Selecciona un alumno desde los resultados.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>User ID</label>
+                <input id="ss_user_id" readonly>
+              </div>
+              <div class="field">
+                <label>Request ID</label>
+                <input id="ss_request_id" readonly>
+              </div>
+
+              <div class="field">
+                <label>Nombre</label>
+                <input id="ss_first_name" placeholder="Nombre">
+              </div>
+              <div class="field">
+                <label>Segundo nombre</label>
+                <input id="ss_second_name" placeholder="Segundo nombre">
+              </div>
+
+              <div class="field">
+                <label>Apellido paterno</label>
+                <input id="ss_p_last_name" placeholder="Apellido paterno">
+              </div>
+              <div class="field">
+                <label>Apellido materno</label>
+                <input id="ss_m_last_name" placeholder="Apellido materno">
+              </div>
+
+              <div class="field">
+                <label>Correo principal</label>
+                <input id="ss_email" type="email" placeholder="correo@ejemplo.com">
+              </div>
+              <div class="field">
+                <label>Segundo correo</label>
+                <input id="ss_secondary_email" type="email" placeholder="Opcional">
+              </div>
+
+              <div class="field">
+                <label>Teléfono</label>
+                <input id="ss_phone_number" placeholder="Teléfono">
+              </div>
+              <div class="field">
+                <label>Matrícula</label>
+                <input id="ss_enrolment_number" placeholder="Ej: a01234567">
+              </div>
+
+              <div class="field">
+                <label>Carrera</label>
+                <input id="ss_degree" placeholder="Ej: LAF">
+              </div>
+              <div class="field">
+                <label>Semestre</label>
+                <input id="ss_semester" type="number" min="1" max="20" placeholder="Ej: 5">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="saveStudentSupportUser()">Guardar cambios</button>
+              <button type="button" class="btn-secondary" onclick="reloadSelectedStudentSupport()">Recargar detalle</button>
+            </div>
+
+            <hr style="margin:18px 0; border:none; border-top:1px solid var(--line);">
+
+            <div class="module-card-title" style="margin-bottom:8px;">
+              <h3>Operación de solicitud / pase</h3>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-secondary" onclick="reissueSelectedStudentPass()">Generar nuevo pase</button>
+              <button type="button" class="btn-danger" onclick="revokeSelectedStudentPass()">Revocar pase activo</button>
+              <button type="button" class="btn-secondary" onclick="enableSelectedStudentAccess()">Habilitar acceso manualmente</button>
+            </div>
+
+            <div id="studentSupportDetail" class="record-grid" style="margin-top:14px;"></div>
           </div>
         </div>
       </div>
@@ -1612,7 +1738,6 @@ ADMIN_HTML = r"""
             <div class="actions">
               <button type="button" class="btn-primary" onclick="exportEventReport()">Exportar reporte completo</button>
             </div>
-
             <div id="exportHint" class="record-grid"></div>
           </div>
         </div>
@@ -1627,6 +1752,384 @@ ADMIN_HTML = r"""
   let allEvents = [];
   let masterProjectsCache = [];
   let eventProjectsCache = [];
+  let studentSupportCache = [];
+  let selectedStudentSupport = null;
+  let studentSupportSearchTimer = null;
+
+  function clearStudentSupportSearch() {
+    const q = document.getElementById('studentSupportSearch');
+    if (q) q.value = '';
+
+    studentSupportCache = [];
+    selectedStudentSupport = null;
+    clearStudentSupportForm();
+    renderStudentSupportDetail(null);
+
+    const results = document.getElementById('studentSupportResults');
+    const detail = document.getElementById('studentSupportDetail');
+    const hint = document.getElementById('studentSupportSelectedHint');
+
+    if (results) {
+      results.innerHTML = renderEmptyCard(
+        'Sin búsqueda',
+        'Escribe matrícula, folio, nombre o correo.'
+      );
+    }
+
+    if (detail) {
+      detail.innerHTML = renderEmptyCard(
+        'Sin selección',
+        'Selecciona un alumno para ver detalle y operar.'
+      );
+    }
+
+    if (hint) {
+      hint.textContent = 'Selecciona un alumno desde los resultados.';
+    }
+
+    clearStudentSupportForm();
+  }
+
+  function clearStudentSupportForm() {
+    [
+      'ss_user_id',
+      'ss_request_id',
+      'ss_first_name',
+      'ss_second_name',
+      'ss_p_last_name',
+      'ss_m_last_name',
+      'ss_email',
+      'ss_secondary_email',
+      'ss_phone_number',
+      'ss_enrolment_number',
+      'ss_degree',
+      'ss_semester'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }
+
+  function fillStudentSupportForm(item) {
+    if (!item) {
+      clearStudentSupportForm();
+      return;
+    }
+
+    document.getElementById('ss_user_id').value = item.user_id || '';
+    document.getElementById('ss_request_id').value = item.request_id || '';
+    document.getElementById('ss_first_name').value = item.first_name || '';
+    document.getElementById('ss_second_name').value = item.second_name || '';
+    document.getElementById('ss_p_last_name').value = item.p_last_name || '';
+    document.getElementById('ss_m_last_name').value = item.m_last_name || '';
+    document.getElementById('ss_email').value = item.email || '';
+    document.getElementById('ss_secondary_email').value = item.secondary_email || '';
+    document.getElementById('ss_phone_number').value = item.phone_number || '';
+    document.getElementById('ss_enrolment_number').value = item.enrolment_number || '';
+    document.getElementById('ss_degree').value = item.degree || '';
+    document.getElementById('ss_semester').value = item.semester || '';
+  }
+
+  function renderStudentSupportDetail(item, passSessions = null) {
+    const detail = document.getElementById('studentSupportDetail');
+    const hint = document.getElementById('studentSupportSelectedHint');
+    if (!detail) return;
+
+    if (!item) {
+      detail.innerHTML = renderEmptyCard(
+        'Sin selección',
+        'Selecciona un alumno para ver detalle y operar.'
+      );
+      if (hint) hint.textContent = 'Selecciona un alumno desde los resultados.';
+      return;
+    }
+
+    if (hint) {
+      hint.textContent = `Seleccionado: ${item.full_name || 'Alumno'} · ${item.enrolment_number || '—'}`;
+    }
+
+    const passesHtml = Array.isArray(passSessions) && passSessions.length
+      ? passSessions.map(ps => `
+          <div class="record-card">
+            <div class="record-card__head">
+              <div>
+                <div class="record-card__title">Pass Session #${ps.id}</div>
+                <div class="record-card__sub">Refresh count: ${ps.refresh_count ?? 0}</div>
+              </div>
+              <div>${statusBadge(ps.status)}</div>
+            </div>
+            <div class="record-stack">
+              <div class="stack-row"><strong>Issued:</strong><span>${escapeHTML(ps.issued_at || '—')}</span></div>
+              <div class="stack-row"><strong>Expires:</strong><span>${escapeHTML(ps.expires_at || '—')}</span></div>
+              <div class="stack-row"><strong>Used:</strong><span>${escapeHTML(ps.used_at || '—')}</span></div>
+              <div class="stack-row"><strong>Revoked:</strong><span>${escapeHTML(ps.revoked_at || '—')}</span></div>
+            </div>
+          </div>
+        `).join('')
+      : (
+          item.active_pass_session_id
+            ? `
+              <div class="record-card">
+                <div class="record-card__head">
+                  <div>
+                    <div class="record-card__title">Pase actual</div>
+                    <div class="record-card__sub">Pass Session #${item.active_pass_session_id}</div>
+                  </div>
+                  <div>${statusBadge(item.active_pass_status || '—')}</div>
+                </div>
+                <div class="record-stack">
+                  <div class="stack-row"><strong>Issued:</strong><span>${escapeHTML(item.active_pass_issued_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Expires:</strong><span>${escapeHTML(item.active_pass_expires_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Used:</strong><span>${escapeHTML(item.active_pass_used_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Revoked:</strong><span>${escapeHTML(item.active_pass_revoked_at || '—')}</span></div>
+                  <div class="stack-row"><strong>Refresh count:</strong><span>${escapeHTML(item.active_pass_refresh_count || 0)}</span></div>
+                </div>
+              </div>
+            `
+            : renderEmptyCard(
+                'Sin pase registrado',
+                'Este alumno no tiene sesiones de pase todavía.'
+              )
+        );
+
+    detail.innerHTML = `
+      <div class="record-card">
+        <div class="record-card__head">
+          <div>
+            <div class="record-card__title">${escapeHTML(item.full_name || 'Alumno')}</div>
+            <div class="record-card__sub">${escapeHTML(item.email || '—')}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            ${statusBadge(item.request_status || '—')}
+            ${statusBadge(item.event_status || '—')}
+          </div>
+        </div>
+        <div class="record-stack">
+          <div class="stack-row"><strong>User ID:</strong><span>${escapeHTML(item.user_id || '—')}</span></div>
+          <div class="stack-row"><strong>Request ID:</strong><span>${escapeHTML(item.request_id || '—')}</span></div>
+          <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(item.folio || '—')}</span></div>
+          <div class="stack-row"><strong>Matrícula:</strong><span>${escapeHTML(item.enrolment_number || '—')}</span></div>
+          <div class="stack-row"><strong>Teléfono:</strong><span>${escapeHTML(item.phone_number || '—')}</span></div>
+          <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(item.degree || '—')}</span></div>
+          <div class="stack-row"><strong>Semestre:</strong><span>${escapeHTML(item.semester || '—')}</span></div>
+          <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(item.display_name || '—')}</span></div>
+          <div class="stack-row"><strong>Requested:</strong><span>${escapeHTML(item.requested_at || '—')}</span></div>
+          <div class="stack-row"><strong>Validated:</strong><span>${escapeHTML(item.validated_at || '—')}</span></div>
+          <div class="stack-row"><strong>Access enabled:</strong><span>${escapeHTML(item.access_enabled_at || '—')}</span></div>
+          <div class="stack-row"><strong>Registered:</strong><span>${escapeHTML(item.registered_at || '—')}</span></div>
+          <div class="stack-row"><strong>Cancelled:</strong><span>${escapeHTML(item.cancelled_at || '—')}</span></div>
+          <div class="stack-row"><strong>Closed:</strong><span>${escapeHTML(item.closed_at || '—')}</span></div>
+          <div class="stack-row"><strong>Notas:</strong><span>${escapeHTML(item.notes || '—')}</span></div>
+        </div>
+      </div>
+      ${passesHtml}
+    `;
+  }
+
+  function scheduleStudentSupportSearch() {
+    clearTimeout(studentSupportSearchTimer);
+    studentSupportSearchTimer = setTimeout(() => {
+      searchStudentSupport();
+    }, 250);
+  }
+
+  async function searchStudentSupport() {
+    const q = (document.getElementById('studentSupportSearch')?.value || '').trim();
+    const eventId = document.getElementById('studentSupportEventSelector')?.value;
+    const results = document.getElementById('studentSupportResults');
+
+    if (!results) return;
+
+    if (!q && !eventId) {
+      return showMsg('Escribe algo para buscar o selecciona una temporada', false);
+    }
+
+    try {
+      results.innerHTML = renderEmptyCard('Buscando...', 'Consultando alumnos y solicitudes...');
+
+      const params = new URLSearchParams();
+      if (q) params.set('q', q);
+      if (eventId) params.set('event_id', eventId);
+
+      const data = await apiGet(`/api/admin/student-support/search?${params.toString()}`);
+      const items = data.items || [];
+
+      studentSupportCache = items;
+      selectedStudentSupport = null;
+      clearStudentSupportForm();
+      renderStudentSupportDetail(null);
+
+      if (!items.length) {
+        results.innerHTML = renderEmptyCard(
+          'Sin resultados',
+          'No encontramos alumnos o solicitudes con esa búsqueda.'
+        );
+        return showMsg('No se encontraron resultados', false);
+      }
+
+      results.innerHTML = items.map(item => `
+        <div class="record-card">
+          <div class="record-card__head">
+            <div>
+              <div class="record-card__title">${escapeHTML(item.full_name || 'Alumno')}</div>
+              <div class="record-card__sub">
+                ${escapeHTML(item.enrolment_number || '—')} · ${escapeHTML(item.email || '—')}
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              ${statusBadge(item.request_status || '—')}
+              ${item.active_pass_status ? statusBadge(item.active_pass_status) : '<span class="badge badge-neutral">SIN PASE</span>'}
+            </div>
+          </div>
+          <div class="record-stack">
+            <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(item.folio || '—')}</span></div>
+            <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(item.display_name || '—')}</span></div>
+            <div class="stack-row"><strong>Teléfono:</strong><span>${escapeHTML(item.phone_number || '—')}</span></div>
+            <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(item.degree || '—')}</span></div>
+            <div class="stack-row"><strong>Pase actual:</strong><span>${escapeHTML(item.active_pass_expires_at || 'Sin sesión')}</span></div>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-primary" onclick="selectStudentSupport(${Number(item.request_id)})">Seleccionar</button>
+          </div>
+        </div>
+      `).join('');
+
+      showMsg('Resultados cargados correctamente');
+    } catch (e) {
+      results.innerHTML = renderEmptyCard('No se pudo buscar', e.message || 'Error inesperado');
+      showMsg(e.message, false);
+    }
+  }
+
+  async function selectStudentSupport(requestId) {
+    try {
+      const data = await apiGet(`/api/admin/student-support/request/${requestId}`);
+      const requestRow = data.request || null;
+      const passSessions = data.pass_sessions || [];
+
+      if (!requestRow) {
+        return showMsg('No se pudo cargar el detalle de la solicitud', false);
+      }
+
+      selectedStudentSupport = {
+        ...requestRow,
+        active_pass_session_id: passSessions[0]?.id || null,
+        active_pass_status: passSessions[0]?.status || null,
+        active_pass_issued_at: passSessions[0]?.issued_at || null,
+        active_pass_expires_at: passSessions[0]?.expires_at || null,
+        active_pass_used_at: passSessions[0]?.used_at || null,
+        active_pass_revoked_at: passSessions[0]?.revoked_at || null,
+        active_pass_refresh_count: passSessions[0]?.refresh_count || null
+      };
+
+      fillStudentSupportForm(selectedStudentSupport);
+      renderStudentSupportDetail(selectedStudentSupport, passSessions);
+      showMsg('Detalle cargado correctamente');
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function reloadSelectedStudentSupport() {
+    const requestId = document.getElementById('ss_request_id')?.value;
+    if (!requestId) return showMsg('No hay solicitud seleccionada', false);
+    await selectStudentSupport(Number(requestId));
+  }
+
+  async function saveStudentSupportUser() {
+    try {
+      const userId = Number(document.getElementById('ss_user_id')?.value || 0);
+      if (!userId) return showMsg('No hay alumno seleccionado', false);
+
+      const payload = {
+        first_name: document.getElementById('ss_first_name')?.value.trim(),
+        second_name: document.getElementById('ss_second_name')?.value.trim(),
+        p_last_name: document.getElementById('ss_p_last_name')?.value.trim(),
+        m_last_name: document.getElementById('ss_m_last_name')?.value.trim(),
+        email: document.getElementById('ss_email')?.value.trim().toLowerCase(),
+        secondary_email: document.getElementById('ss_secondary_email')?.value.trim().toLowerCase(),
+        phone_number: document.getElementById('ss_phone_number')?.value.trim(),
+        enrolment_number: document.getElementById('ss_enrolment_number')?.value.trim().toLowerCase(),
+        degree: document.getElementById('ss_degree')?.value.trim(),
+        semester: document.getElementById('ss_semester')?.value.trim()
+      };
+
+      const data = await apiPatch(`/api/admin/student-support/users/${userId}`, payload);
+      showMsg(data.message || 'Alumno actualizado correctamente');
+
+      const requestId = Number(document.getElementById('ss_request_id')?.value || 0);
+      if (requestId) await selectStudentSupport(requestId);
+
+      const q = (document.getElementById('studentSupportSearch')?.value || '').trim();
+      const eventId = document.getElementById('studentSupportEventSelector')?.value;
+      if (q || eventId) await searchStudentSupport();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function reissueSelectedStudentPass() {
+    try {
+      const requestId = Number(document.getElementById('ss_request_id')?.value || 0);
+      if (!requestId) return showMsg('No hay solicitud seleccionada', false);
+
+      const data = await apiPost(`/api/admin/student-support/request/${requestId}/reissue-pass`, {});
+      showMsg(data.message || 'Nuevo pase generado');
+
+      const detail = document.getElementById('studentSupportDetail');
+      if (detail && data.pass_session?.plain_token) {
+        detail.insertAdjacentHTML('afterbegin', `
+          <div class="record-card">
+            <div class="record-card__title">Nuevo pase generado</div>
+            <div class="record-card__sub">Comparte este token QR con el alumno solo si lo necesitas para soporte inmediato.</div>
+            <div style="margin-top:10px;"><span class="mono">${escapeHTML(data.pass_session.plain_token)}</span></div>
+            <div class="small" style="margin-top:8px;">Expira: ${escapeHTML(data.pass_session.expires_at || '—')}</div>
+          </div>
+        `);
+      }
+
+      await selectStudentSupport(requestId);
+      await searchStudentSupport();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function revokeSelectedStudentPass() {
+    try {
+      const passSessionId = Number(selectedStudentSupport?.active_pass_session_id || 0);
+      const requestId = Number(document.getElementById('ss_request_id')?.value || 0);
+
+      if (!passSessionId) return showMsg('No hay pase activo para revocar', false);
+      if (!requestId) return showMsg('No hay solicitud seleccionada', false);
+
+      const data = await apiPost(`/api/admin/student-support/pass/${passSessionId}/revoke`, {});
+      showMsg(data.message || 'Pase revocado correctamente');
+
+      await selectStudentSupport(requestId);
+      await searchStudentSupport();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function enableSelectedStudentAccess() {
+    try {
+      const requestId = Number(document.getElementById('ss_request_id')?.value || 0);
+      if (!requestId) return showMsg('No hay solicitud seleccionada', false);
+
+      const data = await apiPost(`/api/admin/student-support/request/${requestId}/enable-access`, {});
+      showMsg(data.message || 'Acceso habilitado manualmente');
+
+      await selectStudentSupport(requestId);
+      await searchStudentSupport();
+      await loadDashboard();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+
 
   const MODULE_META = {
     summaryModule: { title: 'Dashboard', subtitle: 'Visión ejecutiva del evento.', kicker: 'Estrategia', accent: '#7D5BA6', accentSoft: '#F5F0FB' },
@@ -1640,7 +2143,8 @@ ADMIN_HTML = r"""
     staffModule: { title: 'Staff', subtitle: 'Gestión de cuentas operativas.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
     evidenceModule: { title: 'Evidencia Legal', subtitle: 'Hash, firma y snapshot del registro.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
     importExportModule: { title: 'Carga Masiva', subtitle: 'Importación y exportación del catálogo.', kicker: 'Control', accent: '#F25C78', accentSoft: '#FFF1F5' },
-    exportModule: { title: 'Exportación', subtitle: 'Reporte completo por temporada.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' }
+    exportModule: { title: 'Exportación', subtitle: 'Reporte completo por temporada.', kicker: 'Control', accent: '#3B82F6', accentSoft: '#EFF6FF' },
+    studentSupportModule: { title: 'Solicitudes y Pases', subtitle: 'Corrección de alumnos, revisión de solicitudes y operación de pases.', kicker: 'Operación', accent: '#43AA8B', accentSoft: '#ECFDF7'}
   };
 
   function escapeHTML(value) {
@@ -1964,6 +2468,7 @@ ADMIN_HTML = r"""
       fillSelectNoBlank('registrationsEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
       fillSelectNoBlank('exportEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
       fillSelectNoBlank('evidenceEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
+      fillSelectNoBlank('studentSupportEventSelector', allEvents, e => `${e.display_name} · ${e.status}`);
 
       ensureSelectsDefault([
         'eventSelector',
@@ -1971,7 +2476,8 @@ ADMIN_HTML = r"""
         'eventProjectEventSelector',
         'registrationsEventSelector',
         'exportEventSelector',
-        'evidenceEventSelector'
+        'evidenceEventSelector',
+        'studentSupportEventSelector'
       ]);
 
       const eventsList = document.getElementById('eventsList');
@@ -2824,6 +3330,10 @@ ADMIN_HTML = r"""
         enrolment_number: enrolment
       });
 
+      lastScannedPassSession = null;
+      document.getElementById('staffScannedToken').value = '';
+      document.getElementById('staffPhysicalEnrolment').value = '';
+
       showMsg(data.message || 'Acceso habilitado');
       document.getElementById('staffCheckinInfo').innerHTML += `
         <div class="record-card">
@@ -3097,7 +3607,7 @@ ADMIN_HTML = r"""
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '';
+      a.download = `reporte_temporada_${eventId}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -3122,6 +3632,9 @@ ADMIN_HTML = r"""
   document.addEventListener('DOMContentLoaded', async () => {
     await bootstrapAdmin();
 
+    clearStudentSupportSearch();
+    clearTimeout(studentSupportSearchTimer);
+
     document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') loginAdmin();
     });
@@ -3145,6 +3658,22 @@ ADMIN_HTML = r"""
 
     document.getElementById('registrationsEventSelector')?.addEventListener('change', async () => {
       await loadRegistrations();
+    });
+
+    document.getElementById('studentSupportSearch')?.addEventListener('input', scheduleStudentSupportSearch);
+
+    document.getElementById('studentSupportSearch')?.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        await searchStudentSupport();
+      }
+    });
+    
+    document.getElementById('studentSupportEventSelector')?.addEventListener('change', async () => {
+      const q = (document.getElementById('studentSupportSearch')?.value || '').trim();
+      const eventId = document.getElementById('studentSupportEventSelector')?.value;
+      if (q || eventId) {
+        await searchStudentSupport();
+      }
     });
 
     document.getElementById('projectSelector')?.addEventListener('change', syncBaseProjectSlotsToEventSlots);

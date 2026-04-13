@@ -1198,7 +1198,7 @@ INDEX_HTML = r"""
       </main>
 
       <aside class="side-column">
-        <section class="card">
+        <section class="card" id="studentRegistrationSection">
           <div class="card-title-row">
             <div>
               <h2>Resumen de avance</h2>
@@ -1254,6 +1254,142 @@ INDEX_HTML = r"""
     let currentSelectedProject = null;
     let currentRegistration = null;
     let catalogSearchTimer = null;
+    let canStudentRegister = false;
+    
+    function humanizeErrorMessage(err) {
+      const raw =
+        (typeof err === 'string' ? err : '') ||
+        err?.error ||
+        err?.message ||
+        '';
+
+      const msg = raw.toLowerCase();
+
+      // --- TOKENS ---
+      if (msg.includes('token no existe')) {
+        return 'Ese token no existe. Verifica que esté bien escrito.';
+      }
+
+      if (msg.includes('token expir')) {
+        return 'Ese token ya expiró. Solicita uno nuevo al socio del proyecto.';
+      }
+
+      if (msg.includes('token ya fue utilizado')) {
+        return 'Ese token ya fue utilizado y no puede volver a usarse.';
+      }
+
+      if (msg.includes('token fue revocado')) {
+        return 'Ese token fue revocado. Solicita uno nuevo al responsable del proyecto.';
+      }
+
+      if (msg.includes('token no corresponde')) {
+        return 'Ese token no pertenece al proyecto seleccionado.';
+      }
+
+      if (msg.includes('token está reservado')) {
+        return 'Ese token está reservado por otro alumno.';
+      }
+
+      // --- SOLICITUD ---
+      if (msg.includes('no existe solicitud')) {
+        return 'No tienes una solicitud para esta temporada. Primero solicita tu pase.';
+      }
+
+      if (msg.includes('no está habilitada para registro')) {
+        return 'Aún no estás habilitado por staff. Muestra tu QR para validación.';
+      }
+
+      if (msg.includes('ya tiene un registro activo')) {
+        return 'Ya estás inscrito en esta temporada.';
+      }
+
+      if (msg.includes('solicitud ya no permite acceso')) {
+        return 'Esta solicitud ya fue cerrada o cancelada.';
+      }
+
+      // --- QR / PASE ---
+      if (msg.includes('qr no reconocido')) {
+        return 'El QR no es válido. Genera uno nuevo.';
+      }
+
+      if (msg.includes('qr expirado')) {
+        return 'El QR expiró. Pide al alumno que lo refresque.';
+      }
+
+      if (msg.includes('qr no disponible')) {
+        return 'Este QR ya no está disponible (puede haber sido usado o expirado).';
+      }
+
+      if (msg.includes('la sesión ya no está activa')) {
+        return 'La sesión del QR ya no está activa.';
+      }
+
+      // --- MATRÍCULA ---
+      if (msg.includes('matrícula no coincide')) {
+        return 'La matrícula no coincide con la del pase.';
+      }
+
+      // --- PROYECTOS ---
+      if (msg.includes('proyecto no pertenece')) {
+        return 'El proyecto no corresponde a la temporada seleccionada.';
+      }
+
+      if (msg.includes('proyecto no está disponible')) {
+        return 'Este proyecto ya no está disponible para inscripción.';
+      }
+
+      // --- CAMPOS ---
+      if (msg.includes('es obligatorio')) {
+        return 'Faltan campos obligatorios. Revisa la información.';
+      }
+
+      // --- TEMPORADA ---
+      if (msg.includes('temporada inválida')) {
+        return 'La temporada seleccionada no es válida.';
+      }
+
+      if (msg.includes('no hay temporada visible')) {
+        return 'No hay temporada activa disponible en este momento.';
+      }
+
+      // --- FALLBACK ---
+      if (raw) {
+        return raw; // muestra mensaje backend si no lo reconocemos
+      }
+
+      return 'Ocurrió un error inesperado. Intenta nuevamente.';
+    }
+
+    function syncRegistrationLock() {
+      const step4Card = document.querySelector('.nav-card[data-step="4"]');
+      const previewBtn = document.querySelector('button[onclick="previewRegistration()"]');
+      const confirmBtn = document.getElementById('confirmRegistrationBtn');
+      const tokenInput = document.getElementById('projectTokenInput');
+      const nameInput = document.getElementById('acceptanceFullNameInput');
+      const legalInput = document.getElementById('legalVersionInput');
+      const checkbox = document.getElementById('acceptanceCheckbox');
+
+      canStudentRegister =
+        !!currentRegistration ||
+        currentRequest?.request?.status === 'ACCESS_ENABLED' ||
+        currentRequest?.status === 'ACCESS_ENABLED' ||
+        currentPass?.flow?.can_register === true;
+
+      if (step4Card) {
+        step4Card.style.opacity = canStudentRegister ? '1' : '.55';
+        step4Card.style.pointerEvents = canStudentRegister ? 'auto' : 'none';
+        step4Card.title = canStudentRegister
+          ? ''
+          : 'Bloqueado: primero debes mostrar tu QR al staff para habilitar acceso';
+      }
+
+      if (previewBtn) previewBtn.disabled = !canStudentRegister;
+      if (confirmBtn) confirmBtn.disabled = !canStudentRegister;
+      if (tokenInput) tokenInput.disabled = !canStudentRegister;
+      if (nameInput) nameInput.disabled = !canStudentRegister;
+      if (legalInput) legalInput.disabled = !canStudentRegister;
+      if (checkbox) checkbox.disabled = !canStudentRegister;
+    }
 
     function escapeHTML(value) {
       return String(value ?? '')
@@ -1302,7 +1438,14 @@ INDEX_HTML = r"""
     async function getJSON(url) {
       const r = await fetch(url);
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || data.message || ('Error ' + r.status));
+
+      if (!r.ok) {
+        throw {
+          error: data.error || data.message || ('Error ' + r.status),
+          status: r.status
+        };
+      }
+
       return data;
     }
 
@@ -1312,32 +1455,46 @@ INDEX_HTML = r"""
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
+
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || data.message || ('Error ' + r.status));
+
+      if (!r.ok) {
+        throw {
+          error: data.error || data.message || ('Error ' + r.status),
+          status: r.status
+        };
+      }
+
       return data;
     }
 
     async function tryGet(urls) {
       let lastError = null;
+
       for (const url of urls) {
         try {
           return await getJSON(url);
         } catch (e) {
+          console.error('Falló GET:', url, e);
           lastError = e;
         }
       }
+
       throw lastError || new Error('No se pudo completar la consulta');
     }
 
     async function tryPost(candidates) {
       let lastError = null;
+
       for (const item of candidates) {
         try {
           return await postJSON(item.url, item.body);
         } catch (e) {
+          console.error('Falló POST:', item.url, e);
           lastError = e;
         }
       }
+
       throw lastError || new Error('No se pudo completar la operación');
     }
 
@@ -1696,6 +1853,7 @@ INDEX_HTML = r"""
         </div>
       `;
       updateHeroState();
+      syncRegistrationLock();
     }
 
     async function createStudentRequest() {
@@ -1716,7 +1874,11 @@ INDEX_HTML = r"""
           return showMsg('Faltan campos obligatorios para solicitar pase', false);
         }
 
-        const data = await postJSON('/api/student/requests', payload);
+        const data = await tryPost([
+          { url: '/api/student/requests', body: payload },
+          { url: '/api/student/request', body: payload },
+          { url: '/api/student_requests', body: payload }
+        ]);
 
         currentRequest = data;
         renderRequestInfo(data);
@@ -1724,8 +1886,8 @@ INDEX_HTML = r"""
         updateHeroState();
         showMsg(data.message || 'Solicitud procesada correctamente');
       } catch (e) {
-        console.error('Error al solicitar pase:', e);
-        showMsg('No se pudo solicitar el pase: ' + e.message, false);
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
     }
 
@@ -1745,9 +1907,8 @@ INDEX_HTML = r"""
         updateHeroState();
         showMsg('Solicitud cargada correctamente');
       } catch (e) {
-        currentRequest = null;
-        renderRequestInfo(null);
-        showMsg(e.message, false);
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
     } 
 
@@ -1783,6 +1944,7 @@ INDEX_HTML = r"""
         statusBadge.textContent = 'Sin sesión';
         renderStudentQR('');
         updateHeroState();
+        syncRegistrationLock();
         return;
       }
 
@@ -1841,6 +2003,7 @@ INDEX_HTML = r"""
 
       renderStudentQR(currentToken);
       updateHeroState();
+      syncRegistrationLock();
     }
 
     async function loadStudentPass() {
@@ -1860,9 +2023,8 @@ INDEX_HTML = r"""
         goToSectionAndStep('passSection', 3);
         showMsg('Estado del pase cargado correctamente');
       } catch (e) {
-        currentPass = null;
-        renderPassInfo(null);
-        showMsg(e.message, false);
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
     }
 
@@ -1956,6 +2118,7 @@ INDEX_HTML = r"""
         box.innerHTML = '';
         btn.disabled = false;
         updateHeroState();
+        syncRegistrationLock();
         return;
       }
 
@@ -1993,6 +2156,7 @@ INDEX_HTML = r"""
         </div>
       `;
       updateHeroState();
+      syncRegistrationLock();
     }
 
     async function previewRegistration() {
@@ -2004,6 +2168,10 @@ INDEX_HTML = r"""
         if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
         if (!projectId) return showMsg('Primero elige un proyecto', false);
         if (!tokenValue) return showMsg('Falta el token del proyecto', false);
+
+        if (!canStudentRegister) {
+          return showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
+        }
 
         const payload = {
           enrolment_number: enrolment,
@@ -2024,9 +2192,8 @@ INDEX_HTML = r"""
         updateHeroState();
         showMsg(data.message || 'Preview válido');
       } catch (e) {
-        currentPreview = null;
-        renderPreview(null);
-        showMsg(e.message, false);
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
     }
 
@@ -2044,6 +2211,10 @@ INDEX_HTML = r"""
         if (!tokenValue) return showMsg('Falta el token del proyecto', false);
         if (!acceptedFullName) return showMsg('Debes escribir tu nombre completo', false);
         if (!acceptedCheckbox) return showMsg('Debes aceptar la confirmación legal', false);
+
+        if (!canStudentRegister) {
+          return showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
+        }
 
         const payload = {
           enrolment_number: enrolment,
@@ -2075,7 +2246,8 @@ INDEX_HTML = r"""
         showMsg(data.message || 'Registro completado');
         showStudentSection('statusSection');
       } catch (e) {
-        showMsg(e.message, false);
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
     }
 
@@ -2102,8 +2274,10 @@ INDEX_HTML = r"""
         renderRegistrationSuccess(null);
         setCurrentStep(1);
         updateHeroState();
+        syncRegistrationLock();
         showStudentSection('catalogSection');
       } catch (e) {
+        console.error('Error al inicializar alumno:', e);
         showMsg('Error al inicializar la página: ' + e.message, false);
       }
     });

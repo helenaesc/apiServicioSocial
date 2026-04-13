@@ -28,6 +28,7 @@ from .routes.admin_session_auth import admin_session_auth_bp
 from .routes.admin_users_management import admin_users_management_bp
 from .routes.admin_registration_evidence import admin_registration_evidence_bp
 from .routes.admin_event_export import admin_event_export_bp
+from .routes.admin_student_support import admin_student_support_bp  
 
 def create_app():
     app = Flask(__name__)
@@ -66,6 +67,7 @@ def create_app():
     app.register_blueprint(admin_users_management_bp)
     app.register_blueprint(admin_registration_evidence_bp)
     app.register_blueprint(admin_event_export_bp)
+    app.register_blueprint(admin_student_support_bp)
 
 
     return app

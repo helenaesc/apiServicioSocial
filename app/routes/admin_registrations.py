@@ -156,7 +156,7 @@ def cancel_registration(registration_id: int):
                 "status": 409
             }
 
-        # liberar token si existe
+        # 1) liberar token si existe
         if reg["project_token_id"]:
             cur.execute(
                 """
@@ -170,7 +170,7 @@ def cancel_registration(registration_id: int):
                 [reg["project_token_id"]]
             )
 
-        # cancelar registro
+        # 2) cancelar registro
         cur.execute(
             """
             UPDATE registrations
@@ -183,13 +183,32 @@ def cancel_registration(registration_id: int):
             [reason, admin_user_id, registration_id]
         )
 
-        # regresar solicitud a ACCESS_ENABLED
+        # 3) revocar cualquier pase ACTIVO vigente para obligar nuevo flujo presencial
+        cur.execute(
+            """
+            UPDATE pass_sessions
+            SET status = 'REVOKED',
+                revoked_at = NOW()
+            WHERE request_id = %s
+              AND status = 'ACTIVE'
+            """,
+            [reg["request_id"]]
+        )
+
+        # 4) regresar solicitud a VALIDATED, no a ACCESS_ENABLED
+        #    así el alumno NO puede seguir directo al paso 4
         cur.execute(
             """
             UPDATE student_event_requests
-            SET status = 'ACCESS_ENABLED',
+            SET status = 'VALIDATED',
+                access_enabled_at = NULL,
                 registered_at = NULL,
-                closed_at = NULL
+                closed_at = NULL,
+                notes = CONCAT(
+                    COALESCE(notes, ''),
+                    IF(COALESCE(notes, '') = '', '', ' | '),
+                    'Baja aplicada por ADMIN. Requiere nuevo pase y nueva validación presencial.'
+                )
             WHERE id = %s
             """,
             [reg["request_id"]]
@@ -197,7 +216,7 @@ def cancel_registration(registration_id: int):
 
         return {
             "status": 200,
-            "message": "Inscripción cancelada y token liberado"
+            "message": "Inscripción cancelada. Token liberado. Solicitud regresada a VALIDATED y requiere nuevo check-in."
         }
 
     try:

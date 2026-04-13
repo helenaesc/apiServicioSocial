@@ -273,7 +273,8 @@ def grant_access():
                 UPDATE student_event_requests
                 SET status = 'ACCESS_ENABLED',
                     validated_at = COALESCE(validated_at, NOW()),
-                    access_enabled_at = NOW()
+                    access_enabled_at = NOW(),
+                    notes = CONCAT(COALESCE(notes, ''), IF(COALESCE(notes, '') = '', '', ' | '), 'ACCESS_ENABLED por STAFF/ADMIN')
                 WHERE id = %s
                 """,
                 [row["request_id"]]

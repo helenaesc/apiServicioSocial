@@ -70,7 +70,7 @@ def _revoke_active_sessions(cur, request_id: int):
 def get_student_pass():
     enrolment_number = (request.args.get("enrolment_number") or "").strip().lower()
     season = _normalize_season(request.args.get("season") or request.args.get("temporada"))
-
+    
     if not enrolment_number:
         return jsonify({"error": "Matrícula es obligatoria"}), 400
 
@@ -131,6 +131,10 @@ def get_student_pass():
     """
     active_session = fetch_one(active_sql, [row["request_id"]])
 
+    can_register = row["request_status"] == "ACCESS_ENABLED"
+    needs_new_pass = row["request_status"] in ("REQUESTED", "VALIDATED")
+    request_closed = row["request_status"] in ("REGISTERED", "CANCELLED", "CLOSED")
+
     return jsonify({
         "request": {
             "id": row["request_id"],
@@ -159,7 +163,12 @@ def get_student_pass():
             "semester": row["semester"],
         },
         "pass_session": active_session,
-        "active_session": active_session
+        "active_session": active_session,
+        "flow": {
+            "can_register": can_register,
+            "needs_new_pass": needs_new_pass,
+            "request_closed": request_closed
+        }
     }), 200
 
 
