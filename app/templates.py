@@ -276,6 +276,16 @@ INDEX_HTML = r"""
       background: linear-gradient(135deg, var(--green-soft) 0%, white 100%);
     }
 
+    .nav-card.locked {
+      opacity: .55;
+      filter: grayscale(.08);
+    }
+
+    .nav-card.unlocked {
+      border-color: #cdeee4;
+      background: linear-gradient(135deg, #f0fdf7 0%, #ffffff 100%);
+    }
+
     .nav-index {
       font-size: .72rem;
       text-transform: uppercase;
@@ -1126,6 +1136,126 @@ INDEX_HTML = r"""
         display: none;
       }
     }
+    
+    .qr-timer-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .92rem;
+      transition: all .25s ease;
+      background: rgba(59,130,246,.12);
+      color: #2563eb;
+      border: 1px solid rgba(59,130,246,.18);
+    }
+
+    .qr-timer-box.warn {
+      background: rgba(245,158,11,.12);
+      color: #d97706;
+      border-color: rgba(245,158,11,.22);
+    }
+
+    .qr-timer-box.danger {
+      background: rgba(239,68,68,.12);
+      color: #dc2626;
+      border-color: rgba(239,68,68,.22);
+    }
+
+    .qr-timer-box.expired {
+      background: rgba(107,114,128,.14);
+      color: #4b5563;
+      border-color: rgba(107,114,128,.22);
+    }  
+
+    .smart-toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 9999;
+      min-width: 280px;
+      max-width: 360px;
+      background: #111827;
+      color: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.22);
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .28s ease;
+    }
+
+    .smart-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .smart-toast__title {
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .smart-toast__text {
+      font-size: .92rem;
+      color: rgba(255,255,255,.84);
+    }
+
+    .catalog-card.selected {
+      outline: 2px solid rgba(59,130,246,.42);
+      box-shadow: 0 16px 36px rgba(37,99,235,.14);
+      transform: translateY(-2px);
+    }
+
+    .catalog-card .selected-pill {
+      display: none;
+    }
+
+    .catalog-card.selected .selected-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(59,130,246,.12);
+      color: #2563eb;
+      font-size: .8rem;
+      font-weight: 800;
+    }
+
+    .success-shell {
+      background: linear-gradient(135deg, rgba(16,185,129,.10), rgba(59,130,246,.08));
+      border: 1px solid rgba(16,185,129,.16);
+      border-radius: 22px;
+      padding: 22px;
+      text-align: center;
+    }
+
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 900;
+      background: rgba(16,185,129,.14);
+      color: #059669;
+    }
+
+    .success-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .success-sub {
+      color: var(--text-soft);
+      max-width: 640px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
@@ -1353,7 +1483,14 @@ INDEX_HTML = r"""
               </div>
               <div class="field">
                 <label>Matrícula</label>
-                <input id="enrolmentInput" placeholder="Ej: A01234567">
+                <input
+                  id="enrolmentInput"
+                  placeholder="Ej: A01234567"
+                  maxlength="9"
+                  minlength="9"
+                  autocomplete="off"
+                  spellcheck="false"
+                >
               </div>
               <div class="field">
                 <label>Correo principal</label>
@@ -1570,6 +1707,10 @@ INDEX_HTML = r"""
     let currentRequestStatus = null;
     let journeyTimerInterval = null;
     let currentAccessUnlocked = false;
+    let studentAutoSyncInterval = null;
+    let lastKnownStudentStatus = null;
+    let currentPlainQrToken = '';
+    const ALLOWED_EMAIL_DOMAIN = 'gmail.com';
     
     function humanizeErrorMessage(err) {
       const raw =
@@ -1675,6 +1816,21 @@ INDEX_HTML = r"""
       return 'Ocurrió un error inesperado. Intenta nuevamente.';
     }
 
+    function getStudentStatus() {
+      return (
+        currentRequest?.request?.status ||
+        currentRequest?.status ||
+        currentPass?.request?.status ||
+        currentRequestStatus ||
+        null
+      );
+    }
+
+    function hasJourneyQrEvidence() {
+      const status = getStudentStatus();
+      return ['VALIDATED', 'ACCESS_ENABLED', 'REGISTERED'].includes(String(status || '').toUpperCase());
+    }
+
     function syncRegistrationLock() {
       const step4Card = document.querySelector('.nav-card[data-step="4"]');
       const previewBtn = document.getElementById('previewRegistrationBtn');
@@ -1684,17 +1840,21 @@ INDEX_HTML = r"""
       const legalInput = document.getElementById('legalVersionInput');
       const checkbox = document.getElementById('acceptanceCheckbox');
 
+      const status = getStudentStatus();
+
       canStudentRegister =
         !!currentRegistration ||
-        currentRequest?.request?.status === 'ACCESS_ENABLED' ||
-        currentRequest?.status === 'ACCESS_ENABLED';
+        status === 'ACCESS_ENABLED' ||
+        status === 'REGISTERED';
 
       if (step4Card) {
-        step4Card.style.opacity = canStudentRegister ? '1' : '.55';
         step4Card.style.pointerEvents = canStudentRegister ? 'auto' : 'none';
         step4Card.title = canStudentRegister
           ? ''
           : 'Bloqueado: primero debes mostrar tu QR al staff para habilitar acceso';
+
+        step4Card.classList.remove('locked', 'unlocked');
+        step4Card.classList.add(canStudentRegister ? 'unlocked' : 'locked');
       }
 
       if (previewBtn) previewBtn.disabled = !canStudentRegister;
@@ -1703,6 +1863,45 @@ INDEX_HTML = r"""
       if (nameInput) nameInput.disabled = !canStudentRegister;
       if (legalInput) legalInput.disabled = !canStudentRegister;
       if (checkbox) checkbox.disabled = !canStudentRegister;
+    }
+
+    function syncStep4GateText() {
+      const gateText = document.getElementById('step4GateText');
+      if (!gateText) return;
+
+      const status = getStudentStatus();
+
+      if (!status) {
+        gateText.textContent = 'Todavía no disponible. Primero solicita tu pase y completa la validación presencial.';
+        return;
+      }
+
+      if (status === 'REQUESTED') {
+        gateText.textContent = 'Tu solicitud ya existe. Ahora debes generar y mostrar tu QR al staff.';
+        return;
+      }
+
+      if (status === 'VALIDATED') {
+        gateText.textContent = 'Ya fuiste validado, pero staff todavía no habilita tu acceso al cierre.';
+        return;
+      }
+
+      if (status === 'ACCESS_ENABLED') {
+        gateText.textContent = 'Paso 4 desbloqueado. Ya puedes capturar el token del proyecto y confirmar tu inscripción.';
+        return;
+      }
+
+      if (status === 'REGISTERED') {
+        gateText.textContent = 'Tu inscripción ya fue completada correctamente.';
+        return;
+      }
+
+      if (status === 'CANCELLED' || status === 'CLOSED') {
+        gateText.textContent = 'Tu solicitud está cerrada. Necesitas apoyo de administración para continuar.';
+        return;
+      }
+
+      gateText.textContent = `Estado actual: ${status}`;
     }
 
     function escapeHTML(value) {
@@ -1788,62 +1987,100 @@ INDEX_HTML = r"""
       return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    function stopJourneyTimer() {
-      if (journeyTimerInterval) {
-        clearInterval(journeyTimerInterval);
-        journeyTimerInterval = null;
+    function parseServerDateTime(value) {
+      if (!value) return null;
+      if (value instanceof Date) return value;
+
+      const raw = String(value).trim();
+
+      // Si ya viene con Z o con offset, dejamos que JS lo procese
+      if (/[zZ]|[+\-]\d{2}:\d{2}$/.test(raw)) {
+        const isoDate = new Date(raw);
+        return Number.isNaN(isoDate.getTime()) ? null : isoDate;
       }
+
+      // Esperado del backend: YYYY-MM-DD HH:MM:SS
+      const m = raw.match(
+        /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/
+      );
+
+      if (!m) {
+        const fallback = new Date(raw.replace(' ', 'T'));
+        return Number.isNaN(fallback.getTime()) ? null : fallback;
+      }
+
+      const [, y, mo, d, h, mi, s] = m;
+
+      // Interpretar como UTC para evitar desfase de 6 horas
+      return new Date(Date.UTC(
+        Number(y),
+        Number(mo) - 1,
+        Number(d),
+        Number(h),
+        Number(mi),
+        Number(s)
+      ));
     }
+
 
     function startJourneyTimer(expiresAt) {
       stopJourneyTimer();
 
       const box = document.getElementById('journeyTimerBox');
-      const value = document.getElementById('journeyTimerValue');
+      const val = document.getElementById('journeyTimerValue');
       const sub = document.getElementById('journeyTimerSub');
 
-      if (!box || !value || !sub || !expiresAt) {
-        if (box) box.classList.add('hidden');
-        return;
-      }
+      if (!box || !val || !expiresAt) return;
 
-      const targetTime = new Date(expiresAt.replace(' ', 'T')).getTime();
-      if (Number.isNaN(targetTime)) {
-        box.classList.add('hidden');
-        return;
-      }
+      const targetDate = parseServerDateTime(expiresAt);
+      if (!targetDate) return;
 
-      box.classList.remove('hidden');
+      box.classList.remove('hidden', 'warn', 'danger', 'expired');
 
       function tick() {
-        const now = Date.now();
-        const diffMs = targetTime - now;
-        const seconds = Math.floor(diffMs / 1000);
+        const passSession = currentPass?.pass_session || currentPass?.active_session || null;
 
-        if (seconds <= 0) {
-          value.textContent = '00:00';
-          sub.textContent = 'Tu QR ya expiró. Refresca tu credencial.';
-          box.style.borderColor = '#ffd7df';
-          value.style.color = 'var(--pink)';
+        if (!passSession) {
+          stopJourneyTimer();
+          box.classList.add('hidden');
+          return;
+        }
+
+        const diff = Math.floor((targetDate.getTime() - Date.now()) / 1000);
+
+        if (diff <= 0) {
+          val.textContent = 'Expirado';
+          if (sub) sub.textContent = 'Tu QR expiró. Debes refrescar tu credencial.';
+          box.classList.remove('warn', 'danger');
+          box.classList.add('expired');
           stopJourneyTimer();
           return;
         }
 
-        value.textContent = formatCountdown(seconds);
+        val.textContent = formatCountdown(diff);
 
-        if (seconds <= 60) {
-          sub.textContent = 'Tu QR está por expirar. Refresca si el staff te lo pide.';
-          box.style.borderColor = '#fed7aa';
-          value.style.color = '#c2410c';
-        } else {
-          sub.textContent = 'Tu QR vive 5 minutos y cambia al refrescarse.';
-          box.style.borderColor = '#dbeafe';
-          value.style.color = 'var(--blue)';
+        if (sub) {
+          sub.textContent = 'Tu QR sigue vigente para mostrarlo al staff.';
+        }
+
+        box.classList.remove('warn', 'danger', 'expired');
+
+        if (diff <= 60) {
+          box.classList.add('danger');
+        } else if (diff <= 180) {
+          box.classList.add('warn');
         }
       }
 
       tick();
       journeyTimerInterval = setInterval(tick, 1000);
+    }
+
+    function stopJourneyTimer() {
+      if (journeyTimerInterval) {
+        clearInterval(journeyTimerInterval);
+        journeyTimerInterval = null;
+      }
     }
 
     function computeStudentJourneyState() {
@@ -1866,15 +2103,16 @@ INDEX_HTML = r"""
       const title = document.getElementById('journeyTitle');
       const subtitle = document.getElementById('journeySubtitle');
       const alert = document.getElementById('journeyAlert');
+      const timerBox = document.getElementById('journeyTimerBox');
 
       if (!title || !subtitle || !alert) return;
 
-      const state = computeStudentJourneyState();
-      const requestStatus = state.requestStatus;
-      const passSession = state.passSession;
-      const hasPass = state.hasPass;
-      const hasPreview = state.hasPreview;
-      const isRegistered = state.isRegistered;
+      const requestStatus = getStudentStatus();
+      const passSession = currentPass?.pass_session || currentPass?.active_session || null;
+      const hasPass = !!passSession;
+      const hasPreview = !!currentPreview;
+      const isRegistered = !!currentRegistration || requestStatus === 'REGISTERED';
+      const qrFlowCompleted = hasPass || hasJourneyQrEvidence();
 
       setJourneyStepState(1, 'locked', 'Pendiente');
       setJourneyStepState(2, 'locked', 'Sin pase');
@@ -1882,12 +2120,17 @@ INDEX_HTML = r"""
       setJourneyStepState(4, 'locked', 'Bloqueada');
       setJourneyProgress(0);
       lockStep4UI(true);
+
       stopJourneyTimer();
-      document.getElementById('journeyTimerBox')?.classList.add('hidden');
+      if (timerBox) timerBox.classList.add('hidden');
+
+      if (passSession?.expires_at) {
+        startJourneyTimer(passSession.expires_at);
+      }
 
       if (!requestStatus) {
         title.textContent = 'Esperando solicitud';
-        subtitle.textContent = 'Completa tus datos para generar folio y comenzar el flujo.';
+        subtitle.textContent = 'Completa tu solicitud para generar folio y comenzar el flujo.';
         setJourneyBadge('INACTIVO', 'neutral');
         alert.className = 'journey-alert';
         alert.textContent = 'Primero crea tu solicitud. Después podrás generar tu QR y continuar.';
@@ -1908,7 +2151,6 @@ INDEX_HTML = r"""
         alert.textContent = hasPass
           ? 'Ya tienes un QR activo. Muéstralo al staff para seguir.'
           : 'Genera tu QR. Sin ese paso no puedes avanzar.';
-        if (hasPass) startJourneyTimer(passSession.expires_at);
         return;
       }
 
@@ -1916,7 +2158,7 @@ INDEX_HTML = r"""
         title.textContent = 'Validado por staff';
         subtitle.textContent = 'Tu identidad fue validada, pero todavía no tienes acceso habilitado para cerrar inscripción.';
         setJourneyBadge('VALIDATED', 'brand');
-        setJourneyStepState(2, 'done', passSession?.status === 'USED' ? 'QR usado' : 'QR revisado');
+        setJourneyStepState(2, qrFlowCompleted ? 'done' : 'locked', qrFlowCompleted ? 'QR completado' : 'Sin pase');
         setJourneyStepState(3, 'active', 'Validado');
         setJourneyStepState(4, 'locked', 'Aún sin acceso');
         setJourneyProgress(60);
@@ -1929,7 +2171,7 @@ INDEX_HTML = r"""
         title.textContent = 'Acceso habilitado';
         subtitle.textContent = 'Ya puedes capturar el token del proyecto, revisar preview y confirmar tu inscripción.';
         setJourneyBadge('ACCESS ENABLED', 'ok');
-        setJourneyStepState(2, 'done', passSession?.status === 'USED' ? 'QR consumido' : 'Paso completado');
+        setJourneyStepState(2, qrFlowCompleted ? 'done' : 'locked', qrFlowCompleted ? 'QR completado' : 'Sin pase');
         setJourneyStepState(3, 'done', 'Acceso autorizado');
         setJourneyStepState(4, 'active', hasPreview ? 'Preview listo' : 'Listo para token');
         setJourneyProgress(hasPreview ? 92 : 82);
@@ -1974,20 +2216,133 @@ INDEX_HTML = r"""
       alert.className = 'journey-alert';
       alert.textContent = 'Revisa tu situación con staff si el proceso no avanza.';
     }
-    function showMsg(text, ok = true) {
-      const el = document.getElementById('msg');
-      if (!el) return;
-      el.textContent = text || '';
-      el.className = 'msg ' + (ok ? 'ok' : 'err');
-    }
 
     function getSeason() {
       const el = document.getElementById('seasonSelector');
       return el ? el.value : 'PRIMAVERA';
     }
 
+    function showMsg(text, ok = true) {
+      const el = document.getElementById('msg');
+      if (!el) return;
+
+      el.textContent = text || '';
+      el.className = 'msg ' + (ok ? 'ok' : 'err');
+    }
+
     function getEnrolment() {
-      return (document.getElementById('enrolmentInput')?.value || '').trim().toLowerCase();
+      return normalizeEnrolmentInput();
+    }
+
+    function setCurrentPlainQrToken(token) {
+      currentPlainQrToken = token || '';
+      try {
+        if (token) {
+          sessionStorage.setItem('student_plain_qr_token', token);
+        } else {
+          sessionStorage.removeItem('student_plain_qr_token');
+        }
+      } catch {}
+    }
+
+    function getCurrentPlainQrToken() {
+      if (currentPlainQrToken) return currentPlainQrToken;
+      try {
+        return sessionStorage.getItem('student_plain_qr_token') || '';
+      } catch {
+        return '';
+      }
+    }
+
+    function clearCurrentPlainQrToken() {
+      currentPlainQrToken = '';
+      try {
+        sessionStorage.removeItem('student_plain_qr_token');
+      } catch {}
+    }
+
+    function normalizeEnrolmentInput() {
+      const input = document.getElementById('enrolmentInput');
+      if (!input) return '';
+
+      const cleaned = String(input.value || '')
+        .replace(/\s+/g, '')
+        .toUpperCase()
+        .slice(0, 9);
+
+      input.value = cleaned;
+      return cleaned.toLowerCase();
+    }
+
+    function validateEnrolmentStrict(showError = true) {
+      const enrolment = normalizeEnrolmentInput();
+
+      if (enrolment.length !== 9) {
+        if (showError) {
+          showMsg('La matrícula debe tener exactamente 9 caracteres.', false);
+        }
+        return null;
+      }
+
+      return enrolment;
+    }
+
+    function normalizeEmailInput(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function isValidEmailStrict(value) {
+      const email = normalizeEmailInput(value);
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+    }
+
+    function validateEmailFieldsStrict(showError = true) {
+      const emailInput = document.getElementById('emailInput');
+      const secondEmailInput = document.getElementById('secondEmailInput');
+
+      const email = normalizeEmailInput(emailInput?.value || '');
+      const secondEmail = normalizeEmailInput(secondEmailInput?.value || '');
+
+      if (!email) {
+        if (showError) showMsg('El correo principal es obligatorio.', false);
+        return null;
+      }
+
+      if (!isValidEmailStrict(email)) {
+        if (showError) showMsg('El correo principal debe tener formato válido, por ejemplo: nombre@dominio.com', false);
+        return null;
+      }
+
+      if (ALLOWED_EMAIL_DOMAIN) {
+        const expectedSuffix = '@' + ALLOWED_EMAIL_DOMAIN.toLowerCase();
+        if (!email.endsWith(expectedSuffix)) {
+          if (showError) showMsg(`El correo principal debe usar el dominio ${expectedSuffix}`, false);
+          return null;
+        }
+      }
+
+      if (secondEmail) {
+        if (!isValidEmailStrict(secondEmail)) {
+          if (showError) showMsg('El segundo correo debe tener formato válido o dejarse vacío.', false);
+          return null;
+        }
+
+        if (ALLOWED_EMAIL_DOMAIN) {
+          const expectedSuffix = '@' + ALLOWED_EMAIL_DOMAIN.toLowerCase();
+          if (!secondEmail.endsWith(expectedSuffix)) {
+            if (showError) showMsg(`El segundo correo debe usar el dominio ${expectedSuffix} o dejarse vacío.`, false);
+            return null;
+          }
+        }
+      }
+
+      if (emailInput) emailInput.value = email;
+      if (secondEmailInput) secondEmailInput.value = secondEmail;
+
+      return {
+        email,
+        second_email: secondEmail
+      };
     }
 
     function showStudentSection(sectionId) {
@@ -1996,11 +2351,27 @@ INDEX_HTML = r"""
     }
 
     function setCurrentStep(step) {
+      const status = getStudentStatus();
+      const step4Unlocked = status === 'ACCESS_ENABLED' || status === 'REGISTERED' || !!currentRegistration;
+
       document.querySelectorAll('.nav-card').forEach(el => {
         const n = Number(el.getAttribute('data-step'));
-        el.classList.remove('active', 'done');
-        if (n < step) el.classList.add('done');
-        else if (n === step) el.classList.add('active');
+
+        el.classList.remove('active', 'done', 'locked', 'unlocked');
+
+        if (n < step) {
+          el.classList.add('done');
+        } else if (n === step) {
+          el.classList.add('active');
+        }
+
+        if (n === 4) {
+          if (step4Unlocked) {
+            el.classList.add('unlocked');
+          } else {
+            el.classList.add('locked');
+          }
+        }
       });
     }
 
@@ -2009,27 +2380,109 @@ INDEX_HTML = r"""
       setCurrentStep(step);
     }
 
-    function validateAccessAndGoStep4() {
-      const status = currentRequest?.request?.status || currentRequest?.status || currentRequestStatus;
+    async function validateAccessAndGoStep4() {
+      try {
+        const enrolment = validateEnrolmentStrict();
+        if (!enrolment) return;
 
-      if (status !== 'ACCESS_ENABLED') {
-        showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
-        return;
+        await loadStudentRequest().catch(() => {});
+        await loadStudentPass().catch(() => {});
+
+        const status =
+          currentRequest?.request?.status ||
+          currentRequest?.status ||
+          currentRequestStatus ||
+          null;
+
+        if (status !== 'ACCESS_ENABLED') {
+          showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
+          return;
+        }
+
+        goToSectionAndStep('registrationSection', 4);
+      } catch (e) {
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
-
-      goToSectionAndStep('registrationSection', 4);
     }
 
-    function validateAccessAndShowRegistration() {
-      const status = currentRequest?.request?.status || currentRequest?.status || currentRequestStatus;
+    async function validateAccessAndShowRegistration() {
+      try {
+        const enrolment = validateEnrolmentStrict();
+        if (!enrolment) return;
 
-      if (status !== 'ACCESS_ENABLED' && !currentRegistration) {
-        showMsg('El paso 4 sigue bloqueado. Primero muestra tu QR al staff.', false);
-        return;
+        await loadStudentRequest().catch(() => {});
+        await loadStudentPass().catch(() => {});
+
+        const status =
+          currentRequest?.request?.status ||
+          currentRequest?.status ||
+          currentRequestStatus ||
+          null;
+
+        if (status !== 'ACCESS_ENABLED' && !currentRegistration) {
+          showMsg('El paso 4 sigue bloqueado. Primero muestra tu QR al staff.', false);
+          return;
+        }
+
+        showStudentSection('registrationSection');
+        setCurrentStep(4);
+      } catch (e) {
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
       }
+    }
+    
+    function stopStudentAutoSync() {
+      if (studentAutoSyncInterval) {
+        clearInterval(studentAutoSyncInterval);
+        studentAutoSyncInterval = null;
+      }
+    }
 
-      showStudentSection('registrationSection');
-      setCurrentStep(4);
+    function startStudentAutoSync() {
+      stopStudentAutoSync();
+
+      studentAutoSyncInterval = setInterval(async () => {
+        try {
+          const status =
+            currentRequest?.request?.status ||
+            currentRequest?.status ||
+            currentRequestStatus ||
+            null;
+
+          if (!status) return;
+
+          if (status === 'ACCESS_ENABLED' || status === 'REGISTERED' || status === 'CANCELLED' || status === 'CLOSED') {
+            stopStudentAutoSync();
+            return;
+          }
+
+          await loadStudentRequest().catch(() => {});
+          await loadStudentPass().catch(() => {});
+        } catch (e) {
+          console.error('AutoSync error:', e);
+        }
+      }, 8000);
+    }
+
+    function showSmartToast(title, text) {
+      const toast = document.getElementById('smartToast');
+      if (!toast) return;
+
+      const titleEl = toast.querySelector('.smart-toast__title');
+      const textEl = toast.querySelector('.smart-toast__text');
+
+      if (titleEl) titleEl.textContent = title || 'Aviso';
+      if (textEl) textEl.textContent = text || '';
+
+      toast.classList.remove('hidden');
+      requestAnimationFrame(() => toast.classList.add('show'));
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.classList.add('hidden'), 280);
+      }, 3000);
     }
 
     async function getJSON(url) {
@@ -2117,27 +2570,33 @@ INDEX_HTML = r"""
     }
 
     function updateHeroState() {
-      const route = document.getElementById('heroRouteStatus');
-      const project = document.getElementById('heroProjectStatus');
-      const sideRoute = document.getElementById('sideRouteStatus');
-      const sideProject = document.getElementById('sideProjectStatus');
+      const routeStatus = document.getElementById('heroRouteStatus');
+      const projectStatus = document.getElementById('heroProjectStatus');
+      const sideRouteStatus = document.getElementById('sideRouteStatus');
+      const sideProjectStatus = document.getElementById('sideProjectStatus');
+
+      const status =
+        currentRequest?.request?.status ||
+        currentRequest?.status ||
+        currentRequestStatus ||
+        null;
+
+      const selectedProjectText = currentSelectedProject
+        ? `${currentSelectedProject.general_name || 'Proyecto'} | ${currentSelectedProject.name || currentSelectedProject.project_name || 'Sin nombre'}`
+        : 'Sin proyecto seleccionado';
 
       let routeText = 'Explorando catálogo';
 
-      if (currentRegistration) routeText = 'Inscripción completada';
-      else if (currentPreview) routeText = 'Preview listo para confirmar';
-      else if (currentPass && (currentPass.pass_session || currentPass.active_session)) routeText = 'Pase activo para validación';
-      else if (currentRequest) routeText = 'Solicitud creada';
+      if (status === 'REQUESTED') routeText = 'Solicitud creada';
+      else if (status === 'VALIDATED') routeText = 'Validado por staff';
+      else if (status === 'ACCESS_ENABLED') routeText = 'Acceso habilitado';
+      else if (status === 'REGISTERED') routeText = 'Inscripción completada';
+      else if (status === 'CANCELLED' || status === 'CLOSED') routeText = 'Proceso detenido';
 
-      let projectText = 'Sin proyecto seleccionado';
-      if (currentSelectedProject) {
-        projectText = `${currentSelectedProject.general_name || currentSelectedProject.organization || 'Proyecto'} | ${currentSelectedProject.name || currentSelectedProject.project_name || 'Sin nombre'}`;
-      }
-
-      if (route) route.textContent = routeText;
-      if (project) project.textContent = projectText;
-      if (sideRoute) sideRoute.textContent = routeText;
-      if (sideProject) sideProject.textContent = currentSelectedProject ? (currentSelectedProject.name || currentSelectedProject.project_name || 'Proyecto') : 'Sin selección';
+      if (routeStatus) routeStatus.textContent = routeText;
+      if (projectStatus) projectStatus.textContent = selectedProjectText;
+      if (sideRouteStatus) sideRouteStatus.textContent = routeText;
+      if (sideProjectStatus) sideProjectStatus.textContent = selectedProjectText;
     }
 
     function renderEmptyState(title, subtitle) {
@@ -2150,11 +2609,18 @@ INDEX_HTML = r"""
     }
 
     function resetCatalogFilters() {
-      document.getElementById('catalogSearch').value = '';
-      document.getElementById('filterPartner').value = '';
-      document.getElementById('filterModality').value = '';
-      document.getElementById('filterWeekDays').value = '';
-      document.getElementById('filterSchedule').value = '';
+      const search = document.getElementById('catalogSearch');
+      const partner = document.getElementById('filterPartner');
+      const modality = document.getElementById('filterModality');
+      const weekDays = document.getElementById('filterWeekDays');
+      const schedule = document.getElementById('filterSchedule');
+
+      if (search) search.value = '';
+      if (partner) partner.value = '';
+      if (modality) modality.value = '';
+      if (weekDays) weekDays.value = '';
+      if (schedule) schedule.value = '';
+
       loadCatalog();
     }
 
@@ -2292,77 +2758,75 @@ INDEX_HTML = r"""
       goToSectionAndStep('requestSection', 2);
     }
 
+    function fillSelect(id, items, placeholderText = 'Selecciona', labelFn = null) {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      el.innerHTML = `<option value="">${placeholderText}</option>`;
+
+      for (const item of items || []) {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = labelFn
+          ? labelFn(item)
+          : (item.name || item.description || item.display_name || item.id);
+        el.appendChild(opt);
+      }
+    }
+
     async function loadCatalogsForSeason() {
       try {
         const season = getSeason();
-        const data = await tryGet([
-          `/api/catalogs?temporada=${encodeURIComponent(season)}`,
-          `/api/catalogs?season=${encodeURIComponent(season)}`,
-          `/api/catalogs`
-        ]);
 
-        const partners = data.socio || data.partner || data.partners || data.carreras || [];
-        const modalities = data.modalidad || data.modality || data.modalities || [];
-        const weekDays = data.dias || data.week_days || data.weekDays || data.days || [];
-        const schedules = data.horario || data.schedule || data.schedules || [];
+        const data = await getJSON(`/api/catalogs?season=${encodeURIComponent(season)}`);
 
-        fillSelect('filterPartner', partners, 'name');
-        fillSelect('filterModality', modalities, 'description');
-        fillSelect('filterWeekDays', weekDays, 'description');
-        fillSelect('filterSchedule', schedules, 'description');
+        fillSelect('filterPartner', data.socio || [], 'Todas las carreras', item => item.name);
+        fillSelect('filterModality', data.modalidad || [], 'Todas las modalidades', item => item.description || item.name);
+        fillSelect('filterWeekDays', data.dias || [], 'Todos los días', item => item.description || item.name);
+        fillSelect('filterSchedule', data.horario || [], 'Todos los horarios', item => item.description || item.name);
       } catch (e) {
-        showMsg('No se pudieron cargar los catálogos: ' + e.message, false);
+        console.error('loadCatalogsForSeason error:', e);
+        showMsg(humanizeErrorMessage(e), false);
       }
     }
 
     async function loadCatalog() {
       try {
         const season = getSeason();
-        const q = (document.getElementById('catalogSearch').value || '').trim();
-        const socio = document.getElementById('filterPartner').value;
-        const modalidad = document.getElementById('filterModality').value;
-        const dia = document.getElementById('filterWeekDays').value;
-        const horario = document.getElementById('filterSchedule').value;
 
-        const params1 = new URLSearchParams();
-        params1.set('temporada', season);
-        if (q) params1.set('q', q);
-        if (socio) params1.set('socio', socio);
-        if (modalidad) params1.set('modalidad', modalidad);
-        if (dia) params1.set('dia', dia);
-        if (horario) params1.set('horario', horario);
+        const partner = document.getElementById('filterPartner')?.value || '';
+        const modality = document.getElementById('filterModality')?.value || '';
+        const day = document.getElementById('filterWeekDays')?.value || '';
+        const schedule = document.getElementById('filterSchedule')?.value || '';
+        const q = document.getElementById('catalogSearch')?.value?.trim() || '';
 
-        const params2 = new URLSearchParams();
-        params2.set('season', season);
-        if (q) params2.set('q', q);
-        if (socio) params2.set('partner', socio);
-        if (modalidad) params2.set('modality', modalidad);
-        if (dia) params2.set('week_days', dia);
-        if (horario) params2.set('schedule', horario);
+        const params = new URLSearchParams();
+        params.set('season', season);
 
-        const data = await tryGet([
-          `/api/projects?${params1.toString()}`,
-          `/api/projects?${params2.toString()}`,
-          `/api/projects`
-        ]);
+        if (q) params.set('q', q);
+        if (partner) params.set('socio', partner);
+        if (modality) params.set('modalidad', modality);
+        if (day) params.set('dia', day);
+        if (schedule) params.set('horario', schedule);
 
-        currentCatalog = data.items || data.projects || data.rows || (Array.isArray(data) ? data : []);
-        const eventInfo = data.event || data.current_event || null;
+        const data = await getJSON(`/api/projects?${params.toString()}`);
 
-        renderCatalogHeader(currentCatalog, eventInfo);
+        currentCatalog = data.items || [];
+        currentCatalogEvent = data.event || null;
+
+        renderCatalogHeader(currentCatalog, currentCatalogEvent);
         renderCatalog(currentCatalog);
-        renderSelectedProjectBanner();
-
-        if (!currentCatalog.length) {
-          showMsg('No hay proyectos visibles para alumno en esta temporada', false);
-        } else {
-          showMsg('Catálogo cargado correctamente');
-        }
       } catch (e) {
-        currentCatalog = [];
-        renderCatalogHeader([], null);
-        renderCatalog([]);
-        showMsg('No se pudo cargar el catálogo: ' + e.message, false);
+        console.error('loadCatalog error:', e);
+        showMsg(humanizeErrorMessage(e), false);
+
+        const list = document.getElementById('catalogList');
+        if (list) {
+          list.innerHTML = renderEmptyState(
+            'No se pudo cargar el catálogo',
+            'Revisa la temporada, filtros o conexión.'
+          );
+        }
       }
     }
 
@@ -2455,11 +2919,17 @@ INDEX_HTML = r"""
 
     async function createStudentRequest() {
       try {
+        const strictEnrolment = validateEnrolmentStrict();
+        if (!strictEnrolment) return;
+
+        const emailData = validateEmailFieldsStrict();
+        if (!emailData) return;
+
         const payload = {
           full_name: document.getElementById('fullNameInput').value.trim(),
-          enrolment_number: document.getElementById('enrolmentInput').value.trim(),
-          email: document.getElementById('emailInput').value.trim(),
-          second_email: document.getElementById('secondEmailInput').value.trim(),
+          enrolment_number: strictEnrolment,
+          email: emailData.email,
+          second_email: emailData.second_email,
           phone_number: document.getElementById('phoneInput').value.trim(),
           degree: document.getElementById('degreeInput').value.trim(),
           semester: document.getElementById('semesterInput').value.trim(),
@@ -2478,10 +2948,26 @@ INDEX_HTML = r"""
         ]);
 
         currentRequest = data;
+        currentRequestStatus = data.request?.status || data.status || 'REQUESTED';
+        lastKnownStudentStatus = currentRequestStatus;
+        currentPreview = null;
+        currentRegistration = null;
+
         renderRequestInfo(data);
-        setCurrentStep(2);
         updateHeroState();
+        syncRegistrationLock();
+        syncStep4GateText();
+        renderJourneyState();
+
+        // Cargar inmediatamente el estado vivo sin pedir refresh manual
+        await loadStudentRequest().catch(() => {});
+        await loadStudentPass().catch(() => {});
+
+        startStudentAutoSync();
+        goToSectionAndStep('passSection', 3);
+
         showMsg(data.message || 'Solicitud procesada correctamente');
+        showSmartToast('Solicitud creada', 'Ahora genera tu QR y muéstralo al staff.');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -2490,8 +2976,8 @@ INDEX_HTML = r"""
 
     async function loadStudentRequest() {
       try {
-        const enrolment = getEnrolment();
-        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
+        const enrolment = validateEnrolmentStrict();
+        if (!enrolment) return;
 
         const season = getSeason();
 
@@ -2499,15 +2985,29 @@ INDEX_HTML = r"""
           `/api/student/requests?enrolment_number=${encodeURIComponent(enrolment)}&season=${encodeURIComponent(season)}`
         );
 
+        const newStatus = data.request?.status || data.status || null;
+        const oldStatus = lastKnownStudentStatus;
+
         currentRequest = data;
+        currentRequestStatus = newStatus;
+        lastKnownStudentStatus = newStatus;
+
         renderRequestInfo(data);
         updateHeroState();
+        renderJourneyState();
+        syncRegistrationLock();
+        syncStep4GateText();
+
+        if (oldStatus && oldStatus !== newStatus && newStatus === 'ACCESS_ENABLED') {
+          showSmartToast('Acceso habilitado', 'Ya puedes continuar al paso de inscripción.');
+        }
+
         showMsg('Solicitud cargada correctamente');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
       }
-    } 
+    }
 
     function renderStudentQR(plainToken) {
       const qrCanvas = document.getElementById('qrCanvas');
@@ -2539,10 +3039,12 @@ INDEX_HTML = r"""
         );
         statusBadge.className = 'chip chip-neutral';
         statusBadge.textContent = 'Sin sesión';
+        clearCurrentPlainQrToken();
         renderStudentQR('');
         renderJourneyState();
         updateHeroState();
         syncRegistrationLock();
+        syncStep4GateText();
         return;
       }
 
@@ -2550,7 +3052,6 @@ INDEX_HTML = r"""
       const event = data.event || {};
       const student = data.student || {};
       const session = data.pass_session || data.active_session || null;
-
       const ttlText = session?.expires_at || '—';
 
       box.innerHTML = `
@@ -2587,10 +3088,16 @@ INDEX_HTML = r"""
         </div>
       `;
 
-      const currentToken =
+      const freshToken =
         data.pass_session?.plain_token ||
         data.active_session?.plain_token ||
         '';
+
+      if (freshToken) {
+        setCurrentPlainQrToken(freshToken);
+      }
+
+      const tokenToRender = session ? getCurrentPlainQrToken() : '';
 
       if (session) {
         statusBadge.className = 'chip chip-green';
@@ -2598,18 +3105,20 @@ INDEX_HTML = r"""
       } else {
         statusBadge.className = 'chip chip-neutral';
         statusBadge.textContent = 'Sin sesión';
+        clearCurrentPlainQrToken();
       }
 
-      renderStudentQR(currentToken);
+      renderStudentQR(tokenToRender);
       renderJourneyState();
       updateHeroState();
       syncRegistrationLock();
+      syncStep4GateText();
     }
 
     async function loadStudentPass() {
       try {
-        const enrolment = getEnrolment();
-        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
+        const enrolment = validateEnrolmentStrict();
+        if (!enrolment) return;
 
         const season = getSeason();
 
@@ -2633,17 +3142,19 @@ INDEX_HTML = r"""
 
     async function refreshStudentPass() {
       try {
-        const enrolment = getEnrolment();
-        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
+        const enrolment = validateEnrolmentStrict();
+        if (!enrolment) return;
+
+        const season = getSeason();
 
         const payload = {
           enrolment_number: enrolment,
-          season: getSeason(),
-          temporada: getSeason()
+          season,
+          temporada: season
         };
 
         const data = await tryPost([
-          { url: '/api/student/pass/refresh', body: payload }
+          { url: `/api/student/pass/refresh`, body: payload }
         ]);
 
         currentPass = data;
@@ -2719,54 +3230,37 @@ INDEX_HTML = r"""
     }
 
     function renderRegistrationSuccess(data) {
-      const box = document.getElementById('registrationSuccessBox');
-      const btn = document.getElementById('confirmRegistrationBtn');
-      if (!box || !btn) return;
+      const box = document.getElementById('requestInfo');
+      if (!box) return;
 
-      if (!data) {
-        box.classList.add('hidden');
-        box.innerHTML = '';
-        btn.disabled = false;
-        updateHeroState();
-        syncRegistrationLock();
-        return;
-      }
-
-      btn.disabled = true;
-      box.classList.remove('hidden');
       box.innerHTML = `
-        <div class="success-card">
-          <div class="success-title">🎉 Inscripción completada</div>
-          <div class="meta-grid">
+        <div class="success-shell">
+          <div class="success-icon">✓</div>
+          <div class="success-title">Inscripción completada</div>
+          <div class="success-sub">
+            Tu lugar quedó registrado correctamente. Guarda esta información y verifica tu proyecto asignado.
+          </div>
+
+          <div class="meta-grid" style="margin-top:18px;">
             <div class="meta-box">
               <span class="meta-label">Proyecto</span>
-              <div class="meta-value">${escapeHTML(data.project_name || '—')}</div>
+              <div class="meta-value">${escapeHTML(data?.project_name || '—')}</div>
             </div>
             <div class="meta-box">
               <span class="meta-label">Organización</span>
-              <div class="meta-value">${escapeHTML(data.general_name || '—')}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-label">Temporada</span>
-              <div class="meta-value">${escapeHTML(data.season || getSeason())}</div>
+              <div class="meta-value">${escapeHTML(data?.general_name || '—')}</div>
             </div>
             <div class="meta-box">
               <span class="meta-label">Token usado</span>
-              <div class="meta-value">${escapeHTML(data.token_value || '—')}</div>
+              <div class="meta-value">${escapeHTML(data?.token_value || '—')}</div>
             </div>
             <div class="meta-box">
-              <span class="meta-label">Fecha</span>
-              <div class="meta-value">${escapeHTML(data.accepted_at || '—')}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-label">Estado</span>
-              <div class="meta-value">REGISTRADO</div>
+              <span class="meta-label">Confirmado</span>
+              <div class="meta-value">${escapeHTML(data?.accepted_at || '—')}</div>
             </div>
           </div>
         </div>
       `;
-      updateHeroState();
-      syncRegistrationLock();
     }
 
     async function previewRegistration() {
@@ -2849,10 +3343,12 @@ INDEX_HTML = r"""
         };
 
         renderRegistrationSuccess(currentRegistration);
+        clearCurrentPlainQrToken();
 
         await loadStudentRequest().catch(() => {});
         await loadStudentPass().catch(() => {});
-
+        
+        stopStudentAutoSync();
         setCurrentStep(5);
         updateHeroState();
         showMsg(data.message || 'Registro completado');
@@ -2863,43 +3359,94 @@ INDEX_HTML = r"""
       }
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        document.getElementById('seasonSelector')?.addEventListener('change', async () => {
+    function bindStudentNav() {
+      document.querySelectorAll('[data-student-section]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sectionId = btn.getAttribute('data-student-section');
+          if (!sectionId) return;
+          showStudentSection(sectionId);
+        });
+      });
+    }
+
+    function bindCatalogFilters() {
+      const partner = document.getElementById('filterPartner');
+      const modality = document.getElementById('filterModality');
+      const day = document.getElementById('filterWeekDays');
+      const schedule = document.getElementById('filterSchedule');
+      const search = document.getElementById('catalogSearch');
+      const season = document.getElementById('seasonSelector');
+
+      if (season) {
+        season.addEventListener('change', async () => {
           await loadCatalogsForSeason();
           await loadCatalog();
         });
+      }
 
-        document.getElementById('catalogSearch')?.addEventListener('input', scheduleCatalogSearch);
-        document.getElementById('filterPartner')?.addEventListener('change', loadCatalog);
-        document.getElementById('filterModality')?.addEventListener('change', loadCatalog);
-        document.getElementById('filterWeekDays')?.addEventListener('change', loadCatalog);
-        document.getElementById('filterSchedule')?.addEventListener('change', loadCatalog);
+      [partner, modality, day, schedule].forEach(el => {
+        if (el) {
+          el.addEventListener('change', () => {
+            loadCatalog().catch(e => {
+              console.error('loadCatalog from filter error:', e);
+              showMsg(humanizeErrorMessage(e), false);
+            });
+          });
+        }
+      });
 
-        await loadCatalogsForSeason();
-        await loadCatalog();
+      if (search) {
+        search.addEventListener('input', scheduleCatalogSearch);
+      }
+    }
 
-        renderSelectedProjectBanner();
-        renderRequestInfo(null);
-        renderPassInfo(null);
-        renderPreview(null);
-        renderRegistrationSuccess(null);
-        setCurrentStep(1);
-        updateHeroState();
-        syncRegistrationLock();
-        showStudentSection('catalogSection');
+    function bindRegistrationActions() {
+      const enrolmentInput = document.getElementById('enrolmentInput');
+      if (enrolmentInput) {
+        enrolmentInput.addEventListener('input', () => {
+          normalizeEnrolmentInput();
+        });
+      }
+      // Los botones ya usan onclick inline en el HTML actual.
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        bindStudentNav();
+        bindCatalogFilters();
+        bindRegistrationActions();
+
+        await loadCatalogsForSeason().catch((e) => {
+          console.error('loadCatalogsForSeason error:', e);
+        });
+
+        await loadCatalog().catch((e) => {
+          console.error('loadCatalog error:', e);
+        });
+
         const enrolment = getEnrolment();
         if (enrolment) {
           currentRequestStatus = null;
-          await loadStudentRequest().catch(() => {});
-          await loadStudentPass().catch(() => {});
+          await loadStudentRequest().catch((e) => {
+            console.error('loadStudentRequest error:', e);
+          });
+          await loadStudentPass().catch((e) => {
+            console.error('loadStudentPass error:', e);
+          });
+          startStudentAutoSync();
         }
+
+        showStudentSection('catalogSection');
       } catch (e) {
-        console.error('Error al inicializar alumno:', e);
-        showMsg('Error al inicializar la página: ' + e.message, false);
+        console.error('DOMContentLoaded fatal error:', e);
+        showMsg('Error al inicializar la página', false);
       }
     });
   </script>
+  <div id="smartToast" class="smart-toast hidden">
+    <div class="smart-toast__title">Acceso habilitado</div>
+    <div class="smart-toast__text">Ya puedes pasar al cierre de inscripción.</div>
+  </div>
 </body>
 </html>
 """
