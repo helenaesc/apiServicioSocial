@@ -1256,6 +1256,92 @@ INDEX_HTML = r"""
       max-width: 640px;
       margin: 0 auto;
     }
+
+    .step4-shell {
+      display: grid;
+      gap: 14px;
+    }
+
+    .step4-statebar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .step4-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: .84rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .step4-pill.ok {
+      background: rgba(16,185,129,.12);
+      color: #047857;
+      border-color: rgba(16,185,129,.2);
+    }
+
+    .step4-pill.warn {
+      background: rgba(245,158,11,.12);
+      color: #b45309;
+      border-color: rgba(245,158,11,.2);
+    }
+
+    .step4-pill.err {
+      background: rgba(239,68,68,.12);
+      color: #b91c1c;
+      border-color: rgba(239,68,68,.2);
+    }
+
+    .step4-preview-card {
+      border: 1px solid rgba(59,130,246,.14);
+      background: linear-gradient(135deg, rgba(59,130,246,.05), rgba(255,255,255,1));
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .step4-preview-title {
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .step4-preview-sub {
+      color: var(--text-soft);
+      font-size: .92rem;
+      margin-bottom: 12px;
+    }
+
+    .step4-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .step4-confirm-box {
+      border: 1px dashed rgba(16,185,129,.28);
+      background: rgba(16,185,129,.05);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .step4-confirm-ready {
+      font-weight: 900;
+      color: #047857;
+      margin-bottom: 4px;
+    }
+
+    .input-ok {
+      border-color: rgba(16,185,129,.4) !important;
+      box-shadow: 0 0 0 3px rgba(16,185,129,.08);
+    }
+
+    .input-err {
+      border-color: rgba(239,68,68,.45) !important;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.08);
+    }
   </style>
 </head>
 <body>
@@ -1581,6 +1667,11 @@ INDEX_HTML = r"""
               </div>
             </div>
 
+            <div class="step4-shell">
+              <div id="step4StateBar" class="step4-statebar"></div>
+              <div id="step4PreviewBox"></div>
+              <div id="step4ConfirmBox"></div>
+            </div>
 
             <div class="form-grid">
               <div class="field">
@@ -1904,6 +1995,137 @@ INDEX_HTML = r"""
       gateText.textContent = `Estado actual: ${status}`;
     }
 
+    function renderStep4PremiumState() {
+      const stateBar = document.getElementById('step4StateBar');
+      const previewBox = document.getElementById('step4PreviewBox');
+      const confirmBox = document.getElementById('step4ConfirmBox');
+
+      if (!stateBar || !previewBox || !confirmBox) return;
+
+      const status = getStudentStatus();
+      const tokenValue = document.getElementById('projectTokenInput')?.value.trim() || '';
+      const acceptedFullName = document.getElementById('acceptanceFullNameInput')?.value.trim() || '';
+      const legalVersion = document.getElementById('legalVersionInput')?.value.trim() || 'v1';
+      const acceptedCheckbox = !!document.getElementById('acceptanceCheckbox')?.checked;
+
+      const tokenReady = tokenValue.length > 0;
+      const nameReady = acceptedFullName.length > 0;
+      const legalReady = legalVersion.length > 0;
+      const checkboxReady = acceptedCheckbox;
+
+      const previewReady = !!currentPreview;
+      const canAccess = status === 'ACCESS_ENABLED' || status === 'REGISTERED' || !!currentRegistration;
+      const canConfirm = canAccess && tokenReady && nameReady && legalReady && checkboxReady && previewReady;
+
+      stateBar.innerHTML = `
+        <div class="step4-pill ${canAccess ? 'ok' : 'warn'}">
+          ${canAccess ? 'Acceso habilitado' : 'Paso bloqueado'}
+        </div>
+        <div class="step4-pill ${tokenReady ? 'ok' : 'warn'}">
+          ${tokenReady ? 'Token capturado' : 'Falta token'}
+        </div>
+        <div class="step4-pill ${nameReady ? 'ok' : 'warn'}">
+          ${nameReady ? 'Nombre listo' : 'Falta nombre'}
+        </div>
+        <div class="step4-pill ${checkboxReady ? 'ok' : 'warn'}">
+          ${checkboxReady ? 'Aceptación legal lista' : 'Falta aceptación'}
+        </div>
+        <div class="step4-pill ${previewReady ? 'ok' : 'warn'}">
+          ${previewReady ? 'Preview válido' : 'Preview pendiente'}
+        </div>
+      `;
+
+      if (currentPreview) {
+        const p = currentPreview.project || {};
+        const e = currentPreview.event || {};
+        const t = currentPreview.token || {};
+        previewBox.innerHTML = `
+          <div class="step4-preview-card">
+            <div class="step4-preview-title">Tu inscripción está lista para confirmarse</div>
+            <div class="step4-preview-sub">
+              Verifica estos datos antes de cerrar el proceso.
+            </div>
+            <div class="step4-grid">
+              <div class="meta-box">
+                <span class="meta-label">Proyecto</span>
+                <div class="meta-value">${escapeHTML(p.project_name || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Organización</span>
+                <div class="meta-value">${escapeHTML(p.general_name || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Temporada</span>
+                <div class="meta-value">${escapeHTML(e.display_name || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Token</span>
+                <div class="meta-value">${escapeHTML(t.token_value || tokenValue || '—')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        previewBox.innerHTML = `
+          <div class="step4-preview-card">
+            <div class="step4-preview-title">Preview pendiente</div>
+            <div class="step4-preview-sub">
+              Captura tu token, completa el nombre y genera el preview antes de confirmar.
+            </div>
+          </div>
+        `;
+      }
+
+      confirmBox.innerHTML = canConfirm
+        ? `
+          <div class="step4-confirm-box">
+            <div class="step4-confirm-ready">Todo listo para confirmar</div>
+            <div class="step4-preview-sub">Tu token, nombre, aceptación legal y preview ya están completos.</div>
+          </div>
+        `
+        : `
+          <div class="step4-confirm-box">
+            <div class="step4-confirm-ready" style="color:#92400e;">Aún no listo para confirmar</div>
+            <div class="step4-preview-sub">
+              Completa los elementos pendientes y genera el preview válido.
+            </div>
+          </div>
+        `;
+
+      const confirmBtn = document.getElementById('confirmRegistrationBtn');
+      if (confirmBtn) {
+        confirmBtn.disabled = !canConfirm;
+        confirmBtn.textContent = canConfirm ? 'Confirmar inscripción' : 'Completa el preview primero';
+      }
+    }
+
+    function syncStep4InputsVisualState() {
+      const tokenInput = document.getElementById('projectTokenInput');
+      const nameInput = document.getElementById('acceptanceFullNameInput');
+      const legalInput = document.getElementById('legalVersionInput');
+      const checkbox = document.getElementById('acceptanceCheckbox');
+
+      if (tokenInput) {
+        tokenInput.classList.remove('input-ok', 'input-err');
+        if (tokenInput.value.trim()) tokenInput.classList.add('input-ok');
+      }
+
+      if (nameInput) {
+        nameInput.classList.remove('input-ok', 'input-err');
+        if (nameInput.value.trim()) nameInput.classList.add('input-ok');
+      }
+
+      if (legalInput) {
+        legalInput.classList.remove('input-ok', 'input-err');
+        if (legalInput.value.trim()) legalInput.classList.add('input-ok');
+      }
+
+      const checkboxWrap = checkbox?.closest('label');
+      if (checkboxWrap) {
+        checkboxWrap.style.opacity = checkbox?.checked ? '1' : '.8';
+      }
+    }
+
     function escapeHTML(value) {
       return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -1989,37 +2211,8 @@ INDEX_HTML = r"""
 
     function parseServerDateTime(value) {
       if (!value) return null;
-      if (value instanceof Date) return value;
-
-      const raw = String(value).trim();
-
-      // Si ya viene con Z o con offset, dejamos que JS lo procese
-      if (/[zZ]|[+\-]\d{2}:\d{2}$/.test(raw)) {
-        const isoDate = new Date(raw);
-        return Number.isNaN(isoDate.getTime()) ? null : isoDate;
-      }
-
-      // Esperado del backend: YYYY-MM-DD HH:MM:SS
-      const m = raw.match(
-        /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/
-      );
-
-      if (!m) {
-        const fallback = new Date(raw.replace(' ', 'T'));
-        return Number.isNaN(fallback.getTime()) ? null : fallback;
-      }
-
-      const [, y, mo, d, h, mi, s] = m;
-
-      // Interpretar como UTC para evitar desfase de 6 horas
-      return new Date(Date.UTC(
-        Number(y),
-        Number(mo) - 1,
-        Number(d),
-        Number(h),
-        Number(mi),
-        Number(s)
-      ));
+      const dt = new Date(value);
+      return Number.isNaN(dt.getTime()) ? null : dt;
     }
 
 
@@ -2955,9 +3148,11 @@ INDEX_HTML = r"""
 
         renderRequestInfo(data);
         updateHeroState();
+        renderJourneyState();
         syncRegistrationLock();
         syncStep4GateText();
-        renderJourneyState();
+        syncStep4InputsVisualState();
+        renderStep4PremiumState();
 
         // Cargar inmediatamente el estado vivo sin pedir refresh manual
         await loadStudentRequest().catch(() => {});
@@ -2997,6 +3192,8 @@ INDEX_HTML = r"""
         renderJourneyState();
         syncRegistrationLock();
         syncStep4GateText();
+        syncStep4InputsVisualState();
+        renderStep4PremiumState();
 
         if (oldStatus && oldStatus !== newStatus && newStatus === 'ACCESS_ENABLED') {
           showSmartToast('Acceso habilitado', 'Ya puedes continuar al paso de inscripción.');
@@ -3290,9 +3487,8 @@ INDEX_HTML = r"""
         ]);
 
         currentPreview = data;
-        renderPreview(data);
-        setCurrentStep(4);
-        updateHeroState();
+        renderStep4PremiumState();
+        syncStep4InputsVisualState();
         showMsg(data.message || 'Preview válido');
       } catch (e) {
         console.error(e);
@@ -3343,6 +3539,8 @@ INDEX_HTML = r"""
         };
 
         renderRegistrationSuccess(currentRegistration);
+        renderStep4PremiumState();
+        syncStep4InputsVisualState();
         clearCurrentPlainQrToken();
 
         await loadStudentRequest().catch(() => {});
@@ -3415,6 +3613,29 @@ INDEX_HTML = r"""
         bindStudentNav();
         bindCatalogFilters();
         bindRegistrationActions();
+
+        const enrolmentInput = document.getElementById('enrolmentInput');
+        if (enrolmentInput) {
+          enrolmentInput.addEventListener('input', () => {
+            normalizeEnrolmentInput();
+          });
+        }
+
+        [
+          'projectTokenInput',
+          'acceptanceFullNameInput',
+          'legalVersionInput',
+          'acceptanceCheckbox'
+        ].forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+
+          const evt = el.type === 'checkbox' ? 'change' : 'input';
+          el.addEventListener(evt, () => {
+            syncStep4InputsVisualState();
+            renderStep4PremiumState();
+          });
+        });
 
         await loadCatalogsForSeason().catch((e) => {
           console.error('loadCatalogsForSeason error:', e);

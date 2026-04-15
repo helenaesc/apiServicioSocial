@@ -3,7 +3,7 @@ from mysql.connector import Error
 from ..database import execute_tx, fetch_one
 import hashlib
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 student_pass_bp = Blueprint("student_pass", __name__)
 
@@ -26,7 +26,7 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _gen_pass_token(length=32) -> str:
+def _gen_pass_token(length: int = 40) -> str:
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789abcdefghijklmnopqrstuvwxyz"
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
@@ -36,7 +36,7 @@ def _get_pass_ttl_minutes(cur) -> int:
     row = cur.fetchone()
     try:
         return max(1, min(int(row["v"]), 15)) if row and row.get("v") else 5
-    except:
+    except Exception:
         return 5
 
 
@@ -47,7 +47,7 @@ def _expire_old_sessions(cur, request_id: int):
         SET status = 'EXPIRED'
         WHERE request_id = %s
           AND status = 'ACTIVE'
-          AND expires_at <= NOW()
+          AND expires_at <= UTC_TIMESTAMP()
         """,
         [request_id]
     )
@@ -58,7 +58,7 @@ def _revoke_active_sessions(cur, request_id: int):
         """
         UPDATE pass_sessions
         SET status = 'REVOKED',
-            revoked_at = NOW()
+            revoked_at = UTC_TIMESTAMP()
         WHERE request_id = %s
           AND status = 'ACTIVE'
         """,
@@ -66,11 +66,38 @@ def _revoke_active_sessions(cur, request_id: int):
     )
 
 
+def _to_iso_utc(dt_value):
+    if not dt_value:
+        return None
+
+    if dt_value.tzinfo is None:
+        dt_value = dt_value.replace(tzinfo=timezone.utc)
+    else:
+        dt_value = dt_value.astimezone(timezone.utc)
+
+    return dt_value.isoformat().replace("+00:00", "Z")
+
+
+def _serialize_pass_session(row: dict | None) -> dict | None:
+    if not row:
+        return None
+
+    return {
+        "id": row["id"],
+        "status": row["status"],
+        "issued_at": _to_iso_utc(row.get("issued_at")),
+        "expires_at": _to_iso_utc(row.get("expires_at")),
+        "used_at": _to_iso_utc(row.get("used_at")),
+        "revoked_at": _to_iso_utc(row.get("revoked_at")),
+        "refresh_count": row.get("refresh_count"),
+    }
+
+
 @student_pass_bp.get("/api/student/pass")
 def get_student_pass():
     enrolment_number = (request.args.get("enrolment_number") or "").strip().lower()
     season = _normalize_season(request.args.get("season") or request.args.get("temporada"))
-    
+
     if not enrolment_number:
         return jsonify({"error": "Matrícula es obligatoria"}), 400
 
@@ -125,25 +152,22 @@ def get_student_pass():
         FROM pass_sessions
         WHERE request_id = %s
           AND status = 'ACTIVE'
-          AND expires_at > NOW()
+          AND expires_at > UTC_TIMESTAMP()
         ORDER BY id DESC
         LIMIT 1
     """
     active_session = fetch_one(active_sql, [row["request_id"]])
-
-    can_register = row["request_status"] == "ACCESS_ENABLED"
-    needs_new_pass = row["request_status"] in ("REQUESTED", "VALIDATED")
-    request_closed = row["request_status"] in ("REGISTERED", "CANCELLED", "CLOSED")
+    serialized_active_session = _serialize_pass_session(active_session)
 
     return jsonify({
         "request": {
             "id": row["request_id"],
             "folio": row["folio"],
             "status": row["request_status"],
-            "requested_at": row["requested_at"],
-            "validated_at": row["validated_at"],
-            "access_enabled_at": row["access_enabled_at"],
-            "registered_at": row["registered_at"],
+            "requested_at": _to_iso_utc(row.get("requested_at")),
+            "validated_at": _to_iso_utc(row.get("validated_at")),
+            "access_enabled_at": _to_iso_utc(row.get("access_enabled_at")),
+            "registered_at": _to_iso_utc(row.get("registered_at")),
         },
         "event": {
             "id": row["event_id"],
@@ -162,13 +186,8 @@ def get_student_pass():
             "degree": row["degree"],
             "semester": row["semester"],
         },
-        "pass_session": active_session,
-        "active_session": active_session,
-        "flow": {
-            "can_register": can_register,
-            "needs_new_pass": needs_new_pass,
-            "request_closed": request_closed
-        }
+        "pass_session": serialized_active_session,
+        "active_session": serialized_active_session
     }), 200
 
 
@@ -247,15 +266,15 @@ def refresh_student_pass():
         plain_token = _gen_pass_token(40)
         token_hash = _sha256(plain_token)
         ttl_minutes = _get_pass_ttl_minutes(cur)
-        expires_at = datetime.now() + timedelta(minutes=ttl_minutes)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=ttl_minutes)
 
         cur.execute(
             """
             INSERT INTO pass_sessions
             (request_id, qr_token_hash, status, issued_at, expires_at, refresh_count)
-            VALUES (%s, %s, 'ACTIVE', NOW(), %s, %s)
+            VALUES (%s, %s, 'ACTIVE', UTC_TIMESTAMP(), %s, %s)
             """,
-            [row["request_id"], token_hash, expires_at, next_refresh_count]
+            [row["request_id"], token_hash, expires_at.replace(tzinfo=None), next_refresh_count]
         )
         session_id = cur.lastrowid
 
@@ -287,7 +306,7 @@ def refresh_student_pass():
             "pass_session": {
                 "id": session_id,
                 "plain_token": plain_token,
-                "expires_at": expires_at.isoformat(sep=" ", timespec="seconds"),
+                "expires_at": _to_iso_utc(expires_at),
                 "refresh_count": next_refresh_count,
                 "ttl_minutes": ttl_minutes
             }

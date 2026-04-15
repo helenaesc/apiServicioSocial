@@ -811,6 +811,603 @@ ADMIN_HTML = r"""
         width: 100%;
       }
     }
+
+    .dashboard-shell {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .health-hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, white 0%, var(--purple-soft) 100%);
+      border-radius: var(--r-xl);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .health-hero__head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .health-hero__title {
+      font-size: 1.06rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .health-hero__sub {
+      font-size: .92rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .health-score {
+      min-width: 120px;
+      text-align: center;
+      border-radius: 18px;
+      padding: 14px 16px;
+      background: white;
+      border: 1px solid var(--line);
+    }
+
+    .health-score__value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .health-score__label {
+      margin-top: 6px;
+      font-size: .78rem;
+      font-weight: 900;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .health-bars {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
+    .health-bar-card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: white;
+      padding: 14px;
+    }
+
+    .health-bar-card__top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .health-bar-card__title {
+      font-size: .84rem;
+      font-weight: 900;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .health-bar-card__value {
+      font-size: .92rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .project-priority {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: .74rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .project-priority.high {
+      background: var(--pink-soft);
+      color: var(--pink);
+    }
+
+    .project-priority.medium {
+      background: var(--orange-soft);
+      color: var(--orange);
+    }
+
+    .project-priority.low {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .action-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: .74rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .action-tag.high {
+      background: var(--pink-soft);
+      color: var(--pink);
+    }
+
+    .action-tag.medium {
+      background: var(--orange-soft);
+      color: var(--orange);
+    }
+
+    .action-tag.low {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .project-highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .project-highlight-card {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: var(--r-xl);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .project-highlight-card.primary {
+      background: linear-gradient(135deg, white 0%, var(--pink-soft) 100%);
+      border-color: #ffd5de;
+    }
+
+    .project-highlight-card.success {
+      background: linear-gradient(135deg, white 0%, var(--green-soft) 100%);
+      border-color: #d0eee3;
+    }
+
+    .project-highlight-card.info {
+      background: linear-gradient(135deg, white 0%, var(--blue-soft) 100%);
+      border-color: #dbeafe;
+    }
+
+    .project-highlight__kicker {
+      font-size: .76rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+
+    .project-highlight__title {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .project-highlight__sub {
+      font-size: .88rem;
+      color: var(--text-soft);
+      margin-bottom: 12px;
+    }
+
+    .project-highlight__value {
+      font-size: 1.9rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .project-highlight__meta {
+      margin-top: 10px;
+      font-size: .86rem;
+      color: var(--text-soft);
+    }
+
+    .record-card.clean-project {
+      display: grid;
+      gap: 12px;
+    }
+
+    .clean-project__top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .clean-project__title {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .clean-project__sub {
+      font-size: .9rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .clean-project__insight {
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: .88rem;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      color: var(--text);
+    }
+
+    .clean-project__metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .metric-chip {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: white;
+    }
+
+    .metric-chip__label {
+      display: block;
+      font-size: .74rem;
+      font-weight: 900;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 4px;
+    }
+
+    .metric-chip__value {
+      font-size: .96rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .cases-board {
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      background: white;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .cases-board__head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, #ffffff 0%, var(--orange-soft) 100%);
+    }
+
+    .cases-board__title {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .cases-board__sub {
+      font-size: .9rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .cases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .case-card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: white;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .case-card.high {
+      background: linear-gradient(135deg, white 0%, var(--pink-soft) 100%);
+      border-color: #ffd4dc;
+    }
+
+    .case-card.medium {
+      background: linear-gradient(135deg, white 0%, var(--orange-soft) 100%);
+      border-color: #ffd9c0;
+    }
+
+    .case-card.low {
+      background: linear-gradient(135deg, white 0%, var(--green-soft) 100%);
+      border-color: #d5efe6;
+    }
+
+    .case-card__top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .case-card__title {
+      font-size: .96rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .case-card__value {
+      font-size: 1.7rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .case-card__sub {
+      font-size: .88rem;
+      color: var(--text-soft);
+      line-height: 1.45;
+    }
+
+    .case-card__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .case-card__mini {
+      display: grid;
+      gap: 8px;
+    }
+
+    .case-mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: .86rem;
+      color: var(--text-soft);
+    }
+
+    .case-mini-row strong {
+      color: var(--text);
+    }
+
+    .support-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+      margin-bottom: 14px;
+    }
+
+    .support-mini-kpi {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: white;
+      box-shadow: var(--shadow-sm);
+      padding: 14px;
+    }
+
+    .support-mini-kpi__label {
+      font-size: .74rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--text-soft);
+      margin-bottom: 8px;
+    }
+
+    .support-mini-kpi__value {
+      font-size: 1.5rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .support-mini-kpi__sub {
+      font-size: .82rem;
+      color: var(--text-soft);
+      margin-top: 8px;
+    }
+
+    .support-student-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    .support-student__top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .support-student__name {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .support-student__sub {
+      font-size: .87rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .support-student__reason {
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .support-student__metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+    }
+
+    .support-metric {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+      padding: 10px 12px;
+    }
+
+    .support-metric__label {
+      display: block;
+      font-size: .73rem;
+      font-weight: 900;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 4px;
+    }
+
+    .support-metric__value {
+      font-size: .94rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .support-priority {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: .74rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .support-priority.high {
+      background: var(--pink-soft);
+      color: var(--pink);
+    }
+
+    .support-priority.medium {
+      background: var(--orange-soft);
+      color: var(--orange);
+    }
+
+    .support-priority.low {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .support-summary-wrap {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+      margin-bottom: 16px;
+    }
+
+    .support-summary-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .support-summary-title {
+      font-size: .88rem;
+      font-weight: 900;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .support-summary-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .support-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .support-mini-kpi {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: white;
+      box-shadow: var(--shadow-sm);
+      padding: 14px;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .support-mini-kpi.clickable {
+      cursor: pointer;
+    }
+
+    .support-mini-kpi.clickable:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--line-strong);
+    }
+
+    .support-mini-kpi.active {
+      border-color: color-mix(in srgb, var(--green) 35%, white);
+      background: linear-gradient(135deg, white 0%, var(--green-soft) 100%);
+    }
+
+    .support-filter-chip {
+      width: auto;
+      min-height: 36px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text-soft);
+      font-size: .82rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .support-filter-chip.active {
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: #cfeee3;
+    }
+
+    .support-results-wrap {
+      display: grid;
+      gap: 14px;
+    }
   </style>
 </head>
 <body>
@@ -963,8 +1560,13 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar temporadas</button>
             </div>
 
-            <div id="dashboardSummary" class="stats-grid"></div>
-            <div id="dashboardProjectsBody" class="record-grid"></div>
+            <div class="dashboard-shell">
+              <div id="dashboardSummary" class="stats-grid"></div>
+              <div id="dashboardHealthHero"></div>
+              <div id="dashboardCasesBoard"></div>
+              <div id="dashboardProjectsHighlights"></div>
+              <div id="dashboardProjectsBody" class="record-grid"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1003,7 +1605,10 @@ ADMIN_HTML = r"""
               <h2>Resultados</h2>
               <span class="screen-chip">Consulta</span>
             </div>
-            <div id="studentSupportResults" class="record-grid"></div>
+            <div id="studentSupportSummary"></div>
+            <div id="studentSupportResultsWrap" class="support-results-wrap">
+              <div id="studentSupportResults" class="record-grid"></div>
+            </div>
           </div>
 
           <div class="card span-5">
@@ -1755,6 +2360,7 @@ ADMIN_HTML = r"""
   let studentSupportCache = [];
   let selectedStudentSupport = null;
   let studentSupportSearchTimer = null;
+  let studentSupportActiveFilter = 'ALL';
 
   function clearStudentSupportSearch() {
     const q = document.getElementById('studentSupportSearch');
@@ -1762,11 +2368,13 @@ ADMIN_HTML = r"""
 
     studentSupportCache = [];
     selectedStudentSupport = null;
+    studentSupportActiveFilter = 'ALL';
     clearStudentSupportForm();
     renderStudentSupportDetail(null);
 
     const results = document.getElementById('studentSupportResults');
     const detail = document.getElementById('studentSupportDetail');
+    const summary = document.getElementById('studentSupportSummary');
     const hint = document.getElementById('studentSupportSelectedHint');
 
     if (results) {
@@ -1774,6 +2382,10 @@ ADMIN_HTML = r"""
         'Sin búsqueda',
         'Escribe matrícula, folio, nombre o correo.'
       );
+    }
+
+    if (summary) {
+      summary.innerHTML = "";
     }
 
     if (detail) {
@@ -1808,6 +2420,299 @@ ADMIN_HTML = r"""
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+  }
+
+  function getStudentSupportPriority(item) {
+    const requestStatus = String(item?.request_status || '').toUpperCase();
+    const passStatus = String(item?.active_pass_status || '').toUpperCase();
+
+    if (requestStatus === 'ACCESS_ENABLED') {
+      return { cls: 'high', label: 'Cierre pendiente' };
+    }
+
+    if (requestStatus === 'VALIDATED') {
+      return { cls: 'medium', label: 'Listo para habilitar' };
+    }
+
+    if (requestStatus === 'REQUESTED' && !item?.active_pass_session_id) {
+      return { cls: 'medium', label: 'Sin pase' };
+    }
+
+    if (requestStatus === 'CANCELLED') {
+      return { cls: 'medium', label: 'Baja aplicada' };
+    }
+
+    if (passStatus === 'REVOKED' || passStatus === 'EXPIRED') {
+      return { cls: 'medium', label: 'Pase no vigente' };
+    }
+
+    return { cls: 'low', label: 'Estable' };
+  }
+
+  function getStudentSupportReason(item) {
+    const requestStatus = String(item?.request_status || '').toUpperCase();
+    const passStatus = String(item?.active_pass_status || '').toUpperCase();
+
+    if (requestStatus === 'ACCESS_ENABLED') {
+      return 'Ya tiene acceso habilitado, pero todavía no concluye la inscripción.';
+    }
+
+    if (requestStatus === 'VALIDATED') {
+      return 'Ya fue validado presencialmente y conviene revisar la habilitación final.';
+    }
+
+    if (requestStatus === 'REQUESTED' && !item?.active_pass_session_id) {
+      return 'La solicitud existe, pero aún no tiene pase activo generado.';
+    }
+
+    if (requestStatus === 'REQUESTED' && passStatus === 'ACTIVE') {
+      return 'Ya tiene pase vigente. El siguiente paso es el check-in presencial.';
+    }
+
+    if (requestStatus === 'CANCELLED') {
+      return 'La solicitud quedó dada de baja. Solo requiere acción si se reabre el flujo.';
+    }
+
+    if (passStatus === 'REVOKED') {
+      return 'El pase fue revocado. Puede requerir regeneración o revisión de soporte.';
+    }
+
+    if (passStatus === 'EXPIRED') {
+      return 'El pase expiró. Probablemente necesite un nuevo flujo presencial.';
+    }
+
+    if (requestStatus === 'REGISTERED') {
+      return 'El alumno ya cerró correctamente su inscripción.';
+    }
+
+    return 'Caso visible para seguimiento general.';
+  }
+
+  function sortStudentSupportItems(items) {
+    const order = { high: 0, medium: 1, low: 2 };
+    return [...(items || [])].sort((a, b) => {
+      const pa = getStudentSupportPriority(a);
+      const pb = getStudentSupportPriority(b);
+
+      if (order[pa.cls] !== order[pb.cls]) {
+        return order[pa.cls] - order[pb.cls];
+      }
+
+      const aTime = new Date(
+        a?.access_enabled_at || a?.validated_at || a?.requested_at || 0
+      ).getTime();
+
+      const bTime = new Date(
+        b?.access_enabled_at || b?.validated_at || b?.requested_at || 0
+      ).getTime();
+
+      return bTime - aTime;
+    });
+  }
+
+  function renderStudentSupportSummary(items) {
+    const box = document.getElementById('studentSupportSummary');
+    if (!box) return;
+
+    const list = items || [];
+
+    const countByRequest = (status) =>
+      list.filter(x => String(x?.request_status || '').toUpperCase() === status).length;
+
+    const countByPass = (status) =>
+      list.filter(x => String(x?.active_pass_status || '').toUpperCase() === status).length;
+
+    const requested = countByRequest('REQUESTED');
+    const validated = countByRequest('VALIDATED');
+    const accessEnabled = countByRequest('ACCESS_ENABLED');
+    const registered = countByRequest('REGISTERED');
+    const cancelled = countByRequest('CANCELLED');
+    const activePass = countByPass('ACTIVE');
+    const noPass = list.filter(x => !x?.active_pass_session_id).length;
+
+    const active = String(studentSupportActiveFilter || 'ALL').toUpperCase();
+
+    box.innerHTML = list.length ? `
+      <div class="support-summary-wrap">
+        <div class="support-summary-toolbar">
+          <div class="support-summary-title">Resumen operativo rápido</div>
+          <div class="support-summary-actions">
+            <button
+              type="button"
+              class="support-filter-chip ${active === 'ALL' ? 'active' : ''}"
+              onclick="setStudentSupportFilter('ALL')"
+            >
+              Ver todos
+            </button>
+          </div>
+        </div>
+
+        <div class="support-summary-grid">
+          <div
+            class="support-mini-kpi clickable ${active === 'REQUESTED' ? 'active' : ''}"
+            onclick="setStudentSupportFilter('REQUESTED')"
+          >
+            <div class="support-mini-kpi__label">Requested</div>
+            <div class="support-mini-kpi__value">${requested}</div>
+            <div class="support-mini-kpi__sub">Solicitud creada</div>
+          </div>
+
+          <div
+            class="support-mini-kpi clickable ${active === 'VALIDATED' ? 'active' : ''}"
+            onclick="setStudentSupportFilter('VALIDATED')"
+          >
+            <div class="support-mini-kpi__label">Validated</div>
+            <div class="support-mini-kpi__value">${validated}</div>
+            <div class="support-mini-kpi__sub">Listos para habilitar</div>
+          </div>
+
+          <div
+            class="support-mini-kpi clickable ${active === 'ACCESS_ENABLED' ? 'active' : ''}"
+            onclick="setStudentSupportFilter('ACCESS_ENABLED')"
+          >
+            <div class="support-mini-kpi__label">Access enabled</div>
+            <div class="support-mini-kpi__value">${accessEnabled}</div>
+            <div class="support-mini-kpi__sub">Pendientes de cierre</div>
+          </div>
+
+          <div
+            class="support-mini-kpi clickable ${active === 'REGISTERED' ? 'active' : ''}"
+            onclick="setStudentSupportFilter('REGISTERED')"
+          >
+            <div class="support-mini-kpi__label">Registered</div>
+            <div class="support-mini-kpi__value">${registered}</div>
+            <div class="support-mini-kpi__sub">Ya cerrados</div>
+          </div>
+
+          <div
+            class="support-mini-kpi clickable ${active === 'CANCELLED' ? 'active' : ''}"
+            onclick="setStudentSupportFilter('CANCELLED')"
+          >
+            <div class="support-mini-kpi__label">Cancelled</div>
+            <div class="support-mini-kpi__value">${cancelled}</div>
+            <div class="support-mini-kpi__sub">Bajas aplicadas</div>
+          </div>
+
+          <div
+            class="support-mini-kpi clickable ${active === 'PASS_ACTIVE' ? 'active' : ''}"
+            onclick="setStudentSupportFilter('PASS_ACTIVE')"
+          >
+            <div class="support-mini-kpi__label">Pase activo</div>
+            <div class="support-mini-kpi__value">${activePass}</div>
+            <div class="support-mini-kpi__sub">Sesión vigente</div>
+          </div>
+
+          <div
+            class="support-mini-kpi clickable ${active === 'NO_PASS' ? 'active' : ''}"
+            onclick="setStudentSupportFilter('NO_PASS')"
+          >
+            <div class="support-mini-kpi__label">Sin pase</div>
+            <div class="support-mini-kpi__value">${noPass}</div>
+            <div class="support-mini-kpi__sub">Requieren soporte</div>
+          </div>
+
+          <div class="support-mini-kpi">
+            <div class="support-mini-kpi__label">Resultados</div>
+            <div class="support-mini-kpi__value">${list.length}</div>
+            <div class="support-mini-kpi__sub">Total visibles en búsqueda</div>
+          </div>
+        </div>
+      </div>
+    ` : '';
+  }
+
+  function renderStudentSupportResultCard(item) {
+    const priority = getStudentSupportPriority(item);
+    const reason = getStudentSupportReason(item);
+
+    return `
+      <div class="record-card support-student-card">
+        <div class="support-student__top">
+          <div>
+            <div class="support-student__name">${escapeHTML(item.full_name || 'Alumno')}</div>
+            <div class="support-student__sub">
+              ${escapeHTML(item.enrolment_number || '—')} · ${escapeHTML(item.email || '—')}
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <span class="support-priority ${priority.cls}">${priority.label}</span>
+            ${statusBadge(item.request_status || '—')}
+            ${item.active_pass_status ? statusBadge(item.active_pass_status) : '<span class="badge badge-neutral">SIN PASE</span>'}
+          </div>
+        </div>
+
+        <div class="support-student__reason">${escapeHTML(reason)}</div>
+
+        <div class="support-student__metrics">
+          <div class="support-metric">
+            <span class="support-metric__label">Folio</span>
+            <div class="support-metric__value">${escapeHTML(item.folio || '—')}</div>
+          </div>
+          <div class="support-metric">
+            <span class="support-metric__label">Temporada</span>
+            <div class="support-metric__value">${escapeHTML(item.display_name || '—')}</div>
+          </div>
+          <div class="support-metric">
+            <span class="support-metric__label">Carrera</span>
+            <div class="support-metric__value">${escapeHTML(item.degree || '—')}</div>
+          </div>
+          <div class="support-metric">
+            <span class="support-metric__label">Pase actual</span>
+            <div class="support-metric__value">${escapeHTML(item.active_pass_expires_at || 'Sin sesión')}</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-primary" onclick="selectStudentSupport(${Number(item.request_id)})">
+            Seleccionar
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function getFilteredStudentSupportItems(items, filter) {
+    const list = items || [];
+    const current = String(filter || 'ALL').toUpperCase();
+
+    if (current === 'ALL') return list;
+
+    if (current === 'NO_PASS') {
+      return list.filter(x => !x?.active_pass_session_id);
+    }
+
+    if (current === 'PASS_ACTIVE') {
+      return list.filter(x => String(x?.active_pass_status || '').toUpperCase() === 'ACTIVE');
+    }
+
+    return list.filter(x => String(x?.request_status || '').toUpperCase() === current);
+  }
+
+  function setStudentSupportFilter(filter) {
+    studentSupportActiveFilter = String(filter || 'ALL').toUpperCase();
+    rerenderStudentSupportResults();
+  }
+
+  function rerenderStudentSupportResults() {
+    const results = document.getElementById('studentSupportResults');
+    const summary = document.getElementById('studentSupportSummary');
+
+    if (!results) return;
+
+    const base = studentSupportCache || [];
+    const filtered = getFilteredStudentSupportItems(base, studentSupportActiveFilter);
+
+    renderStudentSupportSummary(base);
+
+    if (!filtered.length) {
+      results.innerHTML = renderEmptyCard(
+        'Sin resultados para este filtro',
+        'Prueba otro filtro o vuelve a “Ver todos”.'
+      );
+      return;
+    }
+
+    results.innerHTML = filtered.map(item => renderStudentSupportResultCard(item)).join('');
   }
 
   function fillStudentSupportForm(item) {
@@ -1937,7 +2842,7 @@ ADMIN_HTML = r"""
     const q = (document.getElementById('studentSupportSearch')?.value || '').trim();
     const eventId = document.getElementById('studentSupportEventSelector')?.value;
     const results = document.getElementById('studentSupportResults');
-
+    const summary = document.getElementById('studentSupportSummary');
     if (!results) return;
 
     if (!q && !eventId) {
@@ -1952,14 +2857,15 @@ ADMIN_HTML = r"""
       if (eventId) params.set('event_id', eventId);
 
       const data = await apiGet(`/api/admin/student-support/search?${params.toString()}`);
-      const items = data.items || [];
-
+      const items = sortStudentSupportItems(data.items || []);
       studentSupportCache = items;
       selectedStudentSupport = null;
+      studentSupportActiveFilter = 'ALL';
       clearStudentSupportForm();
       renderStudentSupportDetail(null);
 
       if (!items.length) {
+        if (summary) summary.innerHTML = '';
         results.innerHTML = renderEmptyCard(
           'Sin resultados',
           'No encontramos alumnos o solicitudes con esa búsqueda.'
@@ -1967,32 +2873,8 @@ ADMIN_HTML = r"""
         return showMsg('No se encontraron resultados', false);
       }
 
-      results.innerHTML = items.map(item => `
-        <div class="record-card">
-          <div class="record-card__head">
-            <div>
-              <div class="record-card__title">${escapeHTML(item.full_name || 'Alumno')}</div>
-              <div class="record-card__sub">
-                ${escapeHTML(item.enrolment_number || '—')} · ${escapeHTML(item.email || '—')}
-              </div>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              ${statusBadge(item.request_status || '—')}
-              ${item.active_pass_status ? statusBadge(item.active_pass_status) : '<span class="badge badge-neutral">SIN PASE</span>'}
-            </div>
-          </div>
-          <div class="record-stack">
-            <div class="stack-row"><strong>Folio:</strong><span>${escapeHTML(item.folio || '—')}</span></div>
-            <div class="stack-row"><strong>Temporada:</strong><span>${escapeHTML(item.display_name || '—')}</span></div>
-            <div class="stack-row"><strong>Teléfono:</strong><span>${escapeHTML(item.phone_number || '—')}</span></div>
-            <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(item.degree || '—')}</span></div>
-            <div class="stack-row"><strong>Pase actual:</strong><span>${escapeHTML(item.active_pass_expires_at || 'Sin sesión')}</span></div>
-          </div>
-          <div class="actions">
-            <button type="button" class="btn-primary" onclick="selectStudentSupport(${Number(item.request_id)})">Seleccionar</button>
-          </div>
-        </div>
-      `).join('');
+      renderStudentSupportSummary(items);
+      rerenderStudentSupportResults();
 
       showMsg('Resultados cargados correctamente');
     } catch (e) {
@@ -2392,6 +3274,425 @@ ADMIN_HTML = r"""
         </div>
         <div class="xp-bar-bg">
           <div class="xp-bar-fill ${levelUpClass}" style="width:${porcentajeSeguro}%"></div>
+        </div>
+      </div>
+    `;
+  }
+  
+  function clampPercent(value) {
+    const n = Number(value || 0);
+    if (Number.isNaN(n)) return 0;
+    return Math.max(0, Math.min(100, Math.round(n)));
+  }
+
+  function getDashboardHealthScore(summary, projects) {
+    const requests = summary?.requests || {};
+    const incidents = summary?.incidents || {};
+    const items = Array.isArray(projects) ? projects : [];
+
+    const registered = Number(requests.registered || 0);
+    const accessEnabled = Number(requests.access_enabled || 0);
+    const openIncidents = Number(incidents.open || 0);
+
+    const totalSlots = items.reduce((acc, p) => acc + Number(p.slots_total || 0), 0);
+    const totalRegistered = items.reduce((acc, p) => acc + Number(p.registered_count || 0), 0);
+    const occupancy = totalSlots > 0 ? (totalRegistered / totalSlots) * 100 : 0;
+
+    let score = 100;
+    score -= Math.min(openIncidents * 8, 32);
+    score -= Math.min(accessEnabled * 2, 20);
+
+    if (occupancy < 25) score -= 18;
+    else if (occupancy < 50) score -= 10;
+    else if (occupancy >= 85) score += 4;
+
+    if (registered === 0 && totalSlots > 0) score -= 15;
+
+    return Math.max(0, Math.min(100, Math.round(score)));
+  }
+
+  function getHealthTone(score) {
+    if (score >= 80) return { label: 'Salud alta', tone: 'ok' };
+    if (score >= 55) return { label: 'Salud media', tone: 'warn' };
+    return { label: 'Salud crítica', tone: 'danger' };
+  }
+
+  function getProjectPriority(project) {
+    const slots = Number(project?.slots_total || 0);
+    const registered = Number(project?.registered_count || 0);
+    const openSeats = Math.max(0, slots - registered);
+    const occupancy = slots > 0 ? (registered / slots) * 100 : 0;
+    const status = String(project?.event_project_status || '').toUpperCase();
+
+    if (status !== 'ACTIVE') {
+      return { label: 'No activo', cls: 'medium' };
+    }
+    if (openSeats <= 1 || occupancy >= 90) {
+      return { label: 'Alta atención', cls: 'high' };
+    }
+    if (occupancy >= 60) {
+      return { label: 'Seguimiento', cls: 'medium' };
+    }
+    return { label: 'Estable', cls: 'low' };
+  }
+
+  function renderDashboardHealthHero(summary, projects) {
+    const requests = summary?.requests || {};
+    const incidents = summary?.incidents || {};
+    const items = Array.isArray(projects) ? projects : [];
+
+    const score = getDashboardHealthScore(summary, items);
+    const tone = getHealthTone(score);
+
+    const totalSlots = items.reduce((acc, p) => acc + Number(p.slots_total || 0), 0);
+    const totalRegistered = items.reduce((acc, p) => acc + Number(p.registered_count || 0), 0);
+    const occupancy = totalSlots > 0 ? Math.round((totalRegistered / totalSlots) * 100) : 0;
+
+    return `
+      <div class="health-hero">
+        <div class="health-hero__head">
+          <div>
+            <div class="health-hero__title">Salud operativa de la temporada</div>
+            <div class="health-hero__sub">
+              Lectura rápida del evento para saber si todo está fluyendo o si ya requiere intervención.
+            </div>
+          </div>
+          <div class="health-score">
+            <div class="health-score__value">${score}</div>
+            <div class="health-score__label">${tone.label}</div>
+          </div>
+        </div>
+
+        <div class="health-bars">
+          <div class="health-bar-card">
+            <div class="health-bar-card__top">
+              <span class="health-bar-card__title">Ocupación total</span>
+              <span class="health-bar-card__value">${occupancy}%</span>
+            </div>
+            <div class="xp-bar-bg">
+              <div class="xp-bar-fill ${occupancy >= 100 ? 'level-up' : ''}" style="width:${clampPercent(occupancy)}%"></div>
+            </div>
+          </div>
+
+          <div class="health-bar-card">
+            <div class="health-bar-card__top">
+              <span class="health-bar-card__title">Access enabled</span>
+              <span class="health-bar-card__value">${requests.access_enabled || 0}</span>
+            </div>
+            <div class="small">Alumnos ya validados pero que aún no cierran inscripción.</div>
+          </div>
+
+          <div class="health-bar-card">
+            <div class="health-bar-card__top">
+              <span class="health-bar-card__title">Incidentes abiertos</span>
+              <span class="health-bar-card__value">${incidents.open || 0}</span>
+            </div>
+            <div class="small">Casos que siguen activos y pueden frenar la operación.</div>
+          </div>
+
+          <div class="health-bar-card">
+            <div class="health-bar-card__top">
+              <span class="health-bar-card__title">Proyectos activos</span>
+              <span class="health-bar-card__value">${items.length}</span>
+            </div>
+            <div class="small">Proyectos vivos dentro de la temporada seleccionada.</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function getProjectOccupancy(project) {
+    const slots = Number(project?.slots_total || 0);
+    const registered = Number(project?.registered_count || 0);
+    return slots > 0 ? (registered / slots) * 100 : 0;
+  }
+
+  function getProjectInsight(project) {
+    const slots = Number(project?.slots_total || 0);
+    const registered = Number(project?.registered_count || 0);
+    const available = Math.max(0, slots - registered);
+    const occupancy = getProjectOccupancy(project);
+    const status = String(project?.event_project_status || '').toUpperCase();
+
+    if (status !== 'ACTIVE') return 'Proyecto no activo en este momento.';
+    if (slots === 0) return 'Sin cupos configurados.';
+    if (occupancy >= 95) return 'Prácticamente lleno. Requiere vigilancia inmediata.';
+    if (occupancy >= 80) return 'Muy alta demanda. Conviene monitorear cierres.';
+    if (occupancy >= 55) return 'Flujo sano y avance constante.';
+    if (registered === 0) return 'Sin registros todavía. Revisar visibilidad o demanda.';
+    if (available >= slots * 0.7) return 'Todavía tiene mucho espacio disponible.';
+    return 'Avance estable.';
+  }
+
+  function sortProjectsForDashboard(projects) {
+    const items = Array.isArray(projects) ? [...projects] : [];
+
+    return items.sort((a, b) => {
+      const pa = getProjectPriority(a);
+      const pb = getProjectPriority(b);
+
+      const order = { high: 0, medium: 1, low: 2 };
+      if (order[pa.cls] !== order[pb.cls]) {
+        return order[pa.cls] - order[pb.cls];
+      }
+
+      const occA = getProjectOccupancy(a);
+      const occB = getProjectOccupancy(b);
+      if (occA !== occB) return occB - occA;
+
+      const regA = Number(a?.registered_count || 0);
+      const regB = Number(b?.registered_count || 0);
+      return regB - regA;
+    });
+  }
+
+  function renderDashboardProjectHighlights(projects) {
+    const items = sortProjectsForDashboard(projects);
+    if (!items.length) {
+      return renderEmptyCard('Sin proyectos', 'No hay proyectos para resumir en esta temporada.');
+    }
+
+    const mostSaturated = [...items].sort((a, b) => getProjectOccupancy(b) - getProjectOccupancy(a))[0];
+    const mostRegistered = [...items].sort((a, b) => Number(b.registered_count || 0) - Number(a.registered_count || 0))[0];
+    const mostOpen = [...items].sort((a, b) => Number(b.cupos_disponibles || 0) - Number(a.cupos_disponibles || 0))[0];
+
+    return `
+      <div class="project-highlight-grid">
+        <div class="project-highlight-card primary">
+          <div class="project-highlight__kicker">Mayor presión</div>
+          <div class="project-highlight__title">${escapeHTML(mostSaturated?.project_name || '—')}</div>
+          <div class="project-highlight__sub">${escapeHTML(mostSaturated?.partner_name || 'Sin carrera preferida')}</div>
+          <div class="project-highlight__value">${Math.round(getProjectOccupancy(mostSaturated))}%</div>
+          <div class="project-highlight__meta">Proyecto con mayor ocupación relativa.</div>
+        </div>
+
+        <div class="project-highlight-card success">
+          <div class="project-highlight__kicker">Más cierres / registros</div>
+          <div class="project-highlight__title">${escapeHTML(mostRegistered?.project_name || '—')}</div>
+          <div class="project-highlight__sub">${escapeHTML(mostRegistered?.partner_name || 'Sin carrera preferida')}</div>
+          <div class="project-highlight__value">${escapeHTML(mostRegistered?.registered_count || 0)}</div>
+          <div class="project-highlight__meta">Proyecto que más alumnos ha absorbido.</div>
+        </div>
+
+        <div class="project-highlight-card info">
+          <div class="project-highlight__kicker">Mayor oportunidad</div>
+          <div class="project-highlight__title">${escapeHTML(mostOpen?.project_name || '—')}</div>
+          <div class="project-highlight__sub">${escapeHTML(mostOpen?.partner_name || 'Sin carrera preferida')}</div>
+          <div class="project-highlight__value">${escapeHTML(mostOpen?.cupos_disponibles || 0)}</div>
+          <div class="project-highlight__meta">Proyecto con más espacio disponible.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDashboardProjectCard(project) {
+    const priority = getProjectPriority(project);
+    const occupancy = Math.round(getProjectOccupancy(project));
+    const insight = getProjectInsight(project);
+
+    return `
+      <div class="record-card clean-project">
+        <div class="clean-project__top">
+          <div>
+            <div class="clean-project__title">${escapeHTML(project.project_name || '—')}</div>
+            <div class="clean-project__sub">${escapeHTML(project.partner_name || 'Sin carrera preferida')}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <span class="project-priority ${priority.cls}">${priority.label}</span>
+            ${statusBadge(project.event_project_status)}
+          </div>
+        </div>
+
+        <div class="clean-project__insight">${escapeHTML(insight)}</div>
+
+        <div class="clean-project__metrics">
+          <div class="metric-chip">
+            <span class="metric-chip__label">Ocupación</span>
+            <div class="metric-chip__value">${occupancy}%</div>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Registrados</span>
+            <div class="metric-chip__value">${escapeHTML(project.registered_count || 0)}</div>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Disponibles</span>
+            <div class="metric-chip__value">${escapeHTML(project.cupos_disponibles || 0)}</div>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Tokens usados</span>
+            <div class="metric-chip__value">${escapeHTML(project.tokens_used || 0)}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:4px;">
+          ${renderXPBar(project.registered_count || 0, project.slots_total || 0)}
+        </div>
+      </div>
+    `;
+  }
+
+  function openDashboardModule(moduleId) {
+    showModule(moduleId);
+  }
+
+  function getDashboardCases(summary, projects) {
+    const requests = summary?.requests || {};
+    const incidents = summary?.incidents || {};
+    const items = Array.isArray(projects) ? projects : [];
+
+    const accessEnabled = Number(requests.access_enabled || 0);
+    const validated = Number(requests.validated || 0);
+    const registered = Number(requests.registered || 0);
+    const openIncidents = Number(incidents.open || 0);
+
+    const nearlyFullProjects = items
+      .map(p => ({
+        ...p,
+        occupancy: getProjectOccupancy(p)
+      }))
+      .filter(p => p.occupancy >= 90)
+      .sort((a, b) => b.occupancy - a.occupancy)
+      .slice(0, 3);
+
+    const lowTractionProjects = items
+      .map(p => ({
+        ...p,
+        occupancy: getProjectOccupancy(p)
+      }))
+      .filter(p => Number(p.event_project_status || '') === 0 || true)
+      .filter(p => p.occupancy <= 25)
+      .sort((a, b) => a.occupancy - b.occupancy)
+      .slice(0, 3);
+
+    return [
+      {
+        priority: openIncidents > 0 ? 'high' : 'low',
+        title: 'Incidentes que requieren atención',
+        value: openIncidents,
+        subtitle: openIncidents > 0
+          ? 'Hay casos activos que conviene resolver antes de que contaminen la operación.'
+          : 'No hay incidentes abiertos en este momento.',
+        ctaLabel: 'Ir a Incidentes',
+        ctaAction: "openDashboardModule('incidentsModule')",
+        rows: [
+          ['Estado', openIncidents > 0 ? 'Atención inmediata' : 'Controlado'],
+          ['Módulo', 'Incidentes']
+        ]
+      },
+      {
+        priority: accessEnabled > 0 ? 'high' : 'low',
+        title: 'Alumnos con acceso habilitado sin cierre',
+        value: accessEnabled,
+        subtitle: accessEnabled > 0
+          ? 'Ya pueden cerrar inscripción, pero siguen sin convertir.'
+          : 'No hay alumnos pendientes entre acceso y cierre.',
+        ctaLabel: 'Ir a Solicitudes y Pases',
+        ctaAction: "openDashboardModule('studentSupportModule')",
+        rows: [
+          ['Estado', accessEnabled > 0 ? 'Fuga de conversión' : 'Sano'],
+          ['Módulo', 'Solicitudes y Pases']
+        ]
+      },
+      {
+        priority: validated > 0 ? 'medium' : 'low',
+        title: 'Validados pendientes de habilitar',
+        value: validated,
+        subtitle: validated > 0
+          ? 'Ya pasaron validación presencial, pero todavía no avanzan al cierre.'
+          : 'No hay alumnos atascados en validación.',
+        ctaLabel: 'Ir a Check-in',
+        ctaAction: "openDashboardModule('checkinModule')",
+        rows: [
+          ['Siguiente paso', validated > 0 ? 'ACCESS_ENABLED' : '—'],
+          ['Módulo', 'Check-in']
+        ]
+      },
+      {
+        priority: nearlyFullProjects.length > 0 ? 'medium' : 'low',
+        title: 'Proyectos casi saturados',
+        value: nearlyFullProjects.length,
+        subtitle: nearlyFullProjects.length > 0
+          ? 'Conviene vigilar estos proyectos antes de que revienten cupo.'
+          : 'No hay proyectos en saturación crítica.',
+        ctaLabel: 'Ver Proyectos',
+        ctaAction: "openDashboardModule('eventProjectsModule')",
+        rows: nearlyFullProjects.length
+          ? nearlyFullProjects.map(p => [p.project_name, `${Math.round(p.occupancy)}%`])
+          : [['Estado', 'Sin riesgo inmediato']]
+      },
+      {
+        priority: registered === 0 ? 'medium' : 'low',
+        title: 'Conversión global',
+        value: registered,
+        subtitle: registered === 0
+          ? 'Todavía no hay cierres reales. Conviene revisar el embudo completo.'
+          : 'La temporada ya está convirtiendo en registros finales.',
+        ctaLabel: 'Ver Inscritos',
+        ctaAction: "openDashboardModule('registrationsModule')",
+        rows: [
+          ['Registrados', registered],
+          ['Lectura', registered === 0 ? 'Sin cierres' : 'Convirtiendo']
+        ]
+      },
+      {
+        priority: lowTractionProjects.length > 0 ? 'medium' : 'low',
+        title: 'Proyectos con baja tracción',
+        value: lowTractionProjects.length,
+        subtitle: lowTractionProjects.length > 0
+          ? 'Tienen baja ocupación relativa y podrían requerir empuje o revisión.'
+          : 'No hay proyectos con alerta temprana de baja tracción.',
+        ctaLabel: 'Ver Dashboard',
+        ctaAction: "openDashboardModule('summaryModule')",
+        rows: lowTractionProjects.length
+          ? lowTractionProjects.map(p => [p.project_name, `${Math.round(p.occupancy)}%`])
+          : [['Estado', 'Sin alertas']]
+      }
+    ];
+  }
+
+  function renderDashboardCasesBoard(summary, projects) {
+    const cases = getDashboardCases(summary, projects);
+
+    return `
+      <div class="cases-board">
+        <div class="cases-board__head">
+          <div>
+            <div class="cases-board__title">Casos que requieren intervención</div>
+            <div class="cases-board__sub">
+              Lectura operativa rápida para decidir dónde actuar primero.
+            </div>
+          </div>
+        </div>
+
+        <div class="cases-grid">
+          ${cases.map(item => `
+            <div class="case-card ${item.priority}">
+              <div class="case-card__top">
+                <div>
+                  <div class="case-card__title">${escapeHTML(item.title)}</div>
+                </div>
+                <div class="case-card__value">${escapeHTML(item.value)}</div>
+              </div>
+
+              <div class="case-card__sub">${escapeHTML(item.subtitle)}</div>
+
+              <div class="case-card__mini">
+                ${(item.rows || []).map(([label, value]) => `
+                  <div class="case-mini-row">
+                    <strong>${escapeHTML(label)}</strong>
+                    <span>${escapeHTML(value)}</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="case-card__actions">
+                <button type="button" class="btn-secondary" onclick="${item.ctaAction}">
+                  ${escapeHTML(item.ctaLabel)}
+                </button>
+              </div>
+            </div>
+          `).join('')}
         </div>
       </div>
     `;
@@ -2954,13 +4255,20 @@ ADMIN_HTML = r"""
   async function loadDashboard() {
     const selector = document.getElementById('dashboardEventSelector');
     const summaryBox = document.getElementById('dashboardSummary');
+    const healthHero = document.getElementById('dashboardHealthHero');
+    const casesBoard = document.getElementById('dashboardCasesBoard');
+    const highlights = document.getElementById('dashboardProjectsHighlights');
     const body = document.getElementById('dashboardProjectsBody');
 
-    if (!selector || !summaryBox || !body) return;
+    if (!selector || !summaryBox || !healthHero || !casesBoard || !highlights || !body) return;
 
     const eventId = selector.value;
+
     if (!eventId) {
       summaryBox.innerHTML = '';
+      healthHero.innerHTML = '';
+      casesBoard.innerHTML = '';
+      highlights.innerHTML = '';
       body.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás ver el dashboard.');
       return;
     }
@@ -2975,55 +4283,50 @@ ADMIN_HTML = r"""
 
       summaryBox.innerHTML = `
         <div class="kpi-card kpi-card--green">
-          <div class="kpi-label">Total Inscritos</div>
+          <div class="kpi-label">Total inscritos</div>
           <div class="kpi-value">${requests.registered || 0}</div>
           <div class="kpi-sub">Alumnos con cierre final</div>
         </div>
+
         <div class="kpi-card kpi-card--orange">
-          <div class="kpi-label">Access Enabled</div>
+          <div class="kpi-label">Access enabled</div>
           <div class="kpi-value">${requests.access_enabled || 0}</div>
           <div class="kpi-sub">Listos para registrar</div>
         </div>
+
         <div class="kpi-card kpi-card--purple">
           <div class="kpi-label">Proyectos</div>
           <div class="kpi-value">${items.length}</div>
           <div class="kpi-sub">Activos en temporada</div>
         </div>
+
         <div class="kpi-card kpi-card--pink">
-          <div class="kpi-label">Incidentes</div>
+          <div class="kpi-label">Incidentes abiertos</div>
           <div class="kpi-value">${incidents.open || 0}</div>
           <div class="kpi-sub">Pendientes de resolver</div>
         </div>
+
+        <div class="kpi-card kpi-card--blue">
+          <div class="kpi-label">Validated</div>
+          <div class="kpi-value">${requests.validated || 0}</div>
+          <div class="kpi-sub">Ya validados por staff</div>
+        </div>
       `;
 
-      body.innerHTML = items.length
-        ? items.map(p => `
-            <div class="record-card">
-              <div class="record-card__head">
-                <div>
-                  <div class="record-card__title">${escapeHTML(p.project_name || '—')}</div>
-                  <div class="record-card__sub">${escapeHTML(p.partner_name || 'Sin carrera preferida')}</div>
-                </div>
-                <div>${statusBadge(p.event_project_status)}</div>
-              </div>
+      const sortedItems = sortProjectsForDashboard(items);
 
-              <div class="record-stack">
-                <div class="stack-row"><strong>Slots:</strong><span>${escapeHTML(p.slots_total || 0)}</span></div>
-                <div class="stack-row"><strong>Registrados:</strong><span>${escapeHTML(p.registered_count || 0)}</span></div>
-                <div class="stack-row"><strong>Disponibles:</strong><span>${escapeHTML(p.cupos_disponibles || 0)}</span></div>
-                <div class="stack-row"><strong>Tokens usados:</strong><span>${escapeHTML(p.tokens_used || 0)}</span></div>
-                <div class="stack-row"><strong>Revocados:</strong><span>${escapeHTML(p.tokens_revoked || 0)}</span></div>
-                <div class="stack-row"><strong>Expirados:</strong><span>${escapeHTML(p.tokens_expired || 0)}</span></div>
-              </div>
+      healthHero.innerHTML = renderDashboardHealthHero(summary, sortedItems);
+      casesBoard.innerHTML = renderDashboardCasesBoard(summary, sortedItems);
+      highlights.innerHTML = renderDashboardProjectHighlights(sortedItems);
 
-              <div style="margin-top:12px;">
-                ${renderXPBar(p.registered_count || 0, p.slots_total || 0)}
-              </div>
-            </div>
-          `).join('')
+      body.innerHTML = sortedItems.length
+        ? sortedItems.map(p => renderDashboardProjectCard(p)).join('')
         : renderEmptyCard('No hay proyectos cargados en esta temporada', 'Activa proyectos para empezar a operar.');
     } catch (e) {
       summaryBox.innerHTML = '';
+      healthHero.innerHTML = '';
+      casesBoard.innerHTML = '';
+      highlights.innerHTML = '';
       body.innerHTML = renderEmptyCard('No se pudo cargar dashboard', e.message || 'Error inesperado');
       showMsg(e.message, false);
     }
