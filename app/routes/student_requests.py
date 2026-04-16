@@ -85,7 +85,7 @@ def create_student_request():
 
     full_name = str(payload.get("full_name") or "").strip()
     enrolment_number = str(payload.get("enrolment_number") or "").strip().lower()
-    email = str(payload.get("email") or "").strip().lower()
+    email =  f"{enrolment_number}@tec.mx"
     secondary_email = str(payload.get("second_email") or payload.get("secondary_email") or "").strip().lower() or None
     phone_number = str(payload.get("phone_number") or "").strip()
     degree = str(payload.get("degree") or "").strip()

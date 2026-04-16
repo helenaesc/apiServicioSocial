@@ -1408,6 +1408,36 @@ ADMIN_HTML = r"""
       display: grid;
       gap: 14px;
     }
+
+    #studentSupportModule .card.span-8,
+    #studentSupportModule .card.span-4 {
+      align-self: start;
+    }
+
+    #studentSupportSummary {
+      max-width: 100%;
+    }
+
+    #studentSupportResultsWrap {
+      width: 100%;
+    }
+
+    #studentSupportResults {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    #studentSupportModule .support-summary-wrap {
+      max-width: 100%;
+    }
+
+    #studentSupportModule .support-summary-grid {
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+
+    #studentSupportModule .module-card-title,
+    #studentSupportModule .muted {
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -1600,7 +1630,7 @@ ADMIN_HTML = r"""
             </div>
           </div>
 
-          <div class="card span-7">
+          <div class="card span-8">
             <div class="module-card-title">
               <h2>Resultados</h2>
               <span class="screen-chip">Consulta</span>
@@ -1611,7 +1641,7 @@ ADMIN_HTML = r"""
             </div>
           </div>
 
-          <div class="card span-5">
+          <div class="card span-4">
             <div class="module-card-title">
               <h2>Editar alumno</h2>
               <span class="screen-chip">Corrección</span>

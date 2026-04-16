@@ -93,6 +93,11 @@ def catalogs():
           AND sc.id IS NOT NULL
         ORDER BY sc.id
     """
+    careers_sql = """
+        SELECT id, name
+        FROM partner
+        ORDER BY name
+    """
 
     return jsonify({
         "event": {
@@ -106,4 +111,5 @@ def catalogs():
         "dias": fetch_all(dias_sql, [event_row["id"]]),
         "modalidad": fetch_all(modalidad_sql, [event_row["id"]]),
         "horario": fetch_all(horario_sql, [event_row["id"]]),
+         "careers": fetch_all(careers_sql, []),
     })

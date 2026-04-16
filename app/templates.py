@@ -1565,34 +1565,61 @@ INDEX_HTML = r"""
             <div class="form-grid">
               <div class="field">
                 <label>Nombre completo</label>
-                <input id="fullNameInput" placeholder="Nombre completo">
+                <input
+                  id="fullNameInput"
+                  type="text"
+                  maxlength="100"
+                  autocomplete="name"
+                  placeholder="Escribe tu nombre completo"
+                />
               </div>
               <div class="field">
                 <label>Matrícula</label>
                 <input
                   id="enrolmentInput"
-                  placeholder="Ej: A01234567"
+                  type="text"
+                  inputmode="text"
                   maxlength="9"
-                  minlength="9"
                   autocomplete="off"
-                  spellcheck="false"
-                >
+                  placeholder="Ej. a01234564"
+                />
               </div>
               <div class="field">
                 <label>Correo principal</label>
-                <input id="emailInput" type="email" placeholder="correo@ejemplo.com">
+                <div class="meta-box">
+                  <span class="meta-label">Correo institucional</span>
+                  <div id="generatedInstitutionalEmail" class="meta-value">Se generará con tu matrícula</div>
+                </div>
               </div>
               <div class="field">
-                <label>Segundo correo</label>
-                <input id="secondEmailInput" type="email" placeholder="Opcional">
+                <div>
+                  <label for="secondaryEmailInput">Correo alternativo (opcional)</label>
+                  <input
+                    id="secondaryEmailInput"
+                    type="email"
+                    maxlength="120"
+                    autocomplete="email"
+                    placeholder="ejemplo@gmail.com"
+                  />
+                  <small class="muted">Solo se usará como respaldo en caso necesario.</small>
+                </div>
               </div>
               <div class="field">
                 <label>Teléfono</label>
-                <input id="phoneInput" placeholder="10 dígitos o similar">
+                <input
+                  id="phoneInput"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="10"
+                  autocomplete="tel"
+                  placeholder="10 dígitos"
+                />
               </div>
               <div class="field">
                 <label>Carrera</label>
-                <input id="degreeInput" placeholder="Ej: LAF, LAE, NEG">
+                <select id="degreeInput">
+                  <option value="">Selecciona tu carrera</option>
+                </select>
               </div>
               <div class="field">
                 <label>Semestre</label>
@@ -1602,7 +1629,7 @@ INDEX_HTML = r"""
 
             <div class="actions">
               <button type="button" class="btn-orange" onclick="createStudentRequest()">Solicitar pase</button>
-              <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Consultar solicitud</button>
+              <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Recuperar mis datos</button>
               <button type="button" class="btn-blue" onclick="goToSectionAndStep('passSection', 3)">Ir a mi QR</button>
             </div>
           </div>
@@ -1801,7 +1828,6 @@ INDEX_HTML = r"""
     let studentAutoSyncInterval = null;
     let lastKnownStudentStatus = null;
     let currentPlainQrToken = '';
-    const ALLOWED_EMAIL_DOMAIN = 'gmail.com';
     
     function humanizeErrorMessage(err) {
       const raw =
@@ -2467,6 +2493,47 @@ INDEX_HTML = r"""
       return cleaned.toLowerCase();
     }
 
+    function normalizeStudentNameInput() {
+      const input = document.getElementById('fullNameInput');
+      if (!input) return;
+      input.value = input.value.replace(/\s+/g, ' ').slice(0, 100);
+    }
+
+    function normalizePhoneInput() {
+      const input = document.getElementById('phoneInput');
+      if (!input) return;
+      input.value = input.value.replace(/\D/g, '').slice(0, 10);
+    }
+
+    function normalizeSecondaryEmailInput() {
+      const input = document.getElementById('secondaryEmailInput');
+      if (!input) return;
+      input.value = input.value.trim().toLowerCase().slice(0, 120);
+    }
+
+    function getInstitutionalEmailFromEnrolment(enrolment) {
+      const clean = String(enrolment || '').trim().toLowerCase();
+      return clean ? `${clean}@tec.mx` : '';
+    }
+
+    function renderGeneratedInstitutionalEmail() {
+      const box = document.getElementById('generatedInstitutionalEmail');
+      if (!box) return;
+
+      const enrolment = getEnrolment();
+      const email = getInstitutionalEmailFromEnrolment(enrolment);
+      box.textContent = email || 'Se generará con tu matrícula';
+    }
+
+    function isValidPhone(phone) {
+      return /^\d{10}$/.test(String(phone || '').trim());
+    }
+
+    function isValidSecondaryEmail(email) {
+      if (!email) return true;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim().toLowerCase());
+    }
+
     function validateEnrolmentStrict(showError = true) {
       const enrolment = normalizeEnrolmentInput();
 
@@ -2478,64 +2545,6 @@ INDEX_HTML = r"""
       }
 
       return enrolment;
-    }
-
-    function normalizeEmailInput(value) {
-      return String(value || '').trim().toLowerCase();
-    }
-
-    function isValidEmailStrict(value) {
-      const email = normalizeEmailInput(value);
-      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
-    }
-
-    function validateEmailFieldsStrict(showError = true) {
-      const emailInput = document.getElementById('emailInput');
-      const secondEmailInput = document.getElementById('secondEmailInput');
-
-      const email = normalizeEmailInput(emailInput?.value || '');
-      const secondEmail = normalizeEmailInput(secondEmailInput?.value || '');
-
-      if (!email) {
-        if (showError) showMsg('El correo principal es obligatorio.', false);
-        return null;
-      }
-
-      if (!isValidEmailStrict(email)) {
-        if (showError) showMsg('El correo principal debe tener formato válido, por ejemplo: nombre@dominio.com', false);
-        return null;
-      }
-
-      if (ALLOWED_EMAIL_DOMAIN) {
-        const expectedSuffix = '@' + ALLOWED_EMAIL_DOMAIN.toLowerCase();
-        if (!email.endsWith(expectedSuffix)) {
-          if (showError) showMsg(`El correo principal debe usar el dominio ${expectedSuffix}`, false);
-          return null;
-        }
-      }
-
-      if (secondEmail) {
-        if (!isValidEmailStrict(secondEmail)) {
-          if (showError) showMsg('El segundo correo debe tener formato válido o dejarse vacío.', false);
-          return null;
-        }
-
-        if (ALLOWED_EMAIL_DOMAIN) {
-          const expectedSuffix = '@' + ALLOWED_EMAIL_DOMAIN.toLowerCase();
-          if (!secondEmail.endsWith(expectedSuffix)) {
-            if (showError) showMsg(`El segundo correo debe usar el dominio ${expectedSuffix} o dejarse vacío.`, false);
-            return null;
-          }
-        }
-      }
-
-      if (emailInput) emailInput.value = email;
-      if (secondEmailInput) secondEmailInput.value = secondEmail;
-
-      return {
-        email,
-        second_email: secondEmail
-      };
     }
 
     function showStudentSection(sectionId) {
@@ -2741,27 +2750,6 @@ INDEX_HTML = r"""
       throw lastError || new Error('No se pudo completar la operación');
     }
 
-    function fillSelect(id, items, labelKey = 'description') {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const firstOption = el.querySelector('option')
-        ? el.querySelector('option').outerHTML
-        : '<option value="">Todas</option>';
-      el.innerHTML = firstOption;
-      for (const item of (items || [])) {
-        const opt = document.createElement('option');
-        opt.value = item.id ?? item.value ?? item.name ?? '';
-        opt.textContent =
-          item[labelKey] ??
-          item.description ??
-          item.name ??
-          item.label ??
-          item.value ??
-          'Opción';
-        el.appendChild(opt);
-      }
-    }
-
     function updateHeroState() {
       const routeStatus = document.getElementById('heroRouteStatus');
       const projectStatus = document.getElementById('heroProjectStatus');
@@ -2951,7 +2939,7 @@ INDEX_HTML = r"""
       goToSectionAndStep('requestSection', 2);
     }
 
-    function fillSelect(id, items, placeholderText = 'Selecciona', labelFn = null) {
+    function fillSelect(id, items, placeholderText = 'Selecciona', labelFn = null, valueFn = null) {
       const el = document.getElementById(id);
       if (!el) return;
 
@@ -2959,10 +2947,14 @@ INDEX_HTML = r"""
 
       for (const item of items || []) {
         const opt = document.createElement('option');
-        opt.value = item.id;
+        opt.value = valueFn
+          ? valueFn(item)
+          : (item.name || item.description || item.display_name || item.id || '');
+
         opt.textContent = labelFn
           ? labelFn(item)
-          : (item.name || item.description || item.display_name || item.id);
+          : (item.name || item.description || item.display_name || item.id || 'Opción');
+
         el.appendChild(opt);
       }
     }
@@ -2973,10 +2965,11 @@ INDEX_HTML = r"""
 
         const data = await getJSON(`/api/catalogs?season=${encodeURIComponent(season)}`);
 
-        fillSelect('filterPartner', data.socio || [], 'Todas las carreras', item => item.name);
-        fillSelect('filterModality', data.modalidad || [], 'Todas las modalidades', item => item.description || item.name);
-        fillSelect('filterWeekDays', data.dias || [], 'Todos los días', item => item.description || item.name);
-        fillSelect('filterSchedule', data.horario || [], 'Todos los horarios', item => item.description || item.name);
+        fillSelect('filterPartner', data.socio || [], 'Todas las carreras', item => item.name, item => item.name);
+        fillSelect('degreeInput', data.careers || [], 'Selecciona tu carrera', item => item.name, item => item.name);
+        fillSelect('filterModality', data.modalidad || [], 'Todas las modalidades', item => item.description || item.name, item => item.description || item.name);
+        fillSelect('filterWeekDays', data.dias || [], 'Todos los días', item => item.description || item.name, item => item.description || item.name);
+        fillSelect('filterSchedule', data.horario || [], 'Todos los horarios', item => item.description || item.name, item => item.description || item.name);
       } catch (e) {
         console.error('loadCatalogsForSeason error:', e);
         showMsg(humanizeErrorMessage(e), false);
@@ -3110,59 +3103,116 @@ INDEX_HTML = r"""
       syncRegistrationLock();
     }
 
+    function hydrateStudentFormFromRequest(data) {
+      if (!data) return;
+
+      const user = data.user || data || {};
+
+      const fullNameInput = document.getElementById('fullNameInput');
+      const phoneInput = document.getElementById('phoneInput');
+      const secondaryEmailInput = document.getElementById('secondaryEmailInput');
+      const degreeInput = document.getElementById('degreeInput');
+      const semesterInput = document.getElementById('semesterInput');
+
+      if (fullNameInput && user.full_name) {
+        fullNameInput.value = String(user.full_name).trim().slice(0, 100);
+      }
+
+      if (phoneInput && user.phone_number) {
+        phoneInput.value = String(user.phone_number).replace(/\D/g, '').slice(0, 10);
+      }
+
+      if (secondaryEmailInput) {
+        secondaryEmailInput.value = String(
+          user.secondary_email || user.second_email || ''
+        ).trim().toLowerCase().slice(0, 120);
+      }
+
+      if (degreeInput && user.degree) {
+        degreeInput.value = String(user.degree).trim();
+      }
+
+      if (semesterInput && user.semester != null) {
+        semesterInput.value = String(user.semester).trim();
+      }
+
+      normalizeStudentNameInput();
+      normalizePhoneInput();
+      normalizeSecondaryEmailInput();
+      renderGeneratedInstitutionalEmail();
+    }
+
     async function createStudentRequest() {
       try {
-        const strictEnrolment = validateEnrolmentStrict();
-        if (!strictEnrolment) return;
+        const enrolment = getEnrolment();
+        const fullName = (document.getElementById('fullNameInput')?.value || '').trim();
+        const phone = (document.getElementById('phoneInput')?.value || '').trim();
+        const secondaryEmail = (document.getElementById('secondaryEmailInput')?.value || '').trim().toLowerCase();
+        const institutionalEmail = getInstitutionalEmailFromEnrolment(enrolment);
+        const degree = (document.getElementById('degreeInput')?.value || '').trim();
+        const semesterRaw = (document.getElementById('semesterInput')?.value || '').trim();
 
-        const emailData = validateEmailFieldsStrict();
-        if (!emailData) return;
+        if (!/^[a-zA-Z0-9]{9}$/.test(enrolment)) {
+          return showMsg('La matrícula debe tener exactamente 9 caracteres.', false);
+        }
+
+        if (!fullName) {
+          return showMsg('Debes escribir tu nombre completo.', false);
+        }
+
+        if (fullName.length > 100) {
+          return showMsg('El nombre completo no puede superar 100 caracteres.', false);
+        }
+
+        if (!isValidPhone(phone)) {
+          return showMsg('El teléfono debe tener exactamente 10 dígitos.', false);
+        }
+
+        if (!isValidSecondaryEmail(secondaryEmail)) {
+          return showMsg('El correo alternativo no tiene un formato válido.', false);
+        }
+
+        if (!degree) {
+          return showMsg('Debes capturar tu carrera.', false);
+        }
+
+        const semester = Number(semesterRaw);
+        if (!semesterRaw || !Number.isInteger(semester) || semester < 1 || semester > 20) {
+          return showMsg('El semestre debe estar entre 1 y 20.', false);
+        }
 
         const payload = {
-          full_name: document.getElementById('fullNameInput').value.trim(),
-          enrolment_number: strictEnrolment,
-          email: emailData.email,
-          second_email: emailData.second_email,
-          phone_number: document.getElementById('phoneInput').value.trim(),
-          degree: document.getElementById('degreeInput').value.trim(),
-          semester: document.getElementById('semesterInput').value.trim(),
+          enrolment_number: enrolment,
+          full_name: fullName,
+          email: institutionalEmail,
+          secondary_email: secondaryEmail || null,
+          phone_number: phone,
+          degree,
+          semester,
           season: getSeason(),
           temporada: getSeason()
         };
 
-        if (!payload.full_name || !payload.enrolment_number || !payload.email || !payload.phone_number || !payload.degree || !payload.semester) {
-          return showMsg('Faltan campos obligatorios para solicitar pase', false);
-        }
-
         const data = await tryPost([
-          { url: '/api/student/requests', body: payload },
-          { url: '/api/student/request', body: payload },
-          { url: '/api/student_requests', body: payload }
+          { url: '/api/student/requests', body: payload }
         ]);
 
         currentRequest = data;
         currentRequestStatus = data.request?.status || data.status || 'REQUESTED';
         lastKnownStudentStatus = currentRequestStatus;
-        currentPreview = null;
-        currentRegistration = null;
 
         renderRequestInfo(data);
+        hydrateStudentFormFromRequest(data);
         updateHeroState();
         renderJourneyState();
         syncRegistrationLock();
         syncStep4GateText();
         syncStep4InputsVisualState();
         renderStep4PremiumState();
-
-        // Cargar inmediatamente el estado vivo sin pedir refresh manual
-        await loadStudentRequest().catch(() => {});
-        await loadStudentPass().catch(() => {});
-
         startStudentAutoSync();
-        goToSectionAndStep('passSection', 3);
 
-        showMsg(data.message || 'Solicitud procesada correctamente');
-        showSmartToast('Solicitud creada', 'Ahora genera tu QR y muéstralo al staff.');
+        goToSectionAndStep('passSection', 3);
+        showMsg(data.message || 'Solicitud creada correctamente');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -3188,6 +3238,7 @@ INDEX_HTML = r"""
         lastKnownStudentStatus = newStatus;
 
         renderRequestInfo(data);
+        hydrateStudentFormFromRequest(data);
         updateHeroState();
         renderJourneyState();
         syncRegistrationLock();
@@ -3599,12 +3650,6 @@ INDEX_HTML = r"""
     }
 
     function bindRegistrationActions() {
-      const enrolmentInput = document.getElementById('enrolmentInput');
-      if (enrolmentInput) {
-        enrolmentInput.addEventListener('input', () => {
-          normalizeEnrolmentInput();
-        });
-      }
       // Los botones ya usan onclick inline en el HTML actual.
     }
 
@@ -3618,48 +3663,46 @@ INDEX_HTML = r"""
         if (enrolmentInput) {
           enrolmentInput.addEventListener('input', () => {
             normalizeEnrolmentInput();
+            renderGeneratedInstitutionalEmail();
           });
         }
 
-        [
-          'projectTokenInput',
-          'acceptanceFullNameInput',
-          'legalVersionInput',
-          'acceptanceCheckbox'
-        ].forEach(id => {
-          const el = document.getElementById(id);
-          if (!el) return;
-
-          const evt = el.type === 'checkbox' ? 'change' : 'input';
-          el.addEventListener(evt, () => {
-            syncStep4InputsVisualState();
-            renderStep4PremiumState();
+        const fullNameInput = document.getElementById('fullNameInput');
+        if (fullNameInput) {
+          fullNameInput.addEventListener('input', () => {
+            normalizeStudentNameInput();
           });
-        });
+        }
 
-        await loadCatalogsForSeason().catch((e) => {
-          console.error('loadCatalogsForSeason error:', e);
-        });
+        const phoneInput = document.getElementById('phoneInput');
+        if (phoneInput) {
+          phoneInput.addEventListener('input', () => {
+            normalizePhoneInput();
+          });
+        }
 
-        await loadCatalog().catch((e) => {
-          console.error('loadCatalog error:', e);
-        });
+        const secondaryEmailInput = document.getElementById('secondaryEmailInput');
+        if (secondaryEmailInput) {
+          secondaryEmailInput.addEventListener('input', () => {
+            normalizeSecondaryEmailInput();
+          });
+        }
+
+        renderGeneratedInstitutionalEmail();
+
+        await loadCatalogsForSeason().catch((e) => console.error(e));
+        await loadCatalog().catch((e) => console.error(e));
 
         const enrolment = getEnrolment();
         if (enrolment) {
-          currentRequestStatus = null;
-          await loadStudentRequest().catch((e) => {
-            console.error('loadStudentRequest error:', e);
-          });
-          await loadStudentPass().catch((e) => {
-            console.error('loadStudentPass error:', e);
-          });
+          await loadStudentRequest().catch((e) => console.error(e));
+          await loadStudentPass().catch((e) => console.error(e));
           startStudentAutoSync();
         }
 
         showStudentSection('catalogSection');
       } catch (e) {
-        console.error('DOMContentLoaded fatal error:', e);
+        console.error(e);
         showMsg('Error al inicializar la página', false);
       }
     });

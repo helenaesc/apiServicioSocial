@@ -37,6 +37,9 @@ def _sign_snapshot(snapshot_json: str) -> str:
         hashlib.sha256
     ).hexdigest()
 
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
 def _insert_registration_audit(
     cur,
     registration_id: int,
@@ -373,24 +376,40 @@ def get_registration_evidence_by_enrolment():
     if not row:
         return jsonify({"error": "No se encontró evidencia para esa matrícula"}), 404
 
-    snapshot_json = row.get("acceptance_snapshot_json") or ""
+    raw_snapshot = row.get("acceptance_snapshot_json")
     stored_hash = row.get("acceptance_hash")
     stored_signature = row.get("acceptance_signature")
 
     snapshot_data = {}
-    if snapshot_json:
+    raw_snapshot_text = ""
+
+    if raw_snapshot is not None:
         try:
-            snapshot_data = json.loads(snapshot_json)
+            if isinstance(raw_snapshot, dict):
+                snapshot_data = raw_snapshot
+                raw_snapshot_text = json.dumps(raw_snapshot, ensure_ascii=False)
+            elif isinstance(raw_snapshot, str):
+                raw_snapshot_text = raw_snapshot
+                snapshot_data = json.loads(raw_snapshot) if raw_snapshot.strip() else {}
+            else:
+                raw_snapshot_text = str(raw_snapshot)
+                snapshot_data = json.loads(raw_snapshot_text) if raw_snapshot_text.strip() else {}
         except Exception:
             snapshot_data = {}
+            raw_snapshot_text = str(raw_snapshot)
+
+    canonical_snapshot_json = (
+        json.dumps(snapshot_data, ensure_ascii=False, sort_keys=True)
+        if snapshot_data else ""
+    )
 
     student_fingerprint = snapshot_data.get("student_fingerprint")
 
-    recalculated_hash = hashlib.sha256(snapshot_json.encode("utf-8")).hexdigest() if snapshot_json else None
-    recalculated_signature = _sign_snapshot(snapshot_json) if snapshot_json else None
+    recalculated_hash = _sha256_text(canonical_snapshot_json) if canonical_snapshot_json else None
+    recalculated_signature = _sign_snapshot(canonical_snapshot_json) if canonical_snapshot_json else None
 
-    hash_matches = bool(snapshot_json and stored_hash == recalculated_hash)
-    signature_matches = bool(snapshot_json and stored_signature == recalculated_signature)
+    hash_matches = bool(canonical_snapshot_json and stored_hash == recalculated_hash)
+    signature_matches = bool(canonical_snapshot_json and stored_signature == recalculated_signature)
     verified = hash_matches and signature_matches
 
     return jsonify({
@@ -427,7 +446,8 @@ def get_registration_evidence_by_enrolment():
             "accepted_user_agent": row["accepted_user_agent"],
         },
         "evidence": {
-            "snapshot_json": snapshot_json,
+            "snapshot_json": canonical_snapshot_json,
+            "snapshot_json_original": raw_snapshot_text,
             "snapshot_data": snapshot_data,
             "stored_hash": stored_hash,
             "stored_signature": stored_signature,
