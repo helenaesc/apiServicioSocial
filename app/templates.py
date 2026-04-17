@@ -1562,6 +1562,33 @@ INDEX_HTML = r"""
               Esto no te registra todavía. Solo crea tu solicitud y tu folio para que el staff pueda validarte presencialmente.
             </div>
 
+            <div class="selected-banner" style="margin-bottom:14px;">
+              <div class="selected-banner-title">¿Ya habías iniciado tu proceso?</div>
+              <div class="selected-banner-text" style="margin-bottom:10px;">
+                Escribe tu matrícula y recupera tu avance sin volver a capturar todo.
+              </div>
+
+              <div class="form-grid" style="margin-bottom:10px;">
+                <div class="field">
+                  <label>Matrícula para recuperar</label>
+                  <input
+                    id="recoverEnrolmentInput"
+                    type="text"
+                    inputmode="text"
+                    maxlength="9"
+                    autocomplete="off"
+                    placeholder="Ej. a01234564"
+                  />
+                </div>
+              </div>
+
+              <div class="actions" style="margin-top:0;">
+                <button type="button" class="btn-secondary" onclick="recoverStudentProcess()">
+                  Recuperar mi proceso
+                </button>
+              </div>
+            </div>
+
             <div class="form-grid">
               <div class="field">
                 <label>Nombre completo</label>
@@ -1623,7 +1650,13 @@ INDEX_HTML = r"""
               </div>
               <div class="field">
                 <label>Semestre</label>
-                <input id="semesterInput" type="number" min="1" max="20" placeholder="Ej: 5">
+                <input
+                  id="semesterInput"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="2"
+                  placeholder="Ej: 5"
+                />
               </div>
             </div>
 
@@ -1711,7 +1744,11 @@ INDEX_HTML = r"""
               </div>
               <div class="field">
                 <label>Token del proyecto</label>
-                <input id="projectTokenInput" placeholder="Token que te entrega el proyecto">
+                <input
+                  id="projectTokenInput"
+                  maxlength="12"
+                  placeholder="Token que te entrega el proyecto"
+                />
               </div>
               <div class="field">
                 <label>Nombre completo para aceptación</label>
@@ -2038,7 +2075,6 @@ INDEX_HTML = r"""
       const nameReady = acceptedFullName.length > 0;
       const legalReady = legalVersion.length > 0;
       const checkboxReady = acceptedCheckbox;
-
       const previewReady = !!currentPreview;
       const canAccess = status === 'ACCESS_ENABLED' || status === 'REGISTERED' || !!currentRegistration;
       const canConfirm = canAccess && tokenReady && nameReady && legalReady && checkboxReady && previewReady;
@@ -2065,6 +2101,7 @@ INDEX_HTML = r"""
         const p = currentPreview.project || {};
         const e = currentPreview.event || {};
         const t = currentPreview.token || {};
+
         previewBox.innerHTML = `
           <div class="step4-preview-card">
             <div class="step4-preview-title">Tu inscripción está lista para confirmarse</div>
@@ -2102,14 +2139,28 @@ INDEX_HTML = r"""
         `;
       }
 
-      confirmBox.innerHTML = canConfirm
-        ? `
+      const tokenInputEl = document.getElementById('projectTokenInput');
+      const nameInputEl = document.getElementById('acceptanceFullNameInput');
+      const legalInputEl = document.getElementById('legalVersionInput');
+
+      if (tokenInputEl) tokenInputEl.disabled = !!currentPreview;
+      if (nameInputEl) nameInputEl.disabled = !!currentPreview;
+      if (legalInputEl) legalInputEl.disabled = !!currentPreview;
+
+      if (canConfirm) {
+        confirmBox.innerHTML = `
           <div class="step4-confirm-box">
-            <div class="step4-confirm-ready">Todo listo para confirmar</div>
-            <div class="step4-preview-sub">Tu token, nombre, aceptación legal y preview ya están completos.</div>
+            <div class="step4-confirm-ready">Datos congelados para confirmación</div>
+            <div class="step4-preview-sub">
+              Revisa el resumen. Si todo está bien, confirma tu inscripción. Si no, usa “Modificar datos”.
+            </div>
+            <div class="actions" style="margin-top:10px;">
+              <button type="button" class="btn-secondary" onclick="clearRegistrationPreview()">Modificar datos</button>
+            </div>
           </div>
-        `
-        : `
+        `;
+      } else {
+        confirmBox.innerHTML = `
           <div class="step4-confirm-box">
             <div class="step4-confirm-ready" style="color:#92400e;">Aún no listo para confirmar</div>
             <div class="step4-preview-sub">
@@ -2117,6 +2168,7 @@ INDEX_HTML = r"""
             </div>
           </div>
         `;
+      }
 
       const confirmBtn = document.getElementById('confirmRegistrationBtn');
       if (confirmBtn) {
@@ -2453,6 +2505,25 @@ INDEX_HTML = r"""
       return normalizeEnrolmentInput();
     }
 
+    function saveStudentEnrolment(enrolment) {
+      try {
+        const clean = String(enrolment || '').trim().toLowerCase();
+        if (!clean) {
+          localStorage.removeItem('student_enrolment');
+          return;
+        }
+        localStorage.setItem('student_enrolment', clean);
+      } catch {}
+    }
+
+    function loadSavedStudentEnrolment() {
+      try {
+        return localStorage.getItem('student_enrolment') || '';
+      } catch {
+        return '';
+      }
+    }
+
     function setCurrentPlainQrToken(token) {
       currentPlainQrToken = token || '';
       try {
@@ -2505,6 +2576,24 @@ INDEX_HTML = r"""
       input.value = input.value.replace(/\D/g, '').slice(0, 10);
     }
 
+    function normalizeSemesterInput() {
+      const input = document.getElementById('semesterInput');
+      if (!input) return;
+
+      input.value = input.value.replace(/\D/g, '').slice(0, 2);
+
+      const n = Number(input.value);
+      if (input.value && n > 20) {
+        input.value = '20';
+      }
+    }
+
+    function normalizeProjectTokenInput() {
+      const input = document.getElementById('projectTokenInput');
+      if (!input) return;
+      input.value = input.value.replace(/\s+/g, '').toUpperCase().slice(0, 12);
+    }
+
     function normalizeSecondaryEmailInput() {
       const input = document.getElementById('secondaryEmailInput');
       if (!input) return;
@@ -2545,6 +2634,19 @@ INDEX_HTML = r"""
       }
 
       return enrolment;
+    }
+
+    function getRecoverEnrolment() {
+      const input = document.getElementById('recoverEnrolmentInput');
+      if (!input) return '';
+
+      const cleaned = String(input.value || '')
+        .replace(/\s+/g, '')
+        .toUpperCase()
+        .slice(0, 9);
+
+      input.value = cleaned;
+      return cleaned.toLowerCase();
     }
 
     function showStudentSection(sectionId) {
@@ -2661,7 +2763,11 @@ INDEX_HTML = r"""
           }
 
           await loadStudentRequest().catch(() => {});
-          await loadStudentPass().catch(() => {});
+
+          const statusAfterRequest = getStudentStatus();
+          if (statusAfterRequest === 'REQUESTED' || statusAfterRequest === 'VALIDATED') {
+            await loadStudentPass().catch(() => {});
+          }
         } catch (e) {
           console.error('AutoSync error:', e);
         }
@@ -2949,7 +3055,7 @@ INDEX_HTML = r"""
         const opt = document.createElement('option');
         opt.value = valueFn
           ? valueFn(item)
-          : (item.name || item.description || item.display_name || item.id || '');
+          : (item.id ?? item.value ?? item.name ?? item.description ?? '');
 
         opt.textContent = labelFn
           ? labelFn(item)
@@ -2962,14 +3068,13 @@ INDEX_HTML = r"""
     async function loadCatalogsForSeason() {
       try {
         const season = getSeason();
-
         const data = await getJSON(`/api/catalogs?season=${encodeURIComponent(season)}`);
 
-        fillSelect('filterPartner', data.socio || [], 'Todas las carreras', item => item.name, item => item.name);
+        fillSelect('filterPartner', data.socio || [], 'Todas las carreras', item => item.name, item => item.id);
         fillSelect('degreeInput', data.careers || [], 'Selecciona tu carrera', item => item.name, item => item.name);
-        fillSelect('filterModality', data.modalidad || [], 'Todas las modalidades', item => item.description || item.name, item => item.description || item.name);
-        fillSelect('filterWeekDays', data.dias || [], 'Todos los días', item => item.description || item.name, item => item.description || item.name);
-        fillSelect('filterSchedule', data.horario || [], 'Todos los horarios', item => item.description || item.name, item => item.description || item.name);
+        fillSelect('filterModality', data.modalidad || [], 'Todas las modalidades', item => item.description || item.name, item => item.id);
+        fillSelect('filterWeekDays', data.dias || [], 'Todos los días', item => item.description || item.name, item => item.id);
+        fillSelect('filterSchedule', data.horario || [], 'Todos los horarios', item => item.description || item.name, item => item.id);
       } catch (e) {
         console.error('loadCatalogsForSeason error:', e);
         showMsg(humanizeErrorMessage(e), false);
@@ -3114,6 +3219,7 @@ INDEX_HTML = r"""
       const degreeInput = document.getElementById('degreeInput');
       const semesterInput = document.getElementById('semesterInput');
 
+
       if (fullNameInput && user.full_name) {
         fullNameInput.value = String(user.full_name).trim().slice(0, 100);
       }
@@ -3139,7 +3245,91 @@ INDEX_HTML = r"""
       normalizeStudentNameInput();
       normalizePhoneInput();
       normalizeSecondaryEmailInput();
+      normalizeSemesterInput();
       renderGeneratedInstitutionalEmail();
+    }
+
+    async function recoverStudentProcess() {
+      try {
+        const enrolment = getRecoverEnrolment();
+
+        if (!/^[a-zA-Z0-9]{9}$/.test(enrolment)) {
+          return showMsg('La matrícula para recuperar debe tener exactamente 9 caracteres.', false);
+        }
+
+        const mainInput = document.getElementById('enrolmentInput');
+        if (mainInput) {
+          mainInput.value = enrolment.toUpperCase();
+        }
+
+        renderGeneratedInstitutionalEmail();
+
+        await loadStudentRequest();
+        const status = getStudentStatus();
+
+        if (status === 'REQUESTED' || status === 'VALIDATED') {
+          await loadStudentPass().catch(() => {});
+        }
+
+        if (status === 'REGISTERED') {
+          showStudentSection('statusSection');
+          setCurrentStep(5);
+          showMsg('Proceso recuperado. Ya cuentas con una inscripción completada.');
+          return;
+        }
+
+        if (status === 'ACCESS_ENABLED') {
+          showStudentSection('registrationSection');
+          setCurrentStep(4);
+          showMsg('Proceso recuperado. Ya puedes continuar con tu inscripción.');
+          return;
+        }
+
+        if (status === 'VALIDATED' || status === 'REQUESTED') {
+          showStudentSection('passSection');
+          setCurrentStep(3);
+          showMsg('Proceso recuperado. Continúa mostrando tu QR al staff.');
+          return;
+        }
+
+        showStudentSection('requestSection');
+        setCurrentStep(2);
+        showMsg('Proceso recuperado correctamente.');
+      } catch (e) {
+        console.error(e);
+        showMsg(humanizeErrorMessage(e), false);
+      }
+    }
+
+    function continueStudentFlowFromStatus() {
+      const status = getStudentStatus();
+
+      if (status === 'REGISTERED') {
+        showStudentSection('statusSection');
+        setCurrentStep(5);
+        return;
+      }
+
+      if (status === 'ACCESS_ENABLED') {
+        showStudentSection('registrationSection');
+        setCurrentStep(4);
+        return;
+      }
+
+      if (status === 'VALIDATED' || status === 'REQUESTED') {
+        showStudentSection('passSection');
+        setCurrentStep(3);
+        return;
+      }
+
+      if (status) {
+        showStudentSection('requestSection');
+        setCurrentStep(2);
+        return;
+      }
+
+      showStudentSection('catalogSection');
+      setCurrentStep(1);
     }
 
     async function createStudentRequest() {
@@ -3300,6 +3490,8 @@ INDEX_HTML = r"""
       const event = data.event || {};
       const student = data.student || {};
       const session = data.pass_session || data.active_session || null;
+      const requestStatus = getStudentStatus();
+      const shouldShowQrSession = ['REQUESTED', 'VALIDATED'].includes(String(requestStatus || '').toUpperCase());
       const ttlText = session?.expires_at || '—';
 
       box.innerHTML = `
@@ -3345,9 +3537,9 @@ INDEX_HTML = r"""
         setCurrentPlainQrToken(freshToken);
       }
 
-      const tokenToRender = session ? getCurrentPlainQrToken() : '';
+      const tokenToRender = (session && shouldShowQrSession) ? getCurrentPlainQrToken() : '';
 
-      if (session) {
+      if (session && shouldShowQrSession) {
         statusBadge.className = 'chip chip-green';
         statusBadge.textContent = 'QR activo';
       } else {
@@ -3355,7 +3547,9 @@ INDEX_HTML = r"""
         statusBadge.textContent = 'Sin sesión';
         clearCurrentPlainQrToken();
       }
-
+      if (!shouldShowQrSession) {
+        clearCurrentPlainQrToken();
+      }
       renderStudentQR(tokenToRender);
       renderJourneyState();
       updateHeroState();
@@ -3475,6 +3669,20 @@ INDEX_HTML = r"""
           </div>
         </div>
       `;
+    }
+
+    function clearRegistrationPreview() {
+      currentPreview = null;
+      const previewBox = document.getElementById('registrationPreview');
+      if (previewBox) {
+        previewBox.innerHTML = renderEmptyState(
+          'Todavía no hay preview',
+          'Escribe el token del proyecto y usa “Ver preview” para revisar antes de confirmar.'
+        );
+      }
+      renderStep4PremiumState();
+      syncStep4InputsVisualState();
+      showMsg('Preview liberado. Ya puedes modificar los datos.');
     }
 
     function renderRegistrationSuccess(data) {
@@ -3662,7 +3870,8 @@ INDEX_HTML = r"""
         const enrolmentInput = document.getElementById('enrolmentInput');
         if (enrolmentInput) {
           enrolmentInput.addEventListener('input', () => {
-            normalizeEnrolmentInput();
+            const enrolment = normalizeEnrolmentInput();
+            saveStudentEnrolment(enrolment);
             renderGeneratedInstitutionalEmail();
           });
         }
@@ -3681,10 +3890,28 @@ INDEX_HTML = r"""
           });
         }
 
-        const secondaryEmailInput = document.getElementById('secondaryEmailInput');
-        if (secondaryEmailInput) {
-          secondaryEmailInput.addEventListener('input', () => {
-            normalizeSecondaryEmailInput();
+        const semesterInput = document.getElementById('semesterInput');
+        if (semesterInput) {
+          semesterInput.addEventListener('input', () => {
+            normalizeSemesterInput();
+          });
+        }
+
+        const savedEnrolment = loadSavedStudentEnrolment();
+        if (savedEnrolment) {
+          const mainInput = document.getElementById('enrolmentInput');
+          const recoverInput = document.getElementById('recoverEnrolmentInput');
+
+          if (mainInput) mainInput.value = savedEnrolment.toUpperCase();
+          if (recoverInput) recoverInput.value = savedEnrolment.toUpperCase();
+        }
+
+        const projectTokenInput = document.getElementById('projectTokenInput');
+        if (projectTokenInput) {
+          projectTokenInput.addEventListener('input', () => {
+            normalizeProjectTokenInput();
+            syncStep4InputsVisualState();
+            renderStep4PremiumState();
           });
         }
 
@@ -3696,11 +3923,20 @@ INDEX_HTML = r"""
         const enrolment = getEnrolment();
         if (enrolment) {
           await loadStudentRequest().catch((e) => console.error(e));
-          await loadStudentPass().catch((e) => console.error(e));
+
+          const status = getStudentStatus();
+          if (status === 'REQUESTED' || status === 'VALIDATED') {
+            await loadStudentPass().catch((e) => console.error(e));
+          }
+
           startStudentAutoSync();
         }
-
-        showStudentSection('catalogSection');
+        if (enrolment) {
+          continueStudentFlowFromStatus();
+        } else {
+          showStudentSection('catalogSection');
+          setCurrentStep(1);
+        }
       } catch (e) {
         console.error(e);
         showMsg('Error al inicializar la página', false);

@@ -85,24 +85,28 @@ def create_student_request():
 
     full_name = str(payload.get("full_name") or "").strip()
     enrolment_number = str(payload.get("enrolment_number") or "").strip().lower()
-    email =  f"{enrolment_number}@tec.mx"
-    secondary_email = str(payload.get("second_email") or payload.get("secondary_email") or "").strip().lower() or None
+    secondary_email = str(
+        payload.get("second_email") or payload.get("secondary_email") or ""
+    ).strip().lower() or None
     phone_number = str(payload.get("phone_number") or "").strip()
     degree = str(payload.get("degree") or "").strip()
     semester_raw = payload.get("semester")
     season = _normalize_season(payload.get("season") or payload.get("temporada"))
 
+    email = f"{enrolment_number}@tec.mx"
+
     if not full_name:
         return jsonify({"error": "full_name es obligatorio"}), 400
 
-    if not enrolment_number:
-        return jsonify({"error": "enrolment_number es obligatorio"}), 400
+    if len(full_name) > 100:
+        return jsonify({"error": "full_name no puede superar 100 caracteres"}), 400
 
-    if not email:
-        return jsonify({"error": "email es obligatorio"}), 400
+    if len(enrolment_number) != 9 or not enrolment_number.isalnum():
+        return jsonify({"error": "enrolment_number debe tener exactamente 9 caracteres alfanuméricos"}), 400
 
-    if not phone_number:
-        return jsonify({"error": "phone_number es obligatorio"}), 400
+    phone_number = "".join(ch for ch in phone_number if ch.isdigit())
+    if len(phone_number) != 10:
+        return jsonify({"error": "phone_number debe tener exactamente 10 dígitos"}), 400
 
     if not degree:
         return jsonify({"error": "degree es obligatorio"}), 400

@@ -1577,19 +1577,16 @@ ADMIN_HTML = r"""
             <div class="muted">
               KPI ejecutivos, proyectos, tokens, incidentes y estado real de la temporada.
             </div>
-
             <div class="form-grid">
               <div class="field">
                 <label>Temporada para dashboard</label>
                 <select id="dashboardEventSelector"></select>
               </div>
             </div>
-
             <div class="actions">
               <button type="button" class="btn-primary" onclick="loadDashboard()">Cargar dashboard</button>
               <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar temporadas</button>
             </div>
-
             <div class="dashboard-shell">
               <div id="dashboardSummary" class="stats-grid"></div>
               <div id="dashboardHealthHero"></div>
@@ -1597,6 +1594,33 @@ ADMIN_HTML = r"""
               <div id="dashboardProjectsHighlights"></div>
               <div id="dashboardProjectsBody" class="record-grid"></div>
             </div>
+          </div>
+
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Vigencias operativas</h2>
+              <span class="screen-chip">Seguridad</span>
+            </div>
+            <div class="muted">
+              Ajusta cuánto vive el QR del alumno y cuánto duran los tokens de proyecto.
+              Ambos valores están limitados por backend para evitar configuraciones peligrosas.
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>TTL QR alumno (minutos)</label>
+                <input id="passTtlMinutesInput" type="number" min="1" max="5" placeholder="Ej: 2">
+              </div>
+              <div class="field">
+                <label>TTL token proyecto (horas)</label>
+                <input id="tokenTtlHoursInput" type="number" min="1" max="24" placeholder="Ej: 4">
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="loadAdminSettings()">Recargar settings</button>
+              <button type="button" class="btn-secondary" onclick="savePassTtlSeconds()">Guardar TTL QR</button>
+              <button type="button" class="btn-secondary" onclick="saveTokenTtlHours()">Guardar TTL token</button>
+            </div>
+            <div id="adminSettingsInfo" class="record-grid" style="margin-top:14px;"></div>
           </div>
         </div>
       </div>
@@ -3193,6 +3217,85 @@ ADMIN_HTML = r"""
     return data;
   }
 
+  async function loadAdminSettings() {
+    try {
+      const data = await apiGet('/api/admin/settings');
+
+      const passInput = document.getElementById('passTtlMinutesInput');
+      const tokenInput = document.getElementById('tokenTtlHoursInput');
+      const info = document.getElementById('adminSettingsInfo');
+
+      if (passInput) {
+        passInput.value = data.pass_session_ttl_minutes ?? 2;
+      }
+
+      if (tokenInput) {
+        tokenInput.value = data.token_ttl_hours ?? 4;
+      }
+
+      if (info) {
+        info.innerHTML = `
+          <div class="record-card">
+            <div class="record-card__title">Configuración actual</div>
+            <div class="record-stack">
+              <div class="stack-row">
+                <strong>QR alumno</strong>
+                <span>${escapeHTML(data.pass_session_ttl_minutes ?? 2)} minutos</span>
+              </div>
+              <div class="stack-row">
+                <strong>Token proyecto</strong>
+                <span>${escapeHTML(data.token_ttl_hours ?? 4)} horas</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    } catch (e) {
+      if (String(e.message || '').includes('No autorizado')) return;
+      showMsg(e.message, false);
+    }
+  }
+
+  async function savePassTtlSeconds() {
+    try {
+      const input = document.getElementById('passTtlSecondsInput');
+      const minutos = Number(input?.value || 0);
+
+      if (Number.isNaN(minutos) || minutos < 1 || minutos > 5) {
+        return showMsg('El TTL del QR debe estar entre 1 y 5 minutos', false);
+      }
+
+      const data = await apiPut('/api/admin/settings/pass-ttl-minutes', {
+        minutes: minutos
+      });
+
+      showMsg(data.message || 'TTL del QR actualizado');
+      await loadAdminSettings();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
+  async function saveTokenTtlHours() {
+    try {
+      const input = document.getElementById('tokenTtlHoursInput');
+      const hours = Number(input?.value || 0);
+
+      if (Number.isNaN(hours) || hours < 1 || hours > 24) {
+        return showMsg('El TTL del token debe estar entre 1 y 24 horas', false);
+      }
+
+      const data = await apiPut('/api/admin/settings/token-ttl-hours', {
+        hours
+      });
+
+      showMsg(data.message || 'TTL del token actualizado');
+      await loadAdminSettings();
+    } catch (e) {
+      showMsg(e.message, false);
+    }
+  }
+
   async function loginAdmin() {
     try {
       const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -3754,7 +3857,12 @@ ADMIN_HTML = r"""
     if (!user) return;
 
     const tasks = [loadEvents(), loadAdminCatalogs(), loadMasterProjects()];
-    if (user.role === 'ADMIN') tasks.push(loadStaff());
+
+    if (user.role === 'ADMIN') {
+      tasks.push(loadStaff());
+      tasks.push(loadAdminSettings());
+    }
+
     await Promise.allSettled(tasks);
   }
 

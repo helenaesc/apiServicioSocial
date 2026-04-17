@@ -14,9 +14,9 @@ def _get_ttl_hours(cur) -> int:
     cur.execute("SELECT v FROM app_settings WHERE k='TOKEN_TTL_HOURS' LIMIT 1")
     row = cur.fetchone()
     try:
-        return max(1, min(int(row["v"]), 168)) if row and row.get("v") else 24
+        return max(1, min(int(row["v"]), 24)) if row and row.get("v") else 4
     except:
-        return 24
+        return 4
 
 @admin_tokens_bp.post("/api/admin/projects/<int:project_id>/tokens")
 def generate_tokens(project_id: int):

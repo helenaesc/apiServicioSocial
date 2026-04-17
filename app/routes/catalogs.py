@@ -96,6 +96,9 @@ def catalogs():
     careers_sql = """
         SELECT id, name
         FROM partner
+        WHERE name IS NOT NULL
+        AND TRIM(name) <> ''
+        AND UPPER(TRIM(name)) NOT IN ('SIN PREFERENCIA', 'SIN PREFERENCIA ')
         ORDER BY name
     """
 

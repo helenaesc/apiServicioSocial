@@ -32,12 +32,12 @@ def _gen_pass_token(length: int = 40) -> str:
 
 
 def _get_pass_ttl_minutes(cur) -> int:
-    cur.execute("SELECT v FROM app_settings WHERE k='PASS_TTL_MINUTES' LIMIT 1")
+    cur.execute("SELECT v FROM app_settings WHERE k='PASS_SESSION_TTL_MINUTES' LIMIT 1")
     row = cur.fetchone()
     try:
-        return max(1, min(int(row["v"]), 15)) if row and row.get("v") else 5
+        return max(1, min(int(row["v"]), 5)) if row and row.get("v") else 2
     except Exception:
-        return 5
+        return 2
 
 
 def _expire_old_sessions(cur, request_id: int):
@@ -265,8 +265,8 @@ def refresh_student_pass():
 
         plain_token = _gen_pass_token(40)
         token_hash = _sha256(plain_token)
-        ttl_minutes = _get_pass_ttl_minutes(cur)
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=ttl_minutes)
+        _get_pass_ttl_minutes = _get_pass_ttl_minutes(cur)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=_get_pass_ttl_minutes)
 
         cur.execute(
             """
@@ -308,7 +308,7 @@ def refresh_student_pass():
                 "plain_token": plain_token,
                 "expires_at": _to_iso_utc(expires_at),
                 "refresh_count": next_refresh_count,
-                "ttl_minutes": ttl_minutes
+                "ttl_minutes": _get_pass_ttl_minutes
             }
         }
 
