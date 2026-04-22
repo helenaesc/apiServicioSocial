@@ -3,6 +3,7 @@ from mysql.connector import Error
 from ..database import execute_tx
 from ..authz import require_role, ROLE_ADMIN, ROLE_STAFF
 import hashlib
+import os
 
 staff_checkin_bp = Blueprint("staff_checkin", __name__)
 
@@ -10,6 +11,11 @@ staff_checkin_bp = Blueprint("staff_checkin", __name__)
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
+def _get_current_admin_user_id():
+    return session.get("admin_user_id")
+
+def _is_production():
+    return (os.getenv("FLASK_ENV") or "").strip().lower() == "production"
 
 def _get_current_role(req):
     """
@@ -175,6 +181,8 @@ def grant_access():
     if not role:
         return jsonify({"error": "No autorizado"}), 401
 
+    actor_admin_user_id = _get_current_admin_user_id()
+
     payload = request.get_json(silent=True) or {}
     pass_session_id = payload.get("pass_session_id")
     enrolment_number = (payload.get("enrolment_number") or "").strip().lower()
@@ -209,14 +217,22 @@ def grant_access():
             row = cur.fetchone()
 
             if not row:
-                return {"error": "Sesión no encontrada", "status": 404, "debug_step": "select_pass_session"}
+                payload = {
+                    "error": "Sesión no encontrada",
+                    "status": 404
+                }
+                if not _is_production():
+                    payload["debug_step"] = "select_pass_session"
+                return payload
 
             if row["status"] != "ACTIVE":
-                return {
+                payload = {
                     "error": f"La sesión ya no está activa ({row['status']})",
-                    "status": 409,
-                    "debug_step": "pass_status_not_active"
+                    "status": 409
                 }
+                if not _is_production():
+                    payload["debug_step"] = "pass_status_not_active"
+                return payload
 
             cur.execute(
                 """
@@ -235,28 +251,36 @@ def grant_access():
             )
             status_row = cur.fetchone()
             if not status_row or status_row["status"] != "ACTIVE":
-                return {
+                payload = {
                     "error": "La sesión expiró, solicita refresh al alumno",
-                    "status": 409,
-                    "debug_step": "expired_after_recheck"
+                    "status": 409
                 }
+                if not _is_production():
+                    payload["debug_step"] = "expired_after_recheck"
+                return payload
 
             expected = (row["enrolment_number"] or "").strip().lower()
             if expected != enrolment_number:
-                return {
+                payload = {
                     "error": "La matrícula no coincide con la credencial",
-                    "status": 409,
-                    "debug_step": "enrolment_mismatch",
-                    "expected": expected,
-                    "provided": enrolment_number
+                    "status": 409
                 }
+                if not _is_production():
+                    payload.update({
+                        "debug_step": "enrolment_mismatch",
+                        "expected": expected,
+                        "provided": enrolment_number
+                    })
+                return payload
 
             if row["request_status"] in ("REGISTERED", "CANCELLED", "CLOSED"):
-                return {
+                payload = {
                     "error": f"La solicitud ya no permite acceso ({row['request_status']})",
-                    "status": 409,
-                    "debug_step": "request_already_closed"
+                    "status": 409
                 }
+                if not _is_production():
+                    payload["debug_step"] = "request_already_closed"
+                return payload
 
             cur.execute(
                 """
@@ -273,11 +297,12 @@ def grant_access():
                 UPDATE student_event_requests
                 SET status = 'ACCESS_ENABLED',
                     validated_at = COALESCE(validated_at, NOW()),
+                    validated_by_user_id = COALESCE(validated_by_user_id, %s),
                     access_enabled_at = NOW(),
                     notes = CONCAT(COALESCE(notes, ''), IF(COALESCE(notes, '') = '', '', ' | '), 'ACCESS_ENABLED por STAFF/ADMIN')
                 WHERE id = %s
                 """,
-                [row["request_id"]]
+                [actor_admin_user_id, row["request_id"]]
             )
 
             cur.execute(
@@ -295,6 +320,7 @@ def grant_access():
                     ser.status AS request_status,
                     ser.requested_at,
                     ser.validated_at,
+                    ser.validated_by_user_id,
                     ser.access_enabled_at,
                     ser.registered_at,
                     ev.id AS event_id,
@@ -322,18 +348,20 @@ def grant_access():
             final_row = cur.fetchone()
 
             if not final_row:
-                return {
+                payload = {
                     "error": "No se pudo recuperar la sesión actualizada",
-                    "status": 500,
-                    "debug_step": "final_select_empty"
+                    "status": 500
                 }
+                if not _is_production():
+                    payload["debug_step"] = "final_select_empty"
+                return payload
 
             return {
                 "status": 200,
                 "message": "Acceso habilitado",
-                "debug_step": "ok",
                 "performed_by": {
-                    "role": role
+                    "role": role,
+                    "admin_user_id": actor_admin_user_id
                 },
                 "pass_session": {
                     "id": final_row["pass_session_id"],
@@ -350,6 +378,7 @@ def grant_access():
                     "status": final_row["request_status"],
                     "requested_at": final_row["requested_at"],
                     "validated_at": final_row["validated_at"],
+                    "validated_by_user_id": final_row["validated_by_user_id"],
                     "access_enabled_at": final_row["access_enabled_at"],
                     "registered_at": final_row["registered_at"],
                 },
@@ -373,12 +402,17 @@ def grant_access():
             }
 
         except Exception as inner_e:
-            return {
-                "error": str(inner_e),
-                "status": 500,
-                "debug_step": "tx_exception",
-                "debug_type": type(inner_e)._name_
+            payload = {
+                "error": "No se pudo habilitar el acceso",
+                "status": 500
             }
+            if not _is_production():
+                payload.update({
+                    "debug_step": "tx_exception",
+                    "debug_type": type(inner_e)._name_,
+                    "debug_detail": str(inner_e)
+                })
+            return payload
 
     try:
         result = execute_tx(tx)
@@ -389,13 +423,24 @@ def grant_access():
         return jsonify(result), 200
 
     except Error as e:
-        return jsonify({
-            "error": f"Error de base de datos: {e.msg}",
-            "errno": e.errno,
-            "sqlstate": e.sqlstate
-        }), 500
+        payload = {
+            "error": "Error de base de datos"
+        }
+        if not _is_production():
+            payload.update({
+                "detail": e.msg,
+                "errno": e.errno,
+                "sqlstate": e.sqlstate
+            })
+        return jsonify(payload), 500
+
     except Exception as e:
-        return jsonify({
-            "error": str(e),
-            "type": type(e)._name_
-        }), 500
+        payload = {
+            "error": "Error interno"
+        }
+        if not _is_production():
+            payload.update({
+                "detail": str(e),
+                "type": type(e)._name_
+            })
+        return jsonify(payload), 500

@@ -1,8 +1,20 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from ..database import execute_tx, fetch_one
 from ..authz import require_role, ROLE_ADMIN
 
 admin_settings_bp = Blueprint("admin_settings", __name__)
+
+
+def _get_current_admin_role(req):
+    session_role = session.get("admin_user_role")
+    if session_role == ROLE_ADMIN:
+        return session_role
+
+    legacy_role = require_role(req, {ROLE_ADMIN})
+    if legacy_role:
+        return legacy_role
+
+    return None
 
 
 def _get_int_setting(key: str, default: int) -> int:
@@ -15,7 +27,7 @@ def _get_int_setting(key: str, default: int) -> int:
 
 @admin_settings_bp.get("/api/admin/settings")
 def get_settings():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -30,7 +42,7 @@ def get_settings():
 
 @admin_settings_bp.put("/api/admin/settings/token-ttl-hours")
 def set_token_ttl():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
@@ -64,7 +76,7 @@ def set_token_ttl():
 
 @admin_settings_bp.put("/api/admin/settings/pass-ttl-minutes")
 def set_pass_ttl_minutes():
-    role = require_role(request, {ROLE_ADMIN})
+    role = _get_current_admin_role(request)
     if not role:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 

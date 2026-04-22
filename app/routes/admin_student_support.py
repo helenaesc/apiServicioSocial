@@ -45,12 +45,12 @@ def _gen_pass_token(length=40) -> str:
 
 
 def _get_pass_ttl_minutes(cur) -> int:
-    cur.execute("SELECT v FROM app_settings WHERE k='PASS_TTL_MINUTES' LIMIT 1")
+    cur.execute("SELECT v FROM app_settings WHERE k='PASS_SESSION_TTL_MINUTES' LIMIT 1")
     row = cur.fetchone()
     try:
-        return max(1, min(int(row["v"]), 15)) if row and row.get("v") else 5
+        return max(1, min(int(row["v"]), 5)) if row and row.get("v") else 2
     except:
-        return 5
+        return 2
 
 
 def _expire_old_sessions(cur, request_id: int):

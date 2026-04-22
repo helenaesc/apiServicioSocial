@@ -265,8 +265,8 @@ def refresh_student_pass():
 
         plain_token = _gen_pass_token(40)
         token_hash = _sha256(plain_token)
-        _get_pass_ttl_minutes = _get_pass_ttl_minutes(cur)
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=_get_pass_ttl_minutes)
+        ttl_minutes = _get_pass_ttl_minutes(cur)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=ttl_minutes)
 
         cur.execute(
             """
@@ -308,7 +308,7 @@ def refresh_student_pass():
                 "plain_token": plain_token,
                 "expires_at": _to_iso_utc(expires_at),
                 "refresh_count": next_refresh_count,
-                "ttl_minutes": _get_pass_ttl_minutes
+                "ttl_minutes": ttl_minutes
             }
         }
 

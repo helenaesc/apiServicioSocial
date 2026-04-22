@@ -1342,6 +1342,116 @@ INDEX_HTML = r"""
       border-color: rgba(239,68,68,.45) !important;
       box-shadow: 0 0 0 3px rgba(239,68,68,.08);
     }
+
+    .pass-card {
+      background: linear-gradient(135deg, #111827, #1f2937);
+      border-radius: 18px;
+      padding: 20px;
+      color: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .pass-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pass-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .pass-status {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #374151;
+    }
+
+    .pass-body {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .pass-name {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .pass-matricula {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    .qr-container {
+      margin: 15px 0;
+    }
+
+    .qr-expire {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .pass-info {
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .pass-actions {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .project-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.10);
+    }
+
+    .project-card.selected {
+      border-color: rgba(37, 99, 235, 0.40);
+      box-shadow: 0 14px 34px rgba(37, 99, 235, 0.12);
+    }
+
+    .project-card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .project-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .project-card-subtitle {
+      margin-top: 4px;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .project-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .project-card-body {
+      margin-top: 14px;
+    }
   </style>
 </head>
 <body>
@@ -1351,7 +1461,7 @@ INDEX_HTML = r"""
     <div class="topbar">
       <div class="brand">
         <strong>Registro de Proyectos</strong>
-        <span>Explora el catálogo, solicita tu pase y cierra tu inscripción.</span>
+        <span>Explora, solicita, valida y cierra tu inscripción con una ruta guiada.</span>
       </div>
       <div class="top-actions">
         <a href="/admin" class="link-btn">Admin</a>
@@ -1485,7 +1595,7 @@ INDEX_HTML = r"""
             </div>
 
             <div class="card-subtitle">
-              Revisa la temporada, filtra el catálogo y elige el proyecto que más te interese. Ver catálogo no te registra todavía.
+              Explora, compara y elige el proyecto que mejor se ajuste a ti. Cuando encuentres uno que te convenza, selecciónalo y continúa con tu solicitud.
             </div>
 
             <div class="catalog-toolbar">
@@ -1562,13 +1672,19 @@ INDEX_HTML = r"""
               Esto no te registra todavía. Solo crea tu solicitud y tu folio para que el staff pueda validarte presencialmente.
             </div>
 
-            <div class="selected-banner" style="margin-bottom:14px;">
+            <div id="resumeFlowBanner" class="selected-banner" style="margin-bottom:14px;">
               <div class="selected-banner-title">¿Ya habías iniciado tu proceso?</div>
-              <div class="selected-banner-text" style="margin-bottom:10px;">
+              <div id="resumeFlowText" class="selected-banner-text" style="margin-bottom:10px;">
                 Escribe tu matrícula y recupera tu avance sin volver a capturar todo.
               </div>
 
-              <div class="form-grid" style="margin-bottom:10px;">
+              <div class="actions" style="margin-top:0; margin-bottom:10px;">
+                <button type="button" class="btn-blue" onclick="recoverStudentProcess()">
+                  Continuar donde me quedé
+                </button>
+              </div>
+
+              <div class="form-grid" style="margin-bottom:0;">
                 <div class="field">
                   <label>Matrícula para recuperar</label>
                   <input
@@ -1579,26 +1695,21 @@ INDEX_HTML = r"""
                     autocomplete="off"
                     placeholder="Ej. a01234564"
                   />
+                  <small class="muted">Úsala si ya habías creado tu solicitud, generado tu QR o estabas por cerrar tu inscripción.</small>
                 </div>
-              </div>
-
-              <div class="actions" style="margin-top:0;">
-                <button type="button" class="btn-secondary" onclick="recoverStudentProcess()">
-                  Recuperar mi proceso
-                </button>
               </div>
             </div>
 
             <div class="form-grid">
               <div class="field">
                 <label>Nombre completo</label>
-                <input
-                  id="fullNameInput"
+                <input id="fullNameInput"
                   type="text"
                   maxlength="100"
                   autocomplete="name"
                   placeholder="Escribe tu nombre completo"
                 />
+                <small class="muted">Escríbelo como quieres que quede registrado en tu solicitud.</small>
               </div>
               <div class="field">
                 <label>Matrícula</label>
@@ -1610,6 +1721,7 @@ INDEX_HTML = r"""
                   autocomplete="off"
                   placeholder="Ej. a01234564"
                 />
+                <small class="muted">Debe tener exactamente 9 caracteres y será la base de tu correo institucional.</small>
               </div>
               <div class="field">
                 <label>Correo principal</label>
@@ -1641,12 +1753,14 @@ INDEX_HTML = r"""
                   autocomplete="tel"
                   placeholder="10 dígitos"
                 />
+                <small class="muted">Solo números. Se usará únicamente si hace falta contactarte.</small>
               </div>
               <div class="field">
                 <label>Carrera</label>
                 <select id="degreeInput">
                   <option value="">Selecciona tu carrera</option>
                 </select>
+                <small class="muted">Elige la carrera con la que quieres identificar tu solicitud.</small>
               </div>
               <div class="field">
                 <label>Semestre</label>
@@ -1657,11 +1771,12 @@ INDEX_HTML = r"""
                   maxlength="2"
                   placeholder="Ej: 5"
                 />
+                <small class="muted">Captura un valor entre 1 y 20.</small>
               </div>
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-orange" onclick="createStudentRequest()">Solicitar pase</button>
+              <button type="button" class="btn-orange" onclick="createStudentRequest()">Crear solicitud y generar folio</button>
               <button type="button" class="btn-secondary" onclick="loadStudentRequest()">Recuperar mis datos</button>
               <button type="button" class="btn-blue" onclick="goToSectionAndStep('passSection', 3)">Ir a mi QR</button>
             </div>
@@ -2155,7 +2270,12 @@ INDEX_HTML = r"""
               Revisa el resumen. Si todo está bien, confirma tu inscripción. Si no, usa “Modificar datos”.
             </div>
             <div class="actions" style="margin-top:10px;">
-              <button type="button" class="btn-secondary" onclick="clearRegistrationPreview()">Modificar datos</button>
+              <button type="button" class="btn-secondary" onclick="clearRegistrationPreview()">
+                Modificar aquí
+              </button>
+              <button type="button" class="btn-blue" onclick="goBackToCatalogFromStep4()">
+                Volver al catálogo y cambiar proyecto
+              </button>
             </div>
           </div>
         `;
@@ -2175,6 +2295,63 @@ INDEX_HTML = r"""
         confirmBtn.disabled = !canConfirm;
         confirmBtn.textContent = canConfirm ? 'Confirmar inscripción' : 'Completa el preview primero';
       }
+    }
+
+    function renderRegistrationSuccess(data) {
+      const box = document.getElementById('requestInfo');
+      if (!box) return;
+
+      box.innerHTML = `
+        <div class="success-shell">
+          <div class="success-icon">✓</div>
+          <div class="success-title">Inscripción completada</div>
+          <div class="success-sub">
+            Tu lugar quedó registrado correctamente. Guarda esta información como comprobante de cierre.
+          </div>
+
+          <div class="info-card" style="margin-top:18px; text-align:left;">
+            <div class="info-head">
+              <div>
+                <div class="info-title">Comprobante oficial del alumno</div>
+                <div class="info-sub">Resumen final de tu inscripción cerrada</div>
+              </div>
+              <div><span class="chip chip-green">CONFIRMADO</span></div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="meta-box">
+                <span class="meta-label">Proyecto</span>
+                <div class="meta-value">${escapeHTML(data?.project_name || '—')}</div>
+              </div>
+
+              <div class="meta-box">
+                <span class="meta-label">Organización</span>
+                <div class="meta-value">${escapeHTML(data?.general_name || '—')}</div>
+              </div>
+
+              <div class="meta-box">
+                <span class="meta-label">Token usado</span>
+                <div class="meta-value">${escapeHTML(data?.token_value || '—')}</div>
+              </div>
+
+              <div class="meta-box">
+                <span class="meta-label">Temporada</span>
+                <div class="meta-value">${escapeHTML(data?.season || getSeason() || '—')}</div>
+              </div>
+
+              <div class="meta-box">
+                <span class="meta-label">Confirmado</span>
+                <div class="meta-value">${escapeHTML(data?.accepted_at || '—')}</div>
+              </div>
+
+              <div class="meta-box">
+                <span class="meta-label">Estado</span>
+                <div class="meta-value">Inscripción cerrada correctamente</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function syncStep4InputsVisualState() {
@@ -2440,17 +2617,17 @@ INDEX_HTML = r"""
 
       if (requestStatus === 'ACCESS_ENABLED') {
         title.textContent = 'Acceso habilitado';
-        subtitle.textContent = 'Ya puedes capturar el token del proyecto, revisar preview y confirmar tu inscripción.';
+        subtitle.textContent = 'El staff ya cerró la validación. Ahora solo falta capturar tu token, revisar el preview y confirmar.';
         setJourneyBadge('ACCESS ENABLED', 'ok');
         setJourneyStepState(2, qrFlowCompleted ? 'done' : 'locked', qrFlowCompleted ? 'QR completado' : 'Sin pase');
-        setJourneyStepState(3, 'done', 'Acceso autorizado');
-        setJourneyStepState(4, 'active', hasPreview ? 'Preview listo' : 'Listo para token');
+        setJourneyStepState(3, 'done', 'Validación terminada');
+        setJourneyStepState(4, 'active', hasPreview ? 'Preview listo' : 'Listo para cierre');
         setJourneyProgress(hasPreview ? 92 : 82);
         lockStep4UI(false);
         alert.className = 'journey-alert ok';
         alert.textContent = hasPreview
-          ? 'Tu preview es válido. Ya puedes confirmar la inscripción.'
-          : 'El paso 4 ya está desbloqueado. Escribe el token del proyecto.';
+          ? 'Tu preview es válido. Ya puedes confirmar tu inscripción.'
+          : 'Tu camino ya está abierto. Captura el token del proyecto y genera el preview.';
         return;
       }
 
@@ -2505,6 +2682,24 @@ INDEX_HTML = r"""
       return normalizeEnrolmentInput();
     }
 
+    function getEffectiveEnrolment() {
+      const inputValue = (getEnrolment() || '').trim().toLowerCase();
+      if (inputValue) return inputValue;
+
+      const requestEnrolment =
+        (currentRequest?.student?.enrolment_number || '').trim().toLowerCase() ||
+        (currentRequest?.user?.enrolment_number || '').trim().toLowerCase();
+
+      if (requestEnrolment) return requestEnrolment;
+
+      try {
+        const saved = (localStorage.getItem('student_enrolment') || '').trim().toLowerCase();
+        if (saved) return saved;
+      } catch {}
+
+      return '';
+    }
+
     function saveStudentEnrolment(enrolment) {
       try {
         const clean = String(enrolment || '').trim().toLowerCase();
@@ -2513,6 +2708,31 @@ INDEX_HTML = r"""
           return;
         }
         localStorage.setItem('student_enrolment', clean);
+      } catch {}
+    }
+
+    function saveSelectedProject(project) {
+      try {
+        if (!project) {
+          localStorage.removeItem('selected_project');
+          return;
+        }
+        localStorage.setItem('selected_project', JSON.stringify(project));
+      } catch {}
+    }
+
+    function loadSavedSelectedProject() {
+      try {
+        const raw = localStorage.getItem('selected_project');
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function clearSavedSelectedProject() {
+      try {
+        localStorage.removeItem('selected_project');
       } catch {}
     }
 
@@ -2686,8 +2906,17 @@ INDEX_HTML = r"""
 
     async function validateAccessAndGoStep4() {
       try {
-        const enrolment = validateEnrolmentStrict();
-        if (!enrolment) return;
+        const enrolment = getEffectiveEnrolment();
+
+        if (!enrolment) {
+          showMsg('Primero recupera tu proceso o escribe tu matrícula.', false);
+          return;
+        }
+
+        if (!/^[a-zA-Z0-9]{9}$/.test(enrolment)) {
+          showMsg('La matrícula debe tener exactamente 9 caracteres.', false);
+          return;
+        }
 
         await loadStudentRequest().catch(() => {});
         await loadStudentPass().catch(() => {});
@@ -2698,12 +2927,14 @@ INDEX_HTML = r"""
           currentRequestStatus ||
           null;
 
-        if (status !== 'ACCESS_ENABLED') {
+        if (status !== 'ACCESS_ENABLED' && !currentRegistration) {
           showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
           return;
         }
 
-        goToSectionAndStep('registrationSection', 4);
+        showStudentSection('registrationSection');
+        setCurrentStep(4);
+        showMsg('Ya puedes pasar al cierre de inscripción.');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -2712,8 +2943,17 @@ INDEX_HTML = r"""
 
     async function validateAccessAndShowRegistration() {
       try {
-        const enrolment = validateEnrolmentStrict();
-        if (!enrolment) return;
+        const enrolment = getEffectiveEnrolment();
+
+        if (!enrolment) {
+          showMsg('Primero recupera tu proceso o escribe tu matrícula.', false);
+          return;
+        }
+
+        if (!/^[a-zA-Z0-9]{9}$/.test(enrolment)) {
+          showMsg('La matrícula debe tener exactamente 9 caracteres.', false);
+          return;
+        }
 
         await loadStudentRequest().catch(() => {});
         await loadStudentPass().catch(() => {});
@@ -2731,6 +2971,7 @@ INDEX_HTML = r"""
 
         showStudentSection('registrationSection');
         setCurrentStep(4);
+        showMsg('Ya puedes continuar con tu inscripción.');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -2862,6 +3103,10 @@ INDEX_HTML = r"""
       const sideRouteStatus = document.getElementById('sideRouteStatus');
       const sideProjectStatus = document.getElementById('sideProjectStatus');
 
+      const heroKicker = document.querySelector('.hero-kicker');
+      const heroTitle = document.querySelector('.hero h1');
+      const heroText = document.querySelector('.hero p');
+
       const status =
         currentRequest?.request?.status ||
         currentRequest?.status ||
@@ -2873,17 +3118,45 @@ INDEX_HTML = r"""
         : 'Sin proyecto seleccionado';
 
       let routeText = 'Explorando catálogo';
+      let kicker = 'Ruta del alumno';
+      let title = 'Explora primero. Decide bien. Regístrate solo cuando ya tengas acceso.';
+      let text = 'Puedes revisar el catálogo antes de solicitar tu pase. Cuando el staff te habilite acceso, podrás cerrar tu inscripción con el token del proyecto.';
 
-      if (status === 'REQUESTED') routeText = 'Solicitud creada';
-      else if (status === 'VALIDATED') routeText = 'Validado por staff';
-      else if (status === 'ACCESS_ENABLED') routeText = 'Acceso habilitado';
-      else if (status === 'REGISTERED') routeText = 'Inscripción completada';
-      else if (status === 'CANCELLED' || status === 'CLOSED') routeText = 'Proceso detenido';
+      if (status === 'REQUESTED') {
+        routeText = 'Solicitud creada';
+        kicker = 'Solicitud lista';
+        title = 'Tu folio ya existe. Ahora toca generar y mostrar tu QR.';
+        text = 'Ya diste el primer paso. El siguiente movimiento es usar tu credencial viva para que staff valide tu proceso presencialmente.';
+      } else if (status === 'VALIDATED') {
+        routeText = 'Validado por staff';
+        kicker = 'Validación completada';
+        title = 'Tu identidad ya fue validada. Falta habilitar el acceso final.';
+        text = 'Ya pasaste la validación presencial. Solo falta que el flujo quede habilitado para cerrar tu inscripción.';
+      } else if (status === 'ACCESS_ENABLED') {
+        routeText = 'Acceso habilitado';
+        kicker = 'Cierre disponible';
+        title = 'Ya puedes cerrar tu inscripción.';
+        text = 'Captura el token del proyecto, revisa el preview y confirma. Estás a un paso del cierre oficial.';
+      } else if (status === 'REGISTERED') {
+        routeText = 'Inscripción completada';
+        kicker = 'Proceso finalizado';
+        title = 'Tu inscripción ya fue completada correctamente.';
+        text = 'Tu lugar quedó registrado. Ya no necesitas generar otro QR ni volver a capturar tu solicitud para esta temporada.';
+      } else if (status === 'CANCELLED' || status === 'CLOSED') {
+        routeText = 'Proceso detenido';
+        kicker = 'Revisión necesaria';
+        title = 'Tu proceso necesita atención de staff o administración.';
+        text = 'Tu solicitud está cerrada o detenida. Si necesitas continuar, acércate con el equipo de apoyo.';
+      }
 
       if (routeStatus) routeStatus.textContent = routeText;
       if (projectStatus) projectStatus.textContent = selectedProjectText;
       if (sideRouteStatus) sideRouteStatus.textContent = routeText;
       if (sideProjectStatus) sideProjectStatus.textContent = selectedProjectText;
+
+      if (heroKicker) heroKicker.textContent = kicker;
+      if (heroTitle) heroTitle.textContent = title;
+      if (heroText) heroText.textContent = text;
     }
 
     function renderEmptyState(title, subtitle) {
@@ -2909,28 +3182,79 @@ INDEX_HTML = r"""
       if (schedule) schedule.value = '';
 
       loadCatalog();
+      showMsg('Filtros limpiados. Ya puedes explorar el catálogo completo.');
     }
 
     function renderSelectedProjectBanner() {
-      const banner = document.getElementById('selectedProjectBanner');
-      const text = document.getElementById('selectedProjectBannerText');
-      if (!banner || !text) return;
+      const box = document.getElementById('selectedProjectBanner');
+      if (!box) return;
 
       if (!currentSelectedProject) {
-        banner.classList.add('hidden');
-        text.textContent = 'Aún no seleccionas proyecto.';
-        updateHeroState();
+        box.innerHTML = `
+          <div class="selected-banner-title">Aún no has elegido proyecto</div>
+          <div class="selected-banner-text">
+            Explora las opciones del catálogo, compara y selecciona un proyecto para continuar con tu solicitud.
+          </div>
+        `;
         return;
       }
 
-      banner.classList.remove('hidden');
-      text.innerHTML = `
-        <strong>${escapeHTML(currentSelectedProject.general_name || currentSelectedProject.organization || 'Proyecto')}</strong> |
-        ${escapeHTML(currentSelectedProject.name || currentSelectedProject.project_name || 'Sin nombre')}
-        · ${escapeHTML(currentSelectedProject.modalidad || currentSelectedProject.modality || currentSelectedProject.modality_name || '—')}
-        · ${escapeHTML(currentSelectedProject.horario || currentSelectedProject.schedule || currentSelectedProject.schedule_name || '—')}
+      const p = currentSelectedProject;
+      const generalName = p.general_name || p.organization || 'Sin nombre general';
+      const projectName = p.name || p.project_name || 'Sin nombre';
+      const partner = p.partner_name || p.socio || 'Sin organización';
+      const modality = p.modalidad || p.modality_name || '—';
+      const schedule = p.horario || p.schedule_name || '—';
+      const day = p.dia || p.week_days_name || '—';
+      const available = p.cupos_disponibles ?? '—';
+
+      box.innerHTML = `
+        <div class="selected-banner-title">Proyecto listo para continuar</div>
+        <div class="selected-banner-text" style="margin-bottom:10px;">
+          Ya elegiste un proyecto. Si todo se ve bien, continúa con tu solicitud o cambia de opción cuando quieras.
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-box">
+            <span class="meta-label">Proyecto</span>
+            <div class="meta-value">${escapeHTML(generalName)} | ${escapeHTML(projectName)}</div>
+          </div>
+
+          <div class="meta-box">
+            <span class="meta-label">Organización</span>
+            <div class="meta-value">${escapeHTML(partner)}</div>
+          </div>
+
+          <div class="meta-box">
+            <span class="meta-label">Modalidad</span>
+            <div class="meta-value">${escapeHTML(modality)}</div>
+          </div>
+
+          <div class="meta-box">
+            <span class="meta-label">Día</span>
+            <div class="meta-value">${escapeHTML(day)}</div>
+          </div>
+
+          <div class="meta-box">
+            <span class="meta-label">Horario</span>
+            <div class="meta-value">${escapeHTML(schedule)}</div>
+          </div>
+
+          <div class="meta-box">
+            <span class="meta-label">Cupos disponibles</span>
+            <div class="meta-value">${escapeHTML(String(available))}</div>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top:12px;">
+          <button type="button" class="btn-blue" onclick="goToSectionAndStep('requestSection', 2)">
+            Continuar con este proyecto
+          </button>
+          <button type="button" class="btn-secondary" onclick="showStudentSection('catalogSection')">
+            Seguir explorando
+          </button>
+        </div>
       `;
-      updateHeroState();
     }
 
     function renderCatalogHeader(projects, eventInfo = null) {
@@ -2946,79 +3270,81 @@ INDEX_HTML = r"""
     }
 
     function renderCatalog(projects) {
-      const list = document.getElementById('catalogList');
-      if (!list) return;
+      const grid = document.getElementById('catalogList');
+      if (!grid) return;
 
       if (!projects || !projects.length) {
-        list.innerHTML = renderEmptyState(
-          'No hay proyectos para mostrar',
-          'Prueba otros filtros o revisa si la temporada ya tiene proyectos activos y visibles para alumno.'
+        grid.innerHTML = renderEmptyState(
+          'No encontramos proyectos con esos filtros',
+          'Prueba limpiando filtros o cambiando tu búsqueda.'
         );
         return;
       }
 
-      list.innerHTML = projects.map((p, idx) => {
-        const projectId = p.id ?? p.project_id ?? '';
-        const generalName = p.general_name ?? p.organization ?? p.partner_group ?? 'Proyecto';
-        const projectName = p.name ?? p.project_name ?? 'Sin nombre';
-        const partnerName = p.socio ?? p.partner ?? p.partner_name ?? 'Sin preferencia';
-        const modalidad = p.modalidad ?? p.modality ?? p.modality_name ?? '—';
-        const dias = p.dia ?? p.days ?? p.week_days ?? p.week_days_name ?? '—';
-        const horario = p.horario ?? p.schedule ?? p.schedule_name ?? '—';
-        const cupos = p.cupos_disponibles ?? p.cupos ?? p.slots_total ?? '—';
-        const objetivos = p.objectives ?? p.comments ?? p.description ?? 'Proyecto activo para esta temporada.';
-        const duracion = p.duration ?? '—';
-        const location = p.location ?? '—';
-        const competencies = p.competencies ?? '—';
-        const isSelected =
-          currentSelectedProject &&
-          Number(currentSelectedProject.id ?? currentSelectedProject.project_id) === Number(projectId);
+      const selectedId = Number(currentSelectedProject?.id ?? currentSelectedProject?.project_id ?? 0);
+
+      grid.innerHTML = projects.map((p) => {
+        const projectId = Number(p.id ?? p.project_id ?? 0);
+        const eventProjectId = p.event_project_id ?? '—';
+        const generalName = p.general_name || 'Sin nombre general';
+        const projectName = p.name || p.project_name || 'Sin nombre';
+        const partner = p.partner_name || p.socio || 'Sin organización';
+        const modality = p.modalidad || p.modality_name || '—';
+        const day = p.dia || p.week_days_name || '—';
+        const schedule = p.horario || p.schedule_name || '—';
+        const location = p.location || 'Sin ubicación';
+        const available = p.cupos_disponibles ?? '—';
+        const selected = selectedId === projectId;
 
         return `
-          <article class="project-card ${isSelected ? 'selected' : ''}">
-            <div class="project-head">
+          <article class="project-card ${selected ? 'selected' : ''}">
+            <div class="project-card-top">
               <div>
-                <div class="project-org">${escapeHTML(generalName)}</div>
-                <div class="project-title">${escapeHTML(projectName)}</div>
-                <div class="project-subtitle">Carrera preferida: ${escapeHTML(partnerName)}</div>
+                <div class="project-card-title">${escapeHTML(generalName)}</div>
+                <div class="project-card-subtitle">${escapeHTML(projectName)}</div>
               </div>
-              <div class="project-rank">CARD<br>#${idx + 1}</div>
-            </div>
-
-            <div class="project-hero">
-              <div class="project-hero-text">
-                ${escapeHTML(String(objetivos).slice(0, 155))}
+              <div>
+                <span class="chip ${selected ? 'chip-blue' : 'chip-neutral'}">
+                  ${selected ? 'SELECCIONADO' : 'DISPONIBLE'}
+                </span>
               </div>
             </div>
 
-            <div class="project-stats">
-              <div class="project-stat">
-                <span class="project-stat-label">Modalidad</span>
-                <div class="project-stat-value">${escapeHTML(modalidad)}</div>
-              </div>
-              <div class="project-stat">
-                <span class="project-stat-label">Días</span>
-                <div class="project-stat-value">${escapeHTML(dias)}</div>
-              </div>
-              <div class="project-stat">
-                <span class="project-stat-label">Horario</span>
-                <div class="project-stat-value">${escapeHTML(horario)}</div>
-              </div>
-              <div class="project-stat">
-                <span class="project-stat-label">Cupos</span>
-                <div class="project-stat-value">${escapeHTML(cupos)}</div>
+            <div class="project-card-meta">
+              <span class="chip chip-neutral">${escapeHTML(partner)}</span>
+              <span class="chip chip-neutral">${escapeHTML(modality)}</span>
+              <span class="chip chip-neutral">${escapeHTML(day)}</span>
+              <span class="chip chip-neutral">${escapeHTML(schedule)}</span>
+            </div>
+
+            <div class="project-card-body">
+              <div class="meta-grid">
+                <div class="meta-box">
+                  <span class="meta-label">Ubicación</span>
+                  <div class="meta-value">${escapeHTML(location)}</div>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">Cupos disponibles</span>
+                  <div class="meta-value">${escapeHTML(String(available))}</div>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">ID de proyecto</span>
+                  <div class="meta-value">${escapeHTML(String(projectId))}</div>
+                </div>
+                <div class="meta-box">
+                  <span class="meta-label">ID en temporada</span>
+                  <div class="meta-value">${escapeHTML(String(eventProjectId))}</div>
+                </div>
               </div>
             </div>
 
-            <div class="project-extra">
-              <div class="project-extra-row"><strong>Duración:</strong> ${escapeHTML(duracion)}</div>
-              <div class="project-extra-row"><strong>Lugar:</strong> ${escapeHTML(location)}</div>
-              <div class="project-extra-row"><strong>Competencias:</strong> ${escapeHTML(competencies)}</div>
-            </div>
-
-            <div class="actions">
-              <button type="button" class="btn-primary" onclick="selectProject(${Number(projectId)})">Elegir proyecto</button>
-              <button type="button" class="btn-blue" onclick="selectProjectAndContinue(${Number(projectId)})">Elegir y seguir</button>
+            <div class="actions" style="margin-top:12px;">
+              <button type="button" class="btn-secondary" onclick="selectProject(${projectId})">
+                ${selected ? 'Proyecto elegido' : 'Elegir proyecto'}
+              </button>
+              <button type="button" class="btn-blue" onclick="selectProjectAndContinue(${projectId})">
+                Elegir y continuar
+              </button>
             </div>
           </article>
         `;
@@ -3030,19 +3356,39 @@ INDEX_HTML = r"""
       if (!project) return;
 
       currentSelectedProject = project;
-      document.getElementById('selectedProjectId').value = String(project.id ?? project.project_id ?? '');
-      document.getElementById('selectedProjectName').value =
-        `${project.general_name ?? project.organization ?? 'Sin nombre general'} | ${project.name ?? project.project_name ?? 'Sin nombre'}`;
+      saveSelectedProject(project);
+
+      const selectedProjectId = document.getElementById('selectedProjectId');
+      const selectedProjectName = document.getElementById('selectedProjectName');
+      const acceptanceFullNameInput = document.getElementById('acceptanceFullNameInput');
+
+      if (selectedProjectId) {
+        selectedProjectId.value = String(project.id ?? project.project_id ?? '');
+      }
+
+      if (selectedProjectName) {
+        selectedProjectName.value =
+          `${project.general_name ?? project.organization ?? 'Sin nombre general'} | ${project.name ?? project.project_name ?? 'Sin nombre'}`;
+      }
+
+      if (acceptanceFullNameInput && !acceptanceFullNameInput.value.trim()) {
+        const fullName = currentRequest?.student?.full_name || currentRequest?.user?.full_name || '';
+        if (fullName) acceptanceFullNameInput.value = fullName;
+      }
 
       renderCatalog(currentCatalog);
       renderSelectedProjectBanner();
+      syncStep4InputsVisualState();
+      renderStep4PremiumState();
       updateHeroState();
+
       showMsg('Proyecto seleccionado para el cierre de inscripción');
     }
 
     function selectProjectAndContinue(projectId) {
       selectProject(projectId);
       goToSectionAndStep('requestSection', 2);
+      showMsg('Proyecto elegido. Ahora continúa con tu solicitud.');
     }
 
     function fillSelect(id, items, placeholderText = 'Selecciona', labelFn = null, valueFn = null) {
@@ -3110,6 +3456,28 @@ INDEX_HTML = r"""
       } catch (e) {
         console.error('loadCatalog error:', e);
         showMsg(humanizeErrorMessage(e), false);
+
+        const savedProject = loadSavedSelectedProject();
+
+        if (savedProject && Array.isArray(currentCatalog) && currentCatalog.length) {
+          const match = currentCatalog.find(
+            p => Number(p.id ?? p.project_id) === Number(savedProject.id ?? savedProject.project_id)
+          );
+
+          if (match) {
+            currentSelectedProject = match;
+
+            document.getElementById('selectedProjectId').value =
+              String(match.id ?? match.project_id ?? '');
+
+            document.getElementById('selectedProjectName').value =
+              `${match.general_name ?? match.organization ?? 'Sin nombre general'} | ${match.name ?? match.project_name ?? 'Sin nombre'}`;
+
+            renderSelectedProjectBanner();
+            renderCatalog(currentCatalog);
+            updateHeroState();
+          }
+        }
 
         const list = document.getElementById('catalogList');
         if (list) {
@@ -3206,6 +3574,7 @@ INDEX_HTML = r"""
       `;
       updateHeroState();
       syncRegistrationLock();
+      updateResumeFlowBanner();
     }
 
     function hydrateStudentFormFromRequest(data) {
@@ -3249,10 +3618,51 @@ INDEX_HTML = r"""
       renderGeneratedInstitutionalEmail();
     }
 
+    function updateResumeFlowBanner() {
+      const banner = document.getElementById('resumeFlowBanner');
+      const text = document.getElementById('resumeFlowText');
+      const recoverInput = document.getElementById('recoverEnrolmentInput');
+
+      if (!banner || !text) return;
+
+      const savedEnrolment = getEffectiveEnrolment();
+      const status = getStudentStatus();
+
+      if (recoverInput && savedEnrolment && !recoverInput.value.trim()) {
+        recoverInput.value = savedEnrolment.toUpperCase();
+      }
+
+      if (!savedEnrolment) {
+        text.textContent = 'Escribe tu matrícula y recupera tu avance sin volver a capturar todo.';
+        return;
+      }
+
+      if (status === 'REGISTERED') {
+        text.textContent = 'Ya detectamos una matrícula con inscripción completada. Puedes recuperar el comprobante final.';
+        return;
+      }
+
+      if (status === 'ACCESS_ENABLED') {
+        text.textContent = 'Ya detectamos una matrícula con acceso habilitado. Puedes continuar directo al cierre de inscripción.';
+        return;
+      }
+
+      if (status === 'VALIDATED' || status === 'REQUESTED') {
+        text.textContent = 'Ya detectamos una matrícula con solicitud activa. Puedes continuar mostrando tu QR al staff.';
+        return;
+      }
+
+      if (status) {
+        text.textContent = 'Ya detectamos una matrícula con avance guardado. Puedes continuar donde te quedaste.';
+        return;
+      }
+
+      text.textContent = 'Escribe tu matrícula y recupera tu avance sin volver a capturar todo.';
+    }
+
     async function recoverStudentProcess() {
       try {
         const enrolment = getRecoverEnrolment();
-
         if (!/^[a-zA-Z0-9]{9}$/.test(enrolment)) {
           return showMsg('La matrícula para recuperar debe tener exactamente 9 caracteres.', false);
         }
@@ -3263,6 +3673,7 @@ INDEX_HTML = r"""
         }
 
         renderGeneratedInstitutionalEmail();
+        updateResumeFlowBanner();
 
         await loadStudentRequest();
         const status = getStudentStatus();
@@ -3294,7 +3705,7 @@ INDEX_HTML = r"""
 
         showStudentSection('requestSection');
         setCurrentStep(2);
-        showMsg('Proceso recuperado correctamente.');
+        showMsg('Proceso recuperado correctamente. Revisa tus datos y continúa.');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -3307,29 +3718,34 @@ INDEX_HTML = r"""
       if (status === 'REGISTERED') {
         showStudentSection('statusSection');
         setCurrentStep(5);
+        showMsg('Tu inscripción ya fue completada. Aquí puedes consultar tu comprobante y estado final.');
         return;
       }
 
       if (status === 'ACCESS_ENABLED') {
         showStudentSection('registrationSection');
         setCurrentStep(4);
+        showMsg('Tu acceso ya fue habilitado. Solo falta revisar el preview y confirmar.');
         return;
       }
 
       if (status === 'VALIDATED' || status === 'REQUESTED') {
         showStudentSection('passSection');
         setCurrentStep(3);
+        showMsg('Tu siguiente paso es mostrar tu QR al staff para continuar.');
         return;
       }
 
       if (status) {
         showStudentSection('requestSection');
         setCurrentStep(2);
+        showMsg('Tu solicitud ya existe. Revisa tu información y continúa con el siguiente paso.');
         return;
       }
 
       showStudentSection('catalogSection');
       setCurrentStep(1);
+      showMsg('Empieza explorando el catálogo y elige un proyecto con intención.');
     }
 
     async function createStudentRequest() {
@@ -3393,6 +3809,7 @@ INDEX_HTML = r"""
 
         renderRequestInfo(data);
         hydrateStudentFormFromRequest(data);
+        updateResumeFlowBanner();
         updateHeroState();
         renderJourneyState();
         syncRegistrationLock();
@@ -3402,7 +3819,7 @@ INDEX_HTML = r"""
         startStudentAutoSync();
 
         goToSectionAndStep('passSection', 3);
-        showMsg(data.message || 'Solicitud creada correctamente');
+        showMsg(data.message || 'Solicitud creada. Tu siguiente paso es mostrar tu QR al staff.');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -3463,98 +3880,6 @@ INDEX_HTML = r"""
         height: 190,
         correctLevel: QRCode.CorrectLevel.M
       });
-    }
-
-    function renderPassInfo(data) {
-      const box = document.getElementById('passInfo');
-      const statusBadge = document.getElementById('qrStatusBadge');
-      if (!box || !statusBadge) return;
-
-      if (!data) {
-        box.innerHTML = renderEmptyState(
-          'Todavía no hay información del pase',
-          'Cuando tu solicitud exista, podrás consultar o refrescar tu credencial viva.'
-        );
-        statusBadge.className = 'chip chip-neutral';
-        statusBadge.textContent = 'Sin sesión';
-        clearCurrentPlainQrToken();
-        renderStudentQR('');
-        renderJourneyState();
-        updateHeroState();
-        syncRegistrationLock();
-        syncStep4GateText();
-        return;
-      }
-
-      const request = data.request || {};
-      const event = data.event || {};
-      const student = data.student || {};
-      const session = data.pass_session || data.active_session || null;
-      const requestStatus = getStudentStatus();
-      const shouldShowQrSession = ['REQUESTED', 'VALIDATED'].includes(String(requestStatus || '').toUpperCase());
-      const ttlText = session?.expires_at || '—';
-
-      box.innerHTML = `
-        <div class="info-card">
-          <div class="info-head">
-            <div>
-              <div class="info-title">${escapeHTML(student.full_name || 'Alumno')}</div>
-              <div class="info-sub">Matrícula: ${escapeHTML(student.enrolment_number || '—')}</div>
-            </div>
-            <div>${renderRequestStatus(request.status)}</div>
-          </div>
-          <div class="meta-grid">
-            <div class="meta-box">
-              <span class="meta-label">Folio</span>
-              <div class="meta-value">${escapeHTML(request.folio || '—')}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-label">Temporada</span>
-              <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-label">Sesión activa</span>
-              <div class="meta-value">${session ? escapeHTML(session.status || 'ACTIVE') : 'Sin sesión activa'}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-label">Expira</span>
-              <div class="meta-value">${session ? escapeHTML(ttlText) : '—'}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-label">Refresh count</span>
-              <div class="meta-value">${session ? escapeHTML(session.refresh_count || 0) : 0}</div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      const freshToken =
-        data.pass_session?.plain_token ||
-        data.active_session?.plain_token ||
-        '';
-
-      if (freshToken) {
-        setCurrentPlainQrToken(freshToken);
-      }
-
-      const tokenToRender = (session && shouldShowQrSession) ? getCurrentPlainQrToken() : '';
-
-      if (session && shouldShowQrSession) {
-        statusBadge.className = 'chip chip-green';
-        statusBadge.textContent = 'QR activo';
-      } else {
-        statusBadge.className = 'chip chip-neutral';
-        statusBadge.textContent = 'Sin sesión';
-        clearCurrentPlainQrToken();
-      }
-      if (!shouldShowQrSession) {
-        clearCurrentPlainQrToken();
-      }
-      renderStudentQR(tokenToRender);
-      renderJourneyState();
-      updateHeroState();
-      syncRegistrationLock();
-      syncStep4GateText();
     }
 
     async function loadStudentPass() {
@@ -3646,33 +3971,48 @@ INDEX_HTML = r"""
               <span class="meta-label">Alumno</span>
               <div class="meta-value">${escapeHTML(student.full_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Temporada</span>
               <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Proyecto</span>
               <div class="meta-value">${escapeHTML(project.general_name || '—')} | ${escapeHTML(project.project_name || '—')}</div>
             </div>
+
             <div class="meta-box">
-              <span class="meta-label">Carrera preferida</span>
+              <span class="meta-label">Organización</span>
               <div class="meta-value">${escapeHTML(project.partner_name || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Token</span>
               <div class="meta-value">${escapeHTML(token.token_value || '—')}</div>
             </div>
+
             <div class="meta-box">
               <span class="meta-label">Token expira</span>
               <div class="meta-value">${escapeHTML(token.expires_at || '—')}</div>
             </div>
           </div>
+
+          <div class="actions" style="margin-top:14px;">
+            <button type="button" class="btn-secondary" onclick="clearRegistrationPreview()">
+              Modificar aquí
+            </button>
+            <button type="button" class="btn-blue" onclick="goBackToCatalogFromStep4()">
+              Volver al catálogo y cambiar proyecto
+            </button>
+          </div>
         </div>
       `;
     }
 
-    function clearRegistrationPreview() {
+    function clearStep4TransientState() {
       currentPreview = null;
+
       const previewBox = document.getElementById('registrationPreview');
       if (previewBox) {
         previewBox.innerHTML = renderEmptyState(
@@ -3680,59 +4020,208 @@ INDEX_HTML = r"""
           'Escribe el token del proyecto y usa “Ver preview” para revisar antes de confirmar.'
         );
       }
-      renderStep4PremiumState();
+
+      const successBox = document.getElementById('registrationSuccessBox');
+      if (successBox) {
+        successBox.classList.add('hidden');
+        successBox.innerHTML = '';
+      }
+
+      const tokenInput = document.getElementById('projectTokenInput');
+      const checkbox = document.getElementById('acceptanceCheckbox');
+
+      if (tokenInput) tokenInput.value = '';
+      if (checkbox) checkbox.checked = false;
+
+      syncStep4GateText();
       syncStep4InputsVisualState();
-      showMsg('Preview liberado. Ya puedes modificar los datos.');
+      renderStep4PremiumState();
     }
 
-    function renderRegistrationSuccess(data) {
-      const box = document.getElementById('requestInfo');
-      if (!box) return;
+
+    function clearRegistrationPreview() {
+      currentPreview = null;
+
+      const previewBox = document.getElementById('registrationPreview');
+      if (previewBox) {
+        previewBox.innerHTML = renderEmptyState(
+          'Todavía no hay preview',
+          'Escribe el token del proyecto y usa “Ver preview” para revisar antes de confirmar.'
+        );
+      }
+
+      const tokenInput = document.getElementById('projectTokenInput');
+      const nameInput = document.getElementById('acceptanceFullNameInput');
+      const legalInput = document.getElementById('legalVersionInput');
+
+      if (tokenInput) tokenInput.disabled = false;
+      if (nameInput) nameInput.disabled = false;
+      if (legalInput) legalInput.disabled = false;
+
+      syncStep4GateText();
+      syncStep4InputsVisualState();
+      renderStep4PremiumState();
+
+      showMsg('Preview liberado. Ya puedes modificar la información.');
+    }
+
+    function goBackToCatalogFromStep4() {
+      clearStep4TransientState();
+
+      showStudentSection('catalogSection');
+      setCurrentStep(1);
+
+      renderSelectedProjectBanner();
+      renderCatalog(currentCatalog);
+      updateHeroState();
+
+      showMsg('Volviste al catálogo. Tu proceso sigue guardado; solo vas a cambiar tu selección o revisar antes de continuar.');
+    }
+
+    function renderPassInfo(data) {
+      const box = document.getElementById('passInfo');
+      const statusBadge = document.getElementById('qrStatusBadge');
+      const qrPlainToken = document.getElementById('qrPlainToken');
+
+      if (!box || !statusBadge) return;
+
+      if (!data) {
+        box.innerHTML = renderEmptyState(
+          'Todavía no hay información del pase',
+          'Cuando tu solicitud exista, podrás consultar o refrescar tu credencial viva.'
+        );
+        statusBadge.className = 'chip chip-neutral';
+        statusBadge.textContent = 'Sin sesión';
+        clearCurrentPlainQrToken();
+        renderStudentQR('');
+        renderJourneyState();
+        updateHeroState();
+        syncRegistrationLock();
+        syncStep4GateText();
+        return;
+      }
+
+      const request = data.request || {};
+      const event = data.event || {};
+      const student = data.student || {};
+      const session = data.pass_session || data.active_session || null;
+
+      const requestStatus = getStudentStatus();
+      const shouldShowQrSession = ['REQUESTED', 'VALIDATED'].includes(
+        String(requestStatus || '').toUpperCase()
+      );
+
+      const freshToken =
+        data.pass_session?.plain_token ||
+        data.active_session?.plain_token ||
+        '';
+
+      if (freshToken) {
+        setCurrentPlainQrToken(freshToken);
+      }
+
+      const tokenToRender = (session && shouldShowQrSession)
+        ? getCurrentPlainQrToken()
+        : '';
+
+      let statusText = 'Sin sesión';
+      let helperText = 'Genera o consulta tu credencial viva.';
+      let timerText = 'Sin vigencia';
+      let badgeClass = 'chip chip-neutral';
+
+      if (session && shouldShowQrSession) {
+        statusText = 'QR activo';
+        helperText = 'Muéstralo al staff para continuar.';
+        timerText = session.expires_at || '—';
+        badgeClass = 'chip chip-green';
+      } else if (request.status === 'ACCESS_ENABLED') {
+        statusText = 'Acceso habilitado';
+        helperText = 'Ya no necesitas mostrar otro QR. Continúa al paso 4.';
+        timerText = 'Completado';
+        badgeClass = 'chip chip-blue';
+        clearCurrentPlainQrToken();
+      } else if (request.status === 'REGISTERED') {
+        statusText = 'Proceso cerrado';
+        helperText = 'Tu inscripción ya fue completada.';
+        timerText = 'Finalizado';
+        badgeClass = 'chip chip-green';
+        clearCurrentPlainQrToken();
+      } else {
+        clearCurrentPlainQrToken();
+      }
+
+      statusBadge.className = badgeClass;
+      statusBadge.textContent = statusText;
 
       box.innerHTML = `
-        <div class="success-shell">
-          <div class="success-icon">✓</div>
-          <div class="success-title">Inscripción completada</div>
-          <div class="success-sub">
-            Tu lugar quedó registrado correctamente. Guarda esta información y verifica tu proyecto asignado.
+        <div class="pass-card">
+          <div class="pass-header">
+            <div class="pass-title">Credencial viva</div>
+            <div class="pass-status">${escapeHTML(statusText)}</div>
           </div>
 
-          <div class="meta-grid" style="margin-top:18px;">
-            <div class="meta-box">
-              <span class="meta-label">Proyecto</span>
-              <div class="meta-value">${escapeHTML(data?.project_name || '—')}</div>
+          <div class="pass-body">
+            <div class="pass-user">
+              <div class="pass-name">${escapeHTML(student.full_name || 'Alumno')}</div>
+              <div class="pass-matricula">${escapeHTML(student.enrolment_number || '—')}</div>
             </div>
-            <div class="meta-box">
-              <span class="meta-label">Organización</span>
-              <div class="meta-value">${escapeHTML(data?.general_name || '—')}</div>
+
+            <div class="meta-grid" style="margin-top:14px; margin-bottom:14px;">
+              <div class="meta-box">
+                <span class="meta-label">Folio</span>
+                <div class="meta-value">${escapeHTML(request.folio || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Temporada</span>
+                <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Refresh count</span>
+                <div class="meta-value">${session ? escapeHTML(session.refresh_count || 0) : 0}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Vigencia</span>
+                <div class="meta-value">${escapeHTML(timerText)}</div>
+              </div>
             </div>
-            <div class="meta-box">
-              <span class="meta-label">Token usado</span>
-              <div class="meta-value">${escapeHTML(data?.token_value || '—')}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-label">Confirmado</span>
-              <div class="meta-value">${escapeHTML(data?.accepted_at || '—')}</div>
+
+            <div class="pass-info">
+              <div>${escapeHTML(helperText)}</div>
+              <div class="muted">No compartas capturas. Si el staff te lo pide, actualiza el QR.</div>
             </div>
           </div>
         </div>
       `;
+
+      if (!shouldShowQrSession) {
+        renderStudentQR('');
+        if (qrPlainToken) qrPlainToken.textContent = 'No necesitas QR en este momento';
+      } else {
+        renderStudentQR(tokenToRender);
+        if (qrPlainToken) {
+          qrPlainToken.textContent = tokenToRender || 'Genera tu código';
+        }
+      }
+
+      renderJourneyState();
+      updateHeroState();
+      syncRegistrationLock();
+      syncStep4GateText();
     }
 
     async function previewRegistration() {
       try {
-        const enrolment = getEnrolment();
+        const enrolment = getEffectiveEnrolment();
         const projectId = document.getElementById('selectedProjectId').value.trim();
         const tokenValue = document.getElementById('projectTokenInput').value.trim();
-
-        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
-        if (!projectId) return showMsg('Primero elige un proyecto', false);
-        if (!tokenValue) return showMsg('Falta el token del proyecto', false);
 
         if (!canStudentRegister) {
           return showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
         }
 
+        if (!enrolment) return showMsg('Primero recupera tu proceso o escribe tu matrícula', false);
+        if (!projectId) return showMsg('Primero elige un proyecto', false);
+        if (!tokenValue) return showMsg('Falta el token del proyecto', false);
         const payload = {
           enrolment_number: enrolment,
           season: getSeason(),
@@ -3746,8 +4235,11 @@ INDEX_HTML = r"""
         ]);
 
         currentPreview = data;
+
+        renderPreview(data);
         renderStep4PremiumState();
         syncStep4InputsVisualState();
+
         showMsg(data.message || 'Preview válido');
       } catch (e) {
         console.error(e);
@@ -3757,22 +4249,22 @@ INDEX_HTML = r"""
 
     async function confirmRegistration() {
       try {
-        const enrolment = getEnrolment();
+        const enrolment = getEffectiveEnrolment();
         const projectId = document.getElementById('selectedProjectId').value.trim();
         const tokenValue = document.getElementById('projectTokenInput').value.trim();
         const acceptedFullName = document.getElementById('acceptanceFullNameInput').value.trim();
         const acceptedCheckbox = document.getElementById('acceptanceCheckbox').checked;
         const legalVersion = document.getElementById('legalVersionInput').value.trim() || 'v1';
 
-        if (!enrolment) return showMsg('Primero escribe tu matrícula', false);
-        if (!projectId) return showMsg('Primero elige un proyecto', false);
-        if (!tokenValue) return showMsg('Falta el token del proyecto', false);
-        if (!acceptedFullName) return showMsg('Debes escribir tu nombre completo', false);
-        if (!acceptedCheckbox) return showMsg('Debes aceptar la confirmación legal', false);
-
         if (!canStudentRegister) {
           return showMsg('Aún no tienes acceso habilitado. Primero muestra tu QR al staff.', false);
         }
+
+        if (!enrolment) return showMsg('Primero recupera tu proceso o escribe tu matrícula.', false);
+        if (!projectId) return showMsg('Primero elige un proyecto.', false);
+        if (!tokenValue) return showMsg('Falta el token del proyecto.', false);
+        if (!acceptedFullName) return showMsg('Debes escribir tu nombre completo.', false);
+        if (!acceptedCheckbox) return showMsg('Debes aceptar la confirmación legal.', false);
 
         const payload = {
           enrolment_number: enrolment,
@@ -3790,26 +4282,25 @@ INDEX_HTML = r"""
         ]);
 
         currentRegistration = {
-          project_name: data.registration?.project_name || currentSelectedProject?.name || '—',
-          general_name: data.registration?.general_name || currentSelectedProject?.general_name || '—',
-          token_value: data.registration?.token_value || tokenValue,
-          accepted_at: data.registration?.accepted_at || new Date().toLocaleString(),
-          season: getSeason()
+          project_name: data?.registration?.project_name || data?.project?.project_name || currentSelectedProject?.name || '—',
+          general_name: data?.registration?.general_name || data?.project?.general_name || currentSelectedProject?.general_name || '—',
+          token_value: data?.registration?.token_value || data?.token?.token_value || tokenValue,
+          accepted_at: data?.legal_confirmation?.accepted_at || new Date().toLocaleString(),
+          season: data?.event?.season || getSeason() || '—'
         };
 
-        renderRegistrationSuccess(currentRegistration);
-        renderStep4PremiumState();
-        syncStep4InputsVisualState();
         clearCurrentPlainQrToken();
+        clearSavedSelectedProject();
 
         await loadStudentRequest().catch(() => {});
         await loadStudentPass().catch(() => {});
-        
+
         stopStudentAutoSync();
         setCurrentStep(5);
         updateHeroState();
-        showMsg(data.message || 'Registro completado');
+        renderRegistrationSuccess(currentRegistration);
         showStudentSection('statusSection');
+        showMsg(data.message || 'Registro completado.');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -3915,6 +4406,30 @@ INDEX_HTML = r"""
           });
         }
 
+        const acceptanceFullNameInput = document.getElementById('acceptanceFullNameInput');
+        if (acceptanceFullNameInput) {
+          acceptanceFullNameInput.addEventListener('input', () => {
+            syncStep4InputsVisualState();
+            renderStep4PremiumState();
+          });
+        }
+
+        const legalVersionInput = document.getElementById('legalVersionInput');
+        if (legalVersionInput) {
+          legalVersionInput.addEventListener('input', () => {
+            syncStep4InputsVisualState();
+            renderStep4PremiumState();
+          });
+        }
+
+        const acceptanceCheckbox = document.getElementById('acceptanceCheckbox');
+        if (acceptanceCheckbox) {
+          acceptanceCheckbox.addEventListener('change', () => {
+            syncStep4InputsVisualState();
+            renderStep4PremiumState();
+          });
+        }
+
         renderGeneratedInstitutionalEmail();
 
         await loadCatalogsForSeason().catch((e) => console.error(e));
@@ -3934,6 +4449,7 @@ INDEX_HTML = r"""
         if (enrolment) {
           continueStudentFlowFromStatus();
         } else {
+          updateResumeFlowBanner();
           showStudentSection('catalogSection');
           setCurrentStep(1);
         }

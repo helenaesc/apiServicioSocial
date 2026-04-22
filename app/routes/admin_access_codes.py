@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from mysql.connector import Error
 from ..database import execute_tx, fetch_one
 from ..authz import require_role, ROLE_ADMIN, ROLE_STAFF
@@ -8,7 +8,16 @@ from datetime import datetime, timedelta
 
 admin_access_bp = Blueprint("admin_access", __name__)
 
+def _get_current_role(req):
+    session_role = session.get("admin_user_role")
+    if session_role in {ROLE_ADMIN, ROLE_STAFF}:
+        return session_role
 
+    legacy_role = require_role(req, {ROLE_ADMIN, ROLE_STAFF})
+    if legacy_role:
+        return legacy_role
+
+    return None
 
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -34,8 +43,8 @@ def _get_access_ttl_minutes():
 
 @admin_access_bp.put("/api/admin/access-code-ttl")
 def update_access_ttl():
-    role = require_role(request, {ROLE_ADMIN})
-    if not role:
+    role = _get_current_role(request)
+    if role != ROLE_ADMIN:
         return jsonify({"error": "No autorizado (solo ADMIN)"}), 401
 
     payload = request.get_json(silent=True) or {}
@@ -67,8 +76,8 @@ def update_access_ttl():
 
 @admin_access_bp.post("/api/admin/access-codes")
 def generate_access_code():
-    role = require_role(request, {ROLE_ADMIN, ROLE_STAFF})
-    if not role:
+    role = _get_current_role(request)
+    if role not in {ROLE_ADMIN, ROLE_STAFF}:
         return jsonify({"error": "No autorizado (ADMIN o STAFF)"}), 401
 
     payload = request.get_json(silent=True) or {}

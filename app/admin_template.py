@@ -1197,6 +1197,95 @@ ADMIN_HTML = r"""
       color: var(--text);
     }
 
+    .executive-alert {
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      background: linear-gradient(135deg, white 0%, var(--blue-soft) 100%);
+      box-shadow: var(--shadow-sm);
+      padding: 18px;
+    }
+
+    .executive-alert.high {
+      background: linear-gradient(135deg, white 0%, var(--pink-soft) 100%);
+      border-color: #ffd4dc;
+    }
+
+    .executive-alert.medium {
+      background: linear-gradient(135deg, white 0%, var(--orange-soft) 100%);
+      border-color: #ffd9c0;
+    }
+
+    .executive-alert.low {
+      background: linear-gradient(135deg, white 0%, var(--green-soft) 100%);
+      border-color: #d5efe6;
+    }
+
+    .executive-alert__kicker {
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 900;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+
+    .executive-alert__title {
+      font-size: 1.08rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .executive-alert__sub {
+      font-size: .92rem;
+      color: var(--text-soft);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .executive-alert__actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .focus-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .focus-card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: white;
+      box-shadow: var(--shadow-sm);
+      padding: 16px;
+    }
+
+    .focus-card__label {
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 900;
+      color: var(--text-soft);
+      margin-bottom: 8px;
+    }
+
+    .focus-card__value {
+      font-size: 1.65rem;
+      font-weight: 900;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .focus-card__sub {
+      font-size: .86rem;
+      color: var(--text-soft);
+      line-height: 1.45;
+    }
+
     .support-summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1438,6 +1527,155 @@ ADMIN_HTML = r"""
     #studentSupportModule .muted {
       max-width: 100%;
     }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .chart-card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      background: white;
+      box-shadow: var(--shadow-sm);
+      padding: 16px;
+    }
+
+    .chart-card__head {
+      margin-bottom: 10px;
+    }
+
+    .chart-card__title {
+      font-size: .98rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .chart-card__sub {
+      font-size: .84rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      min-height: 260px;
+    }
+
+    .project-ops-alert {
+      border: 1px solid var(--line);
+      border-radius: var(--r-xl);
+      background: linear-gradient(135deg, white 0%, var(--blue-soft) 100%);
+      box-shadow: var(--shadow-sm);
+      padding: 18px;
+      margin-top: 14px;
+    }
+
+    .project-ops-alert.high {
+      background: linear-gradient(135deg, white 0%, var(--pink-soft) 100%);
+      border-color: #ffd4dc;
+    }
+
+    .project-ops-alert.medium {
+      background: linear-gradient(135deg, white 0%, var(--orange-soft) 100%);
+      border-color: #ffd9c0;
+    }
+
+    .project-ops-alert.low {
+      background: linear-gradient(135deg, white 0%, var(--green-soft) 100%);
+      border-color: #d5efe6;
+    }
+
+    .project-ops-alert__kicker {
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 900;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+
+    .project-ops-alert__title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .project-ops-alert__sub {
+      font-size: .92rem;
+      color: var(--text-soft);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .project-ops-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    .project-ops-card__top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .project-ops-card__title {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .project-ops-card__sub {
+      font-size: .88rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .project-ops-card__insight {
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .project-ops-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+    }
+
+    .project-ops-priority {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: .74rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .project-ops-priority.high {
+      background: var(--pink-soft);
+      color: var(--pink);
+    }
+
+    .project-ops-priority.medium {
+      background: var(--orange-soft);
+      color: var(--orange);
+    }
+
+    .project-ops-priority.low {
+      background: var(--green-soft);
+      color: var(--green);
+    }
   </style>
 </head>
 <body>
@@ -1588,39 +1826,39 @@ ADMIN_HTML = r"""
               <button type="button" class="btn-secondary" onclick="loadEvents()">Recargar temporadas</button>
             </div>
             <div class="dashboard-shell">
+              <div id="dashboardExecutiveAlert"></div>
               <div id="dashboardSummary" class="stats-grid"></div>
               <div id="dashboardHealthHero"></div>
               <div id="dashboardCasesBoard"></div>
               <div id="dashboardProjectsHighlights"></div>
+              <div id="dashboardCharts"></div>
+              <div id="dashboardOperationalFocus"></div>
               <div id="dashboardProjectsBody" class="record-grid"></div>
             </div>
           </div>
 
           <div class="card span-12">
             <div class="module-card-title">
-              <h2>Vigencias operativas</h2>
+              <h2>Vigencia del QR del alumno</h2>
               <span class="screen-chip">Seguridad</span>
             </div>
             <div class="muted">
-              Ajusta cuánto vive el QR del alumno y cuánto duran los tokens de proyecto.
-              Ambos valores están limitados por backend para evitar configuraciones peligrosas.
+              Define cuántos minutos vive la credencial del alumno antes de exigir refresh. Menor tiempo = más seguridad; mayor tiempo = menos fricción operativa.
             </div>
+
             <div class="form-grid">
               <div class="field">
                 <label>TTL QR alumno (minutos)</label>
                 <input id="passTtlMinutesInput" type="number" min="1" max="5" placeholder="Ej: 2">
               </div>
-              <div class="field">
-                <label>TTL token proyecto (horas)</label>
-                <input id="tokenTtlHoursInput" type="number" min="1" max="24" placeholder="Ej: 4">
-              </div>
             </div>
+
             <div class="actions">
-              <button type="button" class="btn-primary" onclick="loadAdminSettings()">Recargar settings</button>
-              <button type="button" class="btn-secondary" onclick="savePassTtlSeconds()">Guardar TTL QR</button>
-              <button type="button" class="btn-secondary" onclick="saveTokenTtlHours()">Guardar TTL token</button>
+              <button type="button" class="btn-primary" onclick="loadAdminSettings()">Recargar setting</button>
+              <button type="button" class="btn-secondary" onclick="savePassTtlMinutes()">Guardar TTL QR</button>
             </div>
-            <div id="adminSettingsInfo" class="record-grid" style="margin-top:14px;"></div>
+
+            <div id="adminQrSettingsInfo" class="record-grid" style="margin-top:14px;"></div>
           </div>
         </div>
       </div>
@@ -2005,11 +2243,12 @@ ADMIN_HTML = r"""
               <h2>Administrar proyectos activos</h2>
               <span class="screen-chip">Edición y operación</span>
             </div>
-
             <div class="muted" style="margin-bottom:8px;">
               Aquí puedes cambiar el cupo de cada proyecto activo, revisar sus tokens y actualizar su estado.
             </div>
 
+            <div id="eventProjectsSummary" class="support-summary-wrap" style="margin-top:14px;"></div>
+            <div id="eventProjectsExecutiveAlert"></div>
             <div id="eventProjectsList" class="record-grid"></div>
           </div>
         </div>
@@ -2089,6 +2328,30 @@ ADMIN_HTML = r"""
 
             <div id="tokensSummary" class="stats-grid"></div>
             <div id="tokensCards" class="record-grid"></div>
+          </div>
+
+          <div class="card span-12">
+            <div class="module-card-title">
+              <h2>Vigencia de tokens de proyecto</h2>
+              <span class="screen-chip">Configuración</span>
+            </div>
+            <div class="muted">
+              Define cuántas horas vivirán los tokens nuevos que genere administración. Menor tiempo = menos exposición; mayor tiempo = más comodidad operativa.
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>TTL token proyecto (horas)</label>
+                <input id="tokenTtlHoursInput" type="number" min="1" max="72" placeholder="Ej: 4">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn-primary" onclick="loadAdminSettings()">Recargar setting</button>
+              <button type="button" class="btn-secondary" onclick="saveTokenTtlHours()">Guardar TTL token</button>
+            </div>
+
+            <div id="adminTokenSettingsInfo" class="record-grid" style="margin-top:14px;"></div>
           </div>
         </div>
       </div>
@@ -2415,6 +2678,9 @@ ADMIN_HTML = r"""
   let selectedStudentSupport = null;
   let studentSupportSearchTimer = null;
   let studentSupportActiveFilter = 'ALL';
+  let adminRequestsChart = null;
+  let adminTokensChart = null;
+  let adminProjectsChart = null;
 
   function clearStudentSupportSearch() {
     const q = document.getElementById('studentSupportSearch');
@@ -3223,29 +3489,95 @@ ADMIN_HTML = r"""
 
       const passInput = document.getElementById('passTtlMinutesInput');
       const tokenInput = document.getElementById('tokenTtlHoursInput');
-      const info = document.getElementById('adminSettingsInfo');
+      const qrInfo = document.getElementById('adminQrSettingsInfo');
+      const tokenInfo = document.getElementById('adminTokenSettingsInfo');
+
+      const qrMinutes = Number(data.pass_session_ttl_minutes ?? 2);
+      const tokenHours = Number(data.token_ttl_hours ?? 4);
 
       if (passInput) {
-        passInput.value = data.pass_session_ttl_minutes ?? 2;
+        passInput.value = qrMinutes;
       }
 
       if (tokenInput) {
-        tokenInput.value = data.token_ttl_hours ?? 4;
+        tokenInput.value = tokenHours;
       }
 
-      if (info) {
-        info.innerHTML = `
+      if (qrInfo) {
+        let qrRecommendation = 'Configuración equilibrada para operación normal.';
+        if (qrMinutes <= 1) {
+          qrRecommendation = 'Muy estricto. Máxima seguridad, pero exige refresh frecuente.';
+        } else if (qrMinutes >= 5) {
+          qrRecommendation = 'Más cómodo para operación, pero deja más tiempo viva la credencial.';
+        }
+
+        qrInfo.innerHTML = `
           <div class="record-card">
-            <div class="record-card__title">Configuración actual</div>
-            <div class="record-stack">
-              <div class="stack-row">
-                <strong>QR alumno</strong>
-                <span>${escapeHTML(data.pass_session_ttl_minutes ?? 2)} minutos</span>
+            <div class="record-card__head">
+              <div>
+                <div class="record-card__title">Configuración actual del QR del alumno</div>
+                <div class="record-card__sub">Controla cuánto tiempo vive la credencial antes de exigir refresh.</div>
               </div>
-              <div class="stack-row">
-                <strong>Token proyecto</strong>
-                <span>${escapeHTML(data.token_ttl_hours ?? 4)} horas</span>
+              <div>${statusBadge('ACTIVE')}</div>
+            </div>
+
+            <div class="meta">
+              <div class="meta-box">
+                <span class="meta-label">Actualmente</span>
+                <div class="meta-value">${qrMinutes} minuto(s)</div>
               </div>
+              <div class="meta-box">
+                <span class="meta-label">Rango permitido</span>
+                <div class="meta-value">1 a 5 minutos</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Impacto</span>
+                <div class="meta-value">Seguridad del QR vivo</div>
+              </div>
+            </div>
+
+            <div class="muted" style="margin-top:12px;">
+              ${qrRecommendation}
+            </div>
+          </div>
+        `;
+      }
+
+      if (tokenInfo) {
+        let tokenRecommendation = 'Configuración equilibrada para un evento con operación continua.';
+        if (tokenHours <= 2) {
+          tokenRecommendation = 'Muy estricto. Reduce exposición, pero obliga a regenerar tokens con más frecuencia.';
+        } else if (tokenHours >= 12) {
+          tokenRecommendation = 'Cómodo para operación, pero deja tokens válidos durante mucho tiempo.';
+        }
+
+        tokenInfo.innerHTML = `
+          <div class="record-card">
+            <div class="record-card__head">
+              <div>
+                <div class="record-card__title">Configuración actual del token de proyecto</div>
+                <div class="record-card__sub">Controla la vida útil de los tokens que generan cupos para proyectos.</div>
+              </div>
+              <div>${statusBadge('ACTIVE')}</div>
+            </div>
+
+            <div class="meta">
+              <div class="meta-box">
+                <span class="meta-label">Actualmente</span>
+                <div class="meta-value">${tokenHours} hora(s)</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Rango permitido</span>
+                <div class="meta-value">1 a 24 horas</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Impacto</span>
+                <div class="meta-value">Duración de tokens nuevos</div>
+              </div>
+            </div>
+
+            <div class="muted" style="margin-top:12px;">
+              ${tokenRecommendation}
             </div>
           </div>
         `;
@@ -3256,17 +3588,17 @@ ADMIN_HTML = r"""
     }
   }
 
-  async function savePassTtlSeconds() {
+  async function savePassTtlMinutes() {
     try {
-      const input = document.getElementById('passTtlSecondsInput');
-      const minutos = Number(input?.value || 0);
+      const input = document.getElementById('passTtlMinutesInput');
+      const minutes = Number(input?.value || 0);
 
-      if (Number.isNaN(minutos) || minutos < 1 || minutos > 5) {
+      if (Number.isNaN(minutes) || minutes < 1 || minutes > 5) {
         return showMsg('El TTL del QR debe estar entre 1 y 5 minutos', false);
       }
 
       const data = await apiPut('/api/admin/settings/pass-ttl-minutes', {
-        minutes: minutos
+        minutes
       });
 
       showMsg(data.message || 'TTL del QR actualizado');
@@ -3281,8 +3613,8 @@ ADMIN_HTML = r"""
       const input = document.getElementById('tokenTtlHoursInput');
       const hours = Number(input?.value || 0);
 
-      if (Number.isNaN(hours) || hours < 1 || hours > 24) {
-        return showMsg('El TTL del token debe estar entre 1 y 24 horas', false);
+      if (Number.isNaN(hours) || hours < 1 || hours > 72) {
+        return showMsg('El TTL del token debe estar entre 1 y 72 horas', false);
       }
 
       const data = await apiPut('/api/admin/settings/token-ttl-hours', {
@@ -3784,6 +4116,91 @@ ADMIN_HTML = r"""
     ];
   }
 
+  function getExecutiveDashboardAlert(summary, projects) {
+    const requests = summary?.requests || {};
+    const incidents = summary?.incidents || {};
+    const items = Array.isArray(projects) ? projects : [];
+
+    const accessEnabled = Number(requests.access_enabled || 0);
+    const validated = Number(requests.validated || 0);
+    const registered = Number(requests.registered || 0);
+    const openIncidents = Number(incidents.open || 0);
+
+    const totalSlots = items.reduce((acc, p) => acc + Number(p.slots_total || 0), 0);
+    const totalRegistered = items.reduce((acc, p) => acc + Number(p.registered_count || 0), 0);
+    const occupancy = totalSlots > 0 ? Math.round((totalRegistered / totalSlots) * 100) : 0;
+
+    if (openIncidents > 0) {
+      return {
+        cls: 'high',
+        kicker: 'Atención inmediata',
+        title: 'Hay incidentes abiertos que pueden romper la operación.',
+        sub: 'La prioridad más alta ahora es limpiar los casos activos para evitar bloqueos en validación, acceso o cierre.',
+        actionLabel: 'Ir a Incidentes',
+        actionFn: "openDashboardModule('incidentsModule')"
+      };
+    }
+
+    if (accessEnabled > 0) {
+      return {
+        cls: 'high',
+        kicker: 'Fuga de conversión',
+        title: 'Hay alumnos con acceso habilitado que aún no cierran inscripción.',
+        sub: 'La oportunidad más clara está en convertir estos casos antes de que se enfríen o se pierdan en el flujo.',
+        actionLabel: 'Ir a Solicitudes y Pases',
+        actionFn: "openDashboardModule('studentSupportModule')"
+      };
+    }
+
+    if (validated > 0) {
+      return {
+        cls: 'medium',
+        kicker: 'Cuello de botella',
+        title: 'Hay alumnos validados que todavía no avanzan al siguiente paso.',
+        sub: 'Conviene revisar check-in y habilitación para que no se acumulen pendientes presenciales.',
+        actionLabel: 'Ir a Check-in',
+        actionFn: "openDashboardModule('checkinModule')"
+      };
+    }
+
+    if (registered === 0 && totalSlots > 0) {
+      return {
+        cls: 'medium',
+        kicker: 'Conversión baja',
+        title: 'Todavía no hay cierres reales en la temporada.',
+        sub: 'Aunque el evento ya esté montado, todavía no hay conversiones finales. Revisa demanda, tokens y validación.',
+        actionLabel: 'Ver Dashboard',
+        actionFn: "openDashboardModule('summaryModule')"
+      };
+    }
+
+    return {
+      cls: 'low',
+      kicker: 'Operación estable',
+      title: 'La temporada se ve controlada y sin focos rojos inmediatos.',
+      sub: `La ocupación global va en ${occupancy}% y no hay señales críticas abiertas. Puedes enfocarte en optimización y seguimiento fino.`,
+      actionLabel: 'Ver Proyectos Activos',
+      actionFn: "openDashboardModule('eventProjectsModule')"
+    };
+  }
+
+  function renderDashboardExecutiveAlert(summary, projects) {
+    const alert = getExecutiveDashboardAlert(summary, projects);
+
+    return `
+      <div class="executive-alert ${alert.cls}">
+        <div class="executive-alert__kicker">${escapeHTML(alert.kicker)}</div>
+        <div class="executive-alert__title">${escapeHTML(alert.title)}</div>
+        <div class="executive-alert__sub">${escapeHTML(alert.sub)}</div>
+        <div class="executive-alert__actions">
+          <button type="button" class="btn-primary" onclick="${alert.actionFn}">
+            ${escapeHTML(alert.actionLabel)}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   function renderDashboardCasesBoard(summary, projects) {
     const cases = getDashboardCases(summary, projects);
 
@@ -3829,6 +4246,185 @@ ADMIN_HTML = r"""
         </div>
       </div>
     `;
+  }
+
+  function renderDashboardOperationalFocus(summary, projects) {
+    const requests = summary?.requests || {};
+    const incidents = summary?.incidents || {};
+    const items = Array.isArray(projects) ? projects : [];
+
+    const totalSlots = items.reduce((acc, p) => acc + Number(p.slots_total || 0), 0);
+    const totalRegistered = items.reduce((acc, p) => acc + Number(p.registered_count || 0), 0);
+    const occupancy = totalSlots > 0 ? Math.round((totalRegistered / totalSlots) * 100) : 0;
+
+    const accessEnabled = Number(requests.access_enabled || 0);
+    const validated = Number(requests.validated || 0);
+    const openIncidents = Number(incidents.open || 0);
+
+    return `
+      <div class="focus-grid">
+        <div class="focus-card">
+          <div class="focus-card__label">Ocupación global</div>
+          <div class="focus-card__value">${occupancy}%</div>
+          <div class="focus-card__sub">Lectura rápida del aprovechamiento real de cupos en la temporada.</div>
+        </div>
+
+        <div class="focus-card">
+          <div class="focus-card__label">Pendientes de cierre</div>
+          <div class="focus-card__value">${accessEnabled}</div>
+          <div class="focus-card__sub">Alumnos que ya pueden registrarse, pero todavía no completan el proceso.</div>
+        </div>
+
+        <div class="focus-card">
+          <div class="focus-card__label">Pendientes de habilitar</div>
+          <div class="focus-card__value">${validated}</div>
+          <div class="focus-card__sub">Ya fueron validados presencialmente, pero siguen sin dar el siguiente salto.</div>
+        </div>
+
+        <div class="focus-card">
+          <div class="focus-card__label">Incidentes abiertos</div>
+          <div class="focus-card__value">${openIncidents}</div>
+          <div class="focus-card__sub">Casos que pueden generar fricción, retraso o ruptura del flujo operativo.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDashboardChartsShell() {
+    return `
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-card__head">
+            <div class="chart-card__title">Solicitudes por estado</div>
+            <div class="chart-card__sub">Lectura rápida del avance real del embudo del alumno.</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="requestsStatusChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card__head">
+            <div class="chart-card__title">Tokens por estado</div>
+            <div class="chart-card__sub">Distribución de disponibilidad, uso, expiración y revocación.</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="tokensStatusChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card__head">
+            <div class="chart-card__title">Top proyectos: inscritos vs cupos</div>
+            <div class="chart-card__sub">Comparación visual para detectar saturación o baja demanda.</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="projectsCapacityChart"></canvas>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function destroyDashboardCharts() {
+    if (adminRequestsChart) {
+      adminRequestsChart.destroy();
+      adminRequestsChart = null;
+    }
+    if (adminTokensChart) {
+      adminTokensChart.destroy();
+      adminTokensChart = null;
+    }
+    if (adminProjectsChart) {
+      adminProjectsChart.destroy();
+      adminProjectsChart = null;
+    }
+  }
+
+  function paintDashboardCharts(summary, projects) {
+    if (typeof Chart === 'undefined') return;
+
+    destroyDashboardCharts();
+
+    const requestsCanvas = document.getElementById('requestsStatusChart');
+    const tokensCanvas = document.getElementById('tokensStatusChart');
+    const projectsCanvas = document.getElementById('projectsCapacityChart');
+
+    if (!requestsCanvas || !tokensCanvas || !projectsCanvas) return;
+
+    const requests = summary?.requests || {};
+    const tokens = summary?.tokens || {};
+    const items = Array.isArray(projects) ? [...projects] : [];
+
+    adminRequestsChart = new Chart(requestsCanvas, {
+      type: 'bar',
+      data: {
+        labels: ['Requested', 'Validated', 'Access Enabled', 'Registered', 'Cancelled', 'Closed'],
+        datasets: [{
+          label: 'Solicitudes',
+          data: [
+            Number(requests.requested || 0),
+            Number(requests.validated || 0),
+            Number(requests.access_enabled || 0),
+            Number(requests.registered || 0),
+            Number(requests.cancelled || 0),
+            Number(requests.closed || 0)
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    adminTokensChart = new Chart(tokensCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Available', 'Reserved', 'Used', 'Revoked', 'Expired'],
+        datasets: [{
+          data: [
+            Number(tokens.available || 0),
+            Number(tokens.reserved || 0),
+            Number(tokens.used || 0),
+            Number(tokens.revoked || 0),
+            Number(tokens.expired || 0)
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+    const topProjects = items
+      .sort((a, b) => Number(b.registered_count || 0) - Number(a.registered_count || 0))
+      .slice(0, 6);
+
+    adminProjectsChart = new Chart(projectsCanvas, {
+      type: 'bar',
+      data: {
+        labels: topProjects.map(p => (p.project_name || 'Proyecto').slice(0, 18)),
+        datasets: [
+          {
+            label: 'Inscritos',
+            data: topProjects.map(p => Number(p.registered_count || 0))
+          },
+          {
+            label: 'Cupos',
+            data: topProjects.map(p => Number(p.slots_total || 0))
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
   }
 
   function renderEmptyCard(title, subtitle = '') {
@@ -3922,10 +4518,27 @@ ADMIN_HTML = r"""
       const eventsList = document.getElementById('eventsList');
 
       if (!allEvents.length) {
-        if (eventsList) eventsList.innerHTML = renderEmptyCard('No hay temporadas creadas', 'Crea la primera temporada para comenzar.');
-        document.getElementById('selectedEventInfo').innerHTML = '';
-        document.getElementById('dashboardSummary').innerHTML = '';
-        document.getElementById('dashboardProjectsBody').innerHTML = renderEmptyCard('Sin temporadas', 'No hay nada que mostrar todavía.');
+        if (eventsList) {
+          eventsList.innerHTML = renderEmptyCard(
+            'No hay temporadas creadas',
+            'Crea la primera temporada para comenzar.'
+          );
+        }
+
+        const selectedInfo = document.getElementById('selectedEventInfo');
+        if (selectedInfo) selectedInfo.innerHTML = '';
+
+        const dashboardSummary = document.getElementById('dashboardSummary');
+        if (dashboardSummary) dashboardSummary.innerHTML = '';
+
+        const dashboardProjectsBody = document.getElementById('dashboardProjectsBody');
+        if (dashboardProjectsBody) {
+          dashboardProjectsBody.innerHTML = renderEmptyCard(
+            'Sin temporadas',
+            'No hay nada que mostrar todavía.'
+          );
+        }
+
         return;
       }
 
@@ -3939,14 +4552,29 @@ ADMIN_HTML = r"""
               </div>
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
                 ${statusBadge(e.status)}
-                ${e.is_visible_to_students ? '<span class="badge badge-success">VISIBLE ALUMNO</span>' : '<span class="badge badge-neutral">NO VISIBLE</span>'}
+                ${e.is_visible_to_students
+                  ? '<span class="badge badge-success">VISIBLE ALUMNO</span>'
+                  : '<span class="badge badge-neutral">NO VISIBLE</span>'}
               </div>
             </div>
+
             <div class="meta">
-              <div class="meta-box"><span class="meta-label">Catálogo abre</span><div class="meta-value">${escapeHTML(e.catalog_open_at || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Inicio presencial</span><div class="meta-value">${escapeHTML(e.onsite_start_at || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Fin presencial</span><div class="meta-value">${escapeHTML(e.onsite_end_at || '—')}</div></div>
-              <div class="meta-box"><span class="meta-label">Cierre registro</span><div class="meta-value">${escapeHTML(e.registration_close_at || '—')}</div></div>
+              <div class="meta-box">
+                <span class="meta-label">Catálogo abre</span>
+                <div class="meta-value">${escapeHTML(e.catalog_open_at || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Inicio presencial</span>
+                <div class="meta-value">${escapeHTML(e.onsite_start_at || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Fin presencial</span>
+                <div class="meta-value">${escapeHTML(e.onsite_end_at || '—')}</div>
+              </div>
+              <div class="meta-box">
+                <span class="meta-label">Cierre registro</span>
+                <div class="meta-value">${escapeHTML(e.registration_close_at || '—')}</div>
+              </div>
             </div>
           </div>
         `).join('');
@@ -3956,8 +4584,82 @@ ADMIN_HTML = r"""
       await loadEventProjects();
       await loadDashboard();
       await loadIncidents();
+
     } catch (e) {
       showMsg(e.message, false);
+    }
+  }
+
+  async function loadEventProjects() {
+    const eventId = document.getElementById('eventProjectEventSelector')?.value;
+    const container = document.getElementById('eventProjectsList');
+    const summaryBox = document.getElementById('eventProjectsSummary');
+    const alertBox = document.getElementById('eventProjectsExecutiveAlert');
+
+    if (!container) return;
+
+    if (!eventId) {
+      if (summaryBox) summaryBox.innerHTML = '';
+      if (alertBox) alertBox.innerHTML = '';
+      container.innerHTML = renderEmptyCard(
+        'Selecciona una temporada',
+        'Después podrás ver y operar los proyectos activos.'
+      );
+      return;
+    }
+
+    try {
+      const data = await apiGet(`/api/admin/events/${eventId}/projects`);
+      eventProjectsCache = data || [];
+
+      fillSelect(
+        'tokensEventProjectSelector',
+        eventProjectsCache,
+        'Selecciona proyecto en temporada',
+        p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`
+      );
+
+      if (!eventProjectsCache.length) {
+        if (summaryBox) summaryBox.innerHTML = '';
+        if (alertBox) alertBox.innerHTML = '';
+        container.innerHTML = renderEmptyCard(
+          'No hay proyectos activos',
+          'Activa un proyecto para esta temporada.'
+        );
+        return;
+      }
+
+      const enriched = eventProjectsCache.map(p => {
+        const slots = Number(p?.slots_total || 0);
+        const registered = Number(p?.registered_count || 0);
+        const available = Math.max(0, Number(p?.cupos_disponibles ?? (slots - registered)));
+        return {
+          ...p,
+          registered_count: registered,
+          cupos_disponibles: available
+        };
+      });
+
+      renderEventProjectsSummary(enriched);
+      renderEventProjectsExecutiveAlert(enriched);
+
+      const sorted = [...enriched].sort((a, b) => {
+        const pa = getEventProjectPriority(a);
+        const pb = getEventProjectPriority(b);
+        const order = { high: 0, medium: 1, low: 2 };
+        if (order[pa.cls] !== order[pb.cls]) {
+          return order[pa.cls] - order[pb.cls];
+        }
+        return getEventProjectOccupancy(b) - getEventProjectOccupancy(a);
+      });
+
+      container.innerHTML = sorted.map(p => renderEventProjectCardPremium(p)).join('');
+    } catch (e) {
+      if (summaryBox) summaryBox.innerHTML = '';
+      if (alertBox) alertBox.innerHTML = '';
+      container.innerHTML = renderEmptyCard(
+        e.message || 'No se pudo cargar proyectos activos'
+      );
     }
   }
 
@@ -4139,88 +4841,6 @@ ADMIN_HTML = r"""
     }
   }
 
-  async function loadEventProjects() {
-    const eventId = document.getElementById('eventProjectEventSelector')?.value;
-    const container = document.getElementById('eventProjectsList');
-
-    if (!container) return;
-
-    if (!eventId) {
-      container.innerHTML = renderEmptyCard('Selecciona una temporada', 'Después podrás ver y operar los proyectos activos.');
-      return;
-    }
-
-    try {
-      const data = await apiGet(`/api/admin/events/${eventId}/projects`);
-      eventProjectsCache = data || [];
-
-      fillSelect(
-        'tokensEventProjectSelector',
-        eventProjectsCache,
-        'Selecciona proyecto en temporada',
-        p => `${p.name} · ${p.partner || '—'} · EventProject ${p.id}`
-      );
-
-      if (!eventProjectsCache.length) {
-        container.innerHTML = renderEmptyCard('No hay proyectos activos', 'Activa un proyecto para esta temporada.');
-        return;
-      }
-
-      container.innerHTML = eventProjectsCache.map(p => `
-        <div class="record-card">
-          <div class="record-card__head">
-            <div>
-              <div class="record-card__title">${escapeHTML(p.name)}</div>
-              <div class="record-card__sub">Carrera preferida: ${escapeHTML(p.partner || '—')}</div>
-            </div>
-            <div>${statusBadge(p.status)}</div>
-          </div>
-
-          <div class="record-stack">
-            <div class="stack-row"><strong>Project ID:</strong><span>${p.project_id}</span></div>
-            <div class="stack-row"><strong>EventProject ID:</strong><span>${p.id}</span></div>
-            <div class="stack-row"><strong>Cupo actual:</strong><span>${p.slots_total}</span></div>
-          </div>
-
-          <div class="form-grid" style="margin-top:12px;">
-            <div class="field">
-              <label>Nuevo cupo para esta temporada</label>
-              <input id="slots_edit_${p.id}" type="number" min="1" value="${p.slots_total}">
-            </div>
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn-primary" onclick="saveEventProjectSlots(${p.id})">Guardar cupo</button>
-            <button type="button" class="btn-secondary" onclick="goToTokensModule(${p.id})">Ver tokens</button>
-            <button
-              type="button"
-              class="btn-secondary"
-              onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${p.slots_total}), 'ACTIVE')"
-            >
-              Activar
-            </button>
-            <button
-              type="button"
-              class="btn-secondary"
-              onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${p.slots_total}), 'HIDDEN')"
-            >
-              Ocultar
-            </button>
-            <button
-              type="button"
-              class="btn-secondary"
-              onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${p.slots_total}), 'CLOSED')"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      `).join('');
-    } catch (e) {
-      container.innerHTML = renderEmptyCard(e.message || 'No se pudo cargar proyectos activos');
-    }
-  }
-
   async function quickUpdateEventProject(eventProjectId, currentSlots, status) {
     try {
       const data = await apiPatch(`/api/admin/event-projects/${eventProjectId}`, {
@@ -4272,6 +4892,255 @@ ADMIN_HTML = r"""
     }
 
     loadProjectTokens();
+  }
+
+  function getEventProjectOccupancy(project) {
+    const slots = Number(project?.slots_total || 0);
+    const registered = Number(project?.registered_count || 0);
+    return slots > 0 ? (registered / slots) * 100 : 0;
+  }
+
+  function getEventProjectPriority(project) {
+    const status = String(project?.status || '').toUpperCase();
+    const slots = Number(project?.slots_total || 0);
+    const registered = Number(project?.registered_count || 0);
+    const available = Math.max(0, Number(project?.cupos_disponibles ?? (slots - registered)));
+    const occupancy = getEventProjectOccupancy(project);
+
+    if (status !== 'ACTIVE') {
+      return { cls: 'medium', label: 'No activo' };
+    }
+    if (slots <= 0) {
+      return { cls: 'high', label: 'Sin cupo' };
+    }
+    if (available <= 1 || occupancy >= 90) {
+      return { cls: 'high', label: 'Alta atención' };
+    }
+    if (occupancy <= 20 && registered === 0) {
+      return { cls: 'medium', label: 'Baja tracción' };
+    }
+    if (occupancy >= 55) {
+      return { cls: 'medium', label: 'Seguimiento' };
+    }
+    return { cls: 'low', label: 'Estable' };
+  }
+
+  function getEventProjectInsight(project) {
+    const status = String(project?.status || '').toUpperCase();
+    const slots = Number(project?.slots_total || 0);
+    const registered = Number(project?.registered_count || 0);
+    const available = Math.max(0, Number(project?.cupos_disponibles ?? (slots - registered)));
+    const occupancy = getEventProjectOccupancy(project);
+    const used = Number(project?.tokens_used || 0);
+    const availableTokens = Number(project?.tokens_available || 0);
+
+    if (status === 'HIDDEN') return 'Proyecto oculto. No debería recibir flujo nuevo mientras permanezca así.';
+    if (status === 'CLOSED') return 'Proyecto cerrado. Ya no conviene empujar demanda aquí.';
+    if (slots <= 0) return 'No tiene cupo operativo. Requiere corrección inmediata.';
+    if (occupancy >= 95) return 'Está prácticamente lleno. Conviene vigilar cierres y evitar sobrepresión.';
+    if (occupancy >= 80) return 'Tiene alta demanda y ya se acerca a saturación.';
+    if (registered === 0 && availableTokens > 0) return 'Tiene tokens abiertos pero todavía no convierte. Revisar atracción o claridad del proyecto.';
+    if (registered === 0) return 'No registra movimiento todavía. Conviene revisar visibilidad o demanda.';
+    if (available >= Math.ceil(slots * 0.6)) return 'Todavía conserva bastante espacio. Puede absorber más flujo.';
+    if (used > 0) return 'Ya está convirtiendo de forma real. Mantener seguimiento operativo.';
+    return 'Comportamiento estable por ahora.';
+  }
+
+  function renderEventProjectsSummary(items) {
+    const box = document.getElementById('eventProjectsSummary');
+    if (!box) return;
+
+    const list = Array.isArray(items) ? items : [];
+    if (!list.length) {
+      box.innerHTML = '';
+      return;
+    }
+
+    const active = list.filter(x => String(x?.status || '').toUpperCase() === 'ACTIVE').length;
+    const hidden = list.filter(x => String(x?.status || '').toUpperCase() === 'HIDDEN').length;
+    const closed = list.filter(x => String(x?.status || '').toUpperCase() === 'CLOSED').length;
+    const totalSlots = list.reduce((acc, x) => acc + Number(x?.slots_total || 0), 0);
+    const totalRegistered = list.reduce((acc, x) => acc + Number(x?.registered_count || 0), 0);
+    const totalAvailable = list.reduce((acc, x) => acc + Number(x?.cupos_disponibles || 0), 0);
+    const occupancy = totalSlots > 0 ? Math.round((totalRegistered / totalSlots) * 100) : 0;
+    const highAttention = list.filter(x => getEventProjectPriority(x).cls === 'high').length;
+
+    box.innerHTML = `
+      <div class="support-summary-grid">
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Proyectos activos</div>
+          <div class="support-mini-kpi__value">${active}</div>
+          <div class="support-mini-kpi__sub">Operando en esta temporada</div>
+        </div>
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Cupos totales</div>
+          <div class="support-mini-kpi__value">${totalSlots}</div>
+          <div class="support-mini-kpi__sub">Capacidad total configurada</div>
+        </div>
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Registrados</div>
+          <div class="support-mini-kpi__value">${totalRegistered}</div>
+          <div class="support-mini-kpi__sub">Cierres reales</div>
+        </div>
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Disponibles</div>
+          <div class="support-mini-kpi__value">${totalAvailable}</div>
+          <div class="support-mini-kpi__sub">Espacio restante</div>
+        </div>
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Ocupación global</div>
+          <div class="support-mini-kpi__value">${occupancy}%</div>
+          <div class="support-mini-kpi__sub">Uso total de capacidad</div>
+        </div>
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Alta atención</div>
+          <div class="support-mini-kpi__value">${highAttention}</div>
+          <div class="support-mini-kpi__sub">Saturados o frágiles</div>
+        </div>
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Ocultos</div>
+          <div class="support-mini-kpi__value">${hidden}</div>
+          <div class="support-mini-kpi__sub">Fuera de vitrina</div>
+        </div>
+        <div class="support-mini-kpi">
+          <div class="support-mini-kpi__label">Cerrados</div>
+          <div class="support-mini-kpi__value">${closed}</div>
+          <div class="support-mini-kpi__sub">Sin operación nueva</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEventProjectsExecutiveAlert(items) {
+    const box = document.getElementById('eventProjectsExecutiveAlert');
+    if (!box) return;
+
+    const list = Array.isArray(items) ? items : [];
+    if (!list.length) {
+      box.innerHTML = '';
+      return;
+    }
+
+    const sortedByOccupancy = [...list].sort((a, b) => getEventProjectOccupancy(b) - getEventProjectOccupancy(a));
+    const topPressure = sortedByOccupancy[0];
+    const topPressureOcc = Math.round(getEventProjectOccupancy(topPressure));
+    const highAttention = list.filter(x => getEventProjectPriority(x).cls === 'high').length;
+
+    let cls = 'low';
+    let kicker = 'Operación estable';
+    let title = 'La cartera de proyectos se ve controlada.';
+    let sub = 'No hay señales críticas inmediatas. Puedes enfocarte en afinación y seguimiento fino.';
+
+    if (highAttention > 0 && topPressure) {
+      cls = 'high';
+      kicker = 'Atención inmediata';
+      title = `Hay ${highAttention} proyecto(s) que requieren seguimiento fuerte.`;
+      sub = `${topPressure.project_name || 'Un proyecto'} lidera la presión con ${topPressureOcc}% de ocupación. Conviene vigilar cupos, tokens y cierres.`;
+    } else {
+      const noMovement = list.filter(x => Number(x?.registered_count || 0) === 0).length;
+      if (noMovement > 0) {
+        cls = 'medium';
+        kicker = 'Oportunidad de mejora';
+        title = `Hay ${noMovement} proyecto(s) todavía sin registros.`;
+        sub = 'Conviene revisar visibilidad, demanda y claridad del proyecto antes de seguir abriendo operación.';
+      }
+    }
+
+    box.innerHTML = `
+      <div class="project-ops-alert ${cls}">
+        <div class="project-ops-alert__kicker">${escapeHTML(kicker)}</div>
+        <div class="project-ops-alert__title">${escapeHTML(title)}</div>
+        <div class="project-ops-alert__sub">${escapeHTML(sub)}</div>
+      </div>
+    `;
+  }
+
+  function renderEventProjectCardPremium(p) {
+    const priority = getEventProjectPriority(p);
+    const occupancy = Math.round(getEventProjectOccupancy(p));
+    const insight = getEventProjectInsight(p);
+    const slots = Number(p?.slots_total || 0);
+    const registered = Number(p?.registered_count || 0);
+    const available = Math.max(0, Number(p?.cupos_disponibles ?? (slots - registered)));
+
+    return `
+      <div class="record-card project-ops-card">
+        <div class="project-ops-card__top">
+          <div>
+            <div class="project-ops-card__title">${escapeHTML(p.name || 'Proyecto')}</div>
+            <div class="project-ops-card__sub">
+              Carrera preferida: ${escapeHTML(p.partner || '—')} · EventProject ID: ${escapeHTML(p.id || '—')}
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <span class="project-ops-priority ${priority.cls}">${priority.label}</span>
+            ${statusBadge(p.status)}
+          </div>
+        </div>
+
+        <div class="project-ops-card__insight">${escapeHTML(insight)}</div>
+
+        <div class="project-ops-metrics">
+          <div class="metric-chip">
+            <span class="metric-chip__label">Ocupación</span>
+            <div class="metric-chip__value">${occupancy}%</div>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Registrados</span>
+            <div class="metric-chip__value">${registered}</div>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Disponibles</span>
+            <div class="metric-chip__value">${available}</div>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-chip__label">Cupo total</span>
+            <div class="metric-chip__value">${slots}</div>
+          </div>
+        </div>
+
+        <div>
+          ${renderXPBar(registered, slots)}
+        </div>
+
+        <div class="form-grid" style="margin-top:4px;">
+          <div class="field">
+            <label>Nuevo cupo para esta temporada</label>
+            <input id="slots_edit_${p.id}" type="number" min="1" value="${slots}">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-primary" onclick="saveEventProjectSlots(${p.id})">
+            Guardar cupo
+          </button>
+          <button type="button" class="btn-secondary" onclick="goToTokensModule(${p.id})">
+            Ver tokens
+          </button>
+          <button
+            type="button"
+            class="btn-secondary"
+            onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${slots}), 'ACTIVE')"
+          >
+            Activar
+          </button>
+          <button
+            type="button"
+            class="btn-secondary"
+            onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${slots}), 'HIDDEN')"
+          >
+            Ocultar
+          </button>
+          <button
+            type="button"
+            class="btn-secondary"
+            onclick="quickUpdateEventProject(${p.id}, Number(document.getElementById('slots_edit_${p.id}').value || ${slots}), 'CLOSED')"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    `;
   }
 
   async function generateProjectTokens() {
@@ -4392,22 +5261,31 @@ ADMIN_HTML = r"""
 
   async function loadDashboard() {
     const selector = document.getElementById('dashboardEventSelector');
+    const executiveAlert = document.getElementById('dashboardExecutiveAlert');
     const summaryBox = document.getElementById('dashboardSummary');
     const healthHero = document.getElementById('dashboardHealthHero');
     const casesBoard = document.getElementById('dashboardCasesBoard');
     const highlights = document.getElementById('dashboardProjectsHighlights');
+    const chartsBox = document.getElementById('dashboardCharts');
+    const operationalFocus = document.getElementById('dashboardOperationalFocus');
     const body = document.getElementById('dashboardProjectsBody');
 
-    if (!selector || !summaryBox || !healthHero || !casesBoard || !highlights || !body) return;
+    if (!selector || !summaryBox || !healthHero || !casesBoard || !highlights || !chartsBox || !operationalFocus || !body || !executiveAlert) {
+      return;
+    }
 
     const eventId = selector.value;
 
     if (!eventId) {
+      executiveAlert.innerHTML = '';
       summaryBox.innerHTML = '';
       healthHero.innerHTML = '';
       casesBoard.innerHTML = '';
       highlights.innerHTML = '';
+      chartsBox.innerHTML = '';
+      operationalFocus.innerHTML = '';
       body.innerHTML = renderEmptyCard('Selecciona una temporada', 'Luego podrás ver el dashboard.');
+      destroyDashboardCharts();
       return;
     }
 
@@ -4418,6 +5296,8 @@ ADMIN_HTML = r"""
       const requests = summary.requests || {};
       const incidents = summary.incidents || {};
       const items = Array.isArray(projects) ? projects : [];
+
+      executiveAlert.innerHTML = renderDashboardExecutiveAlert(summary, items);
 
       summaryBox.innerHTML = `
         <div class="kpi-card kpi-card--green">
@@ -4456,16 +5336,24 @@ ADMIN_HTML = r"""
       healthHero.innerHTML = renderDashboardHealthHero(summary, sortedItems);
       casesBoard.innerHTML = renderDashboardCasesBoard(summary, sortedItems);
       highlights.innerHTML = renderDashboardProjectHighlights(sortedItems);
+      chartsBox.innerHTML = renderDashboardChartsShell();
+      paintDashboardCharts(summary, sortedItems);
+      operationalFocus.innerHTML = renderDashboardOperationalFocus(summary, sortedItems);
 
       body.innerHTML = sortedItems.length
         ? sortedItems.map(p => renderDashboardProjectCard(p)).join('')
         : renderEmptyCard('No hay proyectos cargados en esta temporada', 'Activa proyectos para empezar a operar.');
+
     } catch (e) {
+      executiveAlert.innerHTML = '';
       summaryBox.innerHTML = '';
       healthHero.innerHTML = '';
       casesBoard.innerHTML = '';
       highlights.innerHTML = '';
+      chartsBox.innerHTML = '';
+      operationalFocus.innerHTML = '';
       body.innerHTML = renderEmptyCard('No se pudo cargar dashboard', e.message || 'Error inesperado');
+      destroyDashboardCharts();
       showMsg(e.message, false);
     }
   }
@@ -5120,6 +6008,7 @@ ADMIN_HTML = r"""
     document.getElementById('projectSelector')?.addEventListener('change', syncBaseProjectSlotsToEventSlots);
   });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
 """

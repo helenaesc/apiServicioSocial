@@ -94,6 +94,7 @@ def login():
         auth_user = result["user"]
 
         session.clear()
+        session.permanent = True
         session["admin_user_id"] = auth_user["id"]
         session["admin_user_role"] = auth_user["role"]
         session["admin_user_email"] = auth_user["email"]
