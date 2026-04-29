@@ -2122,7 +2122,7 @@ ADMIN_HTML = r"""
               <label>Carreras preferidas</label>
               <select id="mp_partner" multiple size="6"></select>
               <div class="small">
-              Puedes seleccionar más de una carrera. Mantén presionado Ctrl para seleccionar varias.
+              Puedes seleccionar más de una carrera. Mantén presionado shift para seleccionar varias.
               </div>
               </div>
               <div class="field">
