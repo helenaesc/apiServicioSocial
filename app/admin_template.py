@@ -2119,8 +2119,11 @@ ADMIN_HTML = r"""
                 <input id="mp_name" placeholder="Ej: Análisis del equipo">
               </div>
               <div class="field">
-                <label>Carrera preferida</label>
-                <select id="mp_partner"></select>
+              <label>Carreras preferidas</label>
+              <select id="mp_partner" multiple size="6"></select>
+              <div class="small">
+              Puedes seleccionar más de una carrera. Mantén presionado Ctrl para seleccionar varias.
+              </div>
               </div>
               <div class="field">
                 <label>Modalidad</label>
@@ -2141,10 +2144,6 @@ ADMIN_HTML = r"""
               <div class="field">
                 <label>Detalle de horario</label>
                 <input id="mp_schedule_description" placeholder="Ej: 10:00 a 18:00">
-              </div>
-              <div class="field">
-                <label>Responsables</label>
-                <input id="mp_team_owners" placeholder="Ej: Equipo de análisis">
               </div>
               <div class="field">
                 <label>Duración</label>
@@ -2342,7 +2341,7 @@ ADMIN_HTML = r"""
             <div class="form-grid">
               <div class="field">
                 <label>TTL token proyecto (horas)</label>
-                <input id="tokenTtlHoursInput" type="number" min="1" max="72" placeholder="Ej: 4">
+                <input id="tokenTtlHoursInput" type="number" min="1" max="24" placeholder="Ej: 4">
               </div>
             </div>
 
@@ -3613,8 +3612,8 @@ ADMIN_HTML = r"""
       const input = document.getElementById('tokenTtlHoursInput');
       const hours = Number(input?.value || 0);
 
-      if (Number.isNaN(hours) || hours < 1 || hours > 72) {
-        return showMsg('El TTL del token debe estar entre 1 y 72 horas', false);
+      if (Number.isNaN(hours) || hours < 1 || hours > 24) {
+        return showMsg('El TTL del token debe estar entre 1 y 24 horas.', false);
       }
 
       const data = await apiPut('/api/admin/settings/token-ttl-hours', {
@@ -3701,6 +3700,14 @@ ADMIN_HTML = r"""
       opt.textContent = labelFn ? labelFn(item) : (item.name || item.description || item.display_name || item.id);
       el.appendChild(opt);
     }
+  }
+
+  function getSelectedValues(id) {
+    const el = document.getElementById(id);
+    if (!el) return [];
+    return Array.from(el.selectedOptions || [])
+      .map(opt => Number(opt.value))
+      .filter(Boolean);
   }
 
   function fillSelectNoBlank(id, items, labelFn = null) {
@@ -4746,13 +4753,13 @@ ADMIN_HTML = r"""
       const payload = {
         general_name: document.getElementById('mp_general_name')?.value.trim(),
         name: document.getElementById('mp_name')?.value.trim(),
-        id_partner: Number(document.getElementById('mp_partner')?.value),
+        id_partner: getSelectedValues('mp_partner')[0] || 95,
+        partner_ids: getSelectedValues('mp_partner'),
         id_modality: Number(document.getElementById('mp_modality')?.value),
         id_week_days: Number(document.getElementById('mp_week_days')?.value),
         id_schedule: Number(document.getElementById('mp_schedule')?.value),
         slots: Number(document.getElementById('mp_slots')?.value || 0),
         schedule_description: document.getElementById('mp_schedule_description')?.value.trim(),
-        team_owners: document.getElementById('mp_team_owners')?.value.trim(),
         objectives: document.getElementById('mp_objectives')?.value.trim(),
         activities: document.getElementById('mp_activities')?.value.trim(),
         clave: document.getElementById('mp_clave')?.value.trim(),
@@ -4763,6 +4770,15 @@ ADMIN_HTML = r"""
         max_hours: document.getElementById('mp_max_hours')?.value.trim(),
         comments: document.getElementById('mp_comments')?.value.trim()
       };
+
+      if (!payload.general_name) return showMsg('Falta el nombre general / organización.', false);
+      if (!payload.name) return showMsg('Falta el nombre del proyecto.', false);
+      if (!payload.partner_ids.length) return showMsg('Selecciona al menos una carrera preferida.', false);
+      if (!payload.id_modality) return showMsg('Selecciona modalidad.', false);
+      if (!payload.id_week_days) return showMsg('Selecciona días.', false);
+      if (!payload.id_schedule) return showMsg('Selecciona horario.', false);
+      if (!payload.objectives) return showMsg('Faltan objetivos.', false);
+      if (!payload.activities) return showMsg('Faltan actividades.', false);
 
       const data = await apiPost('/api/admin/projects', payload);
       showMsg(data.message || 'Proyecto base creado');
@@ -4779,7 +4795,7 @@ ADMIN_HTML = r"""
       const data = await apiGet('/api/admin/projects' + query);
 
       masterProjectsCache = data || [];
-      fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto base', p => `${p.general_name || 'Sin nombre general'} | ${p.name}`);
+      fillSelect('projectSelector', masterProjectsCache, 'Selecciona proyecto base', p => `${p.general_name || 'Sin nombre general'} | ${p.name || 'Sin nombre'}`);
       syncBaseProjectSlotsToEventSlots();
 
       const list = document.getElementById('masterProjectsList');
@@ -4794,7 +4810,7 @@ ADMIN_HTML = r"""
         <div class="record-card">
           <div class="record-card__head">
             <div>
-              <div class="record-card__title">${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name)}</div>
+              <div class="record-card__title">${escapeHTML(p.general_name || 'Sin nombre general')} | ${escapeHTML(p.name || 'Sin nombre')}</div>
               <div class="record-card__sub">Project ID: ${p.id}</div>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -4804,7 +4820,7 @@ ADMIN_HTML = r"""
             </div>
           </div>
           <div class="record-stack">
-            <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(p.partner_name || '—')}</span></div>
+            <div class="stack-row"><strong>Carrera:</strong><span>${escapeHTML(p.partner_names || p.partner_name || '—')}</span></div>
             <div class="stack-row"><strong>Horario:</strong><span>${escapeHTML(p.schedule_description || '—')}</span></div>
             <div class="stack-row"><strong>Duración:</strong><span>${escapeHTML(p.duration || '—')}</span></div>
             <div class="stack-row"><strong>Cupo base:</strong><span>${escapeHTML(p.slots ?? '—')}</span></div>

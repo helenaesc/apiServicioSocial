@@ -32,22 +32,77 @@ def list_event_projects(event_id: int):
     sql = """
         SELECT
             ep.id,
-            ep.event_id,
+            ep.event_id, 
             ep.project_id,
             ep.slots_total,
             ep.status,
             p.name,
-            pa.name AS partner
+            p.general_name,
+            pa.name AS partner,
+
+            (
+              SELECT COUNT(*)
+              FROM registrations r
+              WHERE r.event_project_id = ep.id
+                AND r.status = 'ACTIVE'
+            ) AS registered_count,
+
+            (
+              SELECT COUNT(*)
+              FROM project_tokens pt
+              WHERE pt.event_project_id = ep.id
+                AND pt.status = 'AVAILABLE'
+                AND (pt.expires_at IS NULL OR pt.expires_at > NOW())
+            ) AS tokens_available,
+
+            (
+              SELECT COUNT(*)
+              FROM project_tokens pt
+              WHERE pt.event_project_id = ep.id
+                AND pt.status = 'USED'
+            ) AS tokens_used,
+
+            (
+              SELECT COUNT(*)
+              FROM project_tokens pt
+              WHERE pt.event_project_id = ep.id
+                AND pt.status = 'REVOKED'
+            ) AS tokens_revoked,
+
+            (
+              SELECT COUNT(*)
+              FROM project_tokens pt
+              WHERE pt.event_project_id = ep.id
+                AND pt.status = 'EXPIRED'
+            ) AS tokens_expired,
+
+            (
+              SELECT COUNT(*)
+              FROM project_tokens pt
+              WHERE pt.event_project_id = ep.id
+            ) AS tokens_total
+
         FROM event_projects ep
         JOIN project p ON p.id = ep.project_id
         LEFT JOIN partner pa ON pa.id = p.id_partner
         WHERE ep.event_id = %s
-        ORDER BY p.name
+        ORDER BY p.general_name, p.name
     """
 
     rows = fetch_all(sql, [event_id])
-    return jsonify(rows), 200
 
+    for r in rows:
+        slots_total = int(r.get("slots_total") or 0)
+        registered_count = int(r.get("registered_count") or 0)
+        tokens_total = int(r.get("tokens_total") or 0)
+        tokens_available = int(r.get("tokens_available") or 0)
+
+        if tokens_total > 0:
+            r["cupos_disponibles"] = tokens_available
+        else:
+            r["cupos_disponibles"] = max(slots_total - registered_count, 0)
+
+    return jsonify(rows), 200
 
 @admin_event_projects_bp.post("/api/admin/events/<int:event_id>/projects")
 def add_project_to_event(event_id: int):

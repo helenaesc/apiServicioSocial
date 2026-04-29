@@ -1452,6 +1452,95 @@ INDEX_HTML = r"""
     .project-card-body {
       margin-top: 14px;
     }
+
+    .project-flip {
+      perspective: 1200px;
+    }
+
+    .project-flip-inner {
+      position: relative;
+      min-height: 520px;
+      transition: transform .55s ease;
+      transform-style: preserve-3d;
+    }
+
+    .project-flip.flipped .project-flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    .project-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      box-shadow: var(--shadow-md);
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .project-back {
+      transform: rotateY(180deg);
+    }
+
+    .project-face-title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .project-face-org {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .project-detail-block {
+      border: 1px solid #edf1f7;
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 11px 12px;
+      margin-bottom: 10px;
+    }
+
+    .project-detail-label {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .project-detail-text {
+      font-size: .88rem;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .selected-project-premium {
+      border: 1px solid #dbeafe;
+      background:
+        radial-gradient(circle at top right, rgba(59,130,246,.10), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .selected-project-hero {
+      border: 1px solid #e5efff;
+      border-radius: 22px;
+      padding: 16px;
+      margin: 14px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      background: linear-gradient(135deg, #ffffff 0%, #eef6ff 100%);
+    }
   </style>
 </head>
 <body>
@@ -1464,8 +1553,11 @@ INDEX_HTML = r"""
         <span>Explora, solicita, valida y cierra tu inscripción con una ruta guiada.</span>
       </div>
       <div class="top-actions">
-        <a href="/admin" class="link-btn">Admin</a>
-        <a href="/health" class="link-btn">Health</a>
+      <a href="/admin" class="link-btn">Admin</a>
+      <a href="/health" class="link-btn">Health</a>
+      <button type="button" class="link-btn" onclick="clearStudentLocalProgress()">
+        Limpiar prueba
+      </button>
       </div>
     </div>
 
@@ -1797,7 +1889,7 @@ INDEX_HTML = r"""
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-blue" onclick="refreshStudentPass()">Refrescar credencial</button>
+              <button id="refreshPassBtn" type="button" class="btn-blue" onclick="refreshStudentPass()">Refrescar credencial</button>
               <button type="button" class="btn-secondary" onclick="loadStudentPass()">Consultar pase</button>
               <button type="button" class="btn-green" onclick="validateAccessAndGoStep4()">Ya tengo acceso</button>
             </div>
@@ -1966,6 +2058,9 @@ INDEX_HTML = r"""
   </div>
 
   <script>
+    const AUTO_RECOVERY_ENABLED = false; // habilita recuperación automática al detectar matrícula en URL o localStorage
+    const TESTING_TOOLS_ENABLED = true; // botones para limpiar datos locales
+    const DEBUG_SHOW_QR_TOKEN = true; // muestra el token plano del QR para pruebas 
     let currentCatalog = [];
     let currentRequest = null;
     let currentPass = null;
@@ -2093,6 +2188,26 @@ INDEX_HTML = r"""
         currentRequestStatus ||
         null
       );
+    }
+
+    function hasAccessEnabled() {
+      const status = String(getStudentStatus() || '').toUpperCase();
+      return status === 'ACCESS_ENABLED' || status === 'REGISTERED';
+    }
+
+    function syncPassRefreshLock() {
+      const btn = document.getElementById('refreshPassBtn');
+      if (!btn) return;
+
+      if (hasAccessEnabled()) {
+        btn.disabled = true;
+        btn.textContent = 'QR ya validado';
+        btn.title = 'Tu QR ya fue validado por staff. Ya no necesitas refrescar la credencial.';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Refrescar credencial';
+        btn.title = '';
+      }
     }
 
     function hasJourneyQrEvidence() {
@@ -2678,6 +2793,15 @@ INDEX_HTML = r"""
       el.className = 'msg ' + (ok ? 'ok' : 'err');
     }
 
+    function copyQrToken(token) {
+      try {
+        navigator.clipboard.writeText(token);
+        showMsg('Token copiado al portapapeles');
+      } catch {
+        showMsg('No se pudo copiar el token', false);
+      }
+    }
+
     function getEnrolment() {
       return normalizeEnrolmentInput();
     }
@@ -2734,6 +2858,91 @@ INDEX_HTML = r"""
       try {
         localStorage.removeItem('selected_project');
       } catch {}
+    }
+
+    function changeSelectedProject() {
+      clearSavedSelectedProject();
+      currentSelectedProject = null;
+      currentPreview = null;
+
+      const selectedName = document.getElementById('selectedProjectName');
+      const selectedId = document.getElementById('selectedProjectId');
+      const tokenInput = document.getElementById('projectTokenInput');
+      const previewBox = document.getElementById('registrationPreview');
+
+      if (selectedName) selectedName.value = '';
+      if (selectedId) selectedId.value = '';
+      if (tokenInput) tokenInput.value = '';
+      if (previewBox) {
+        previewBox.innerHTML = renderEmptyState(
+          'Todavía no hay preview',
+          'Elige un proyecto y escribe el token para revisar tu inscripción.'
+        );
+      }
+
+      renderSelectedProjectBanner();
+      renderCatalog(currentCatalog);
+      showStudentSection('catalogSection');
+      setCurrentStep(1);
+      updateHeroState();
+
+      showMsg('Puedes elegir otro proyecto sin perder tu solicitud ni tu acceso.');
+    }
+
+    function clearStudentLocalProgress() {
+      try {
+        localStorage.removeItem('student_enrolment');
+        localStorage.removeItem('selected_project');
+        sessionStorage.removeItem('student_plain_qr_token');
+      } catch {}
+
+      currentRequest = null;
+      currentPass = null;
+      currentPreview = null;
+      currentSelectedProject = null;
+      currentRegistration = null;
+      currentRequestStatus = null;
+      lastKnownStudentStatus = null;
+      canStudentRegister = false;
+      currentPlainQrToken = '';
+
+      stopStudentAutoSync();
+      stopJourneyTimer();
+
+      const inputs = [
+        'recoverEnrolmentInput',
+        'enrolmentInput',
+        'fullNameInput',
+        'secondaryEmailInput',
+        'phoneInput',
+        'semesterInput',
+        'selectedProjectName',
+        'selectedProjectId',
+        'projectTokenInput',
+        'acceptanceFullNameInput'
+      ];
+
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      const checkbox = document.getElementById('acceptanceCheckbox');
+      if (checkbox) checkbox.checked = false;
+
+      renderStudentQR('');
+      renderRequestInfo(null);
+      renderPassInfo(null);
+      renderSelectedProjectBanner();
+      renderJourneyState();
+      updateHeroState();
+      syncRegistrationLock();
+      syncStep4GateText();
+      renderStep4PremiumState();
+
+      showStudentSection('catalogSection');
+      setCurrentStep(1);
+      showMsg('Modo prueba limpio. Puedes iniciar otro flujo desde cero.');
     }
 
     function loadSavedStudentEnrolment() {
@@ -3187,72 +3396,98 @@ INDEX_HTML = r"""
 
     function renderSelectedProjectBanner() {
       const box = document.getElementById('selectedProjectBanner');
-      if (!box) return;
+      const side = document.getElementById('sideProjectStatus');
+
+      if (!box) {
+        if (side) side.textContent = currentSelectedProject?.name || 'Sin selección';
+        return;
+      }
 
       if (!currentSelectedProject) {
-        box.innerHTML = `
-          <div class="selected-banner-title">Aún no has elegido proyecto</div>
-          <div class="selected-banner-text">
-            Explora las opciones del catálogo, compara y selecciona un proyecto para continuar con tu solicitud.
-          </div>
-        `;
+        box.innerHTML = renderEmptyState(
+          'Aún no eliges proyecto',
+          'Explora el catálogo y elige una carta para continuar.'
+        );
+        if (side) side.textContent = 'Sin selección';
         return;
       }
 
       const p = currentSelectedProject;
-      const generalName = p.general_name || p.organization || 'Sin nombre general';
+      const generalName = p.general_name || 'Sin nombre general';
       const projectName = p.name || p.project_name || 'Sin nombre';
-      const partner = p.partner_name || p.socio || 'Sin organización';
+      const partner = p.partner_names || p.partner_name || p.socio || 'Sin preferencia';
       const modality = p.modalidad || p.modality_name || '—';
-      const schedule = p.horario || p.schedule_name || '—';
       const day = p.dia || p.week_days_name || '—';
-      const available = p.cupos_disponibles ?? '—';
+      const schedule = p.horario || p.schedule_name || '—';
+      const location = p.location || 'Sin ubicación';
+      const available = p.cupos_disponibles ?? p.cupos ?? p.slots_total ?? '—';
+      const duration = p.duration || '—';
+
+      if (side) side.textContent = `${generalName} · ${projectName}`;
 
       box.innerHTML = `
-        <div class="selected-banner-title">Proyecto listo para continuar</div>
-        <div class="selected-banner-text" style="margin-bottom:10px;">
-          Ya elegiste un proyecto. Si todo se ve bien, continúa con tu solicitud o cambia de opción cuando quieras.
-        </div>
-
-        <div class="meta-grid">
-          <div class="meta-box">
-            <span class="meta-label">Proyecto</span>
-            <div class="meta-value">${escapeHTML(generalName)} | ${escapeHTML(projectName)}</div>
+        <div class="info-card selected-project-premium">
+          <div class="info-head">
+            <div>
+              <div class="info-title">Tu carta elegida</div>
+              <div class="info-sub">Este es el proyecto que usarás para tu registro final.</div>
+            </div>
+            <span class="chip chip-green">Seleccionado</span>
           </div>
 
-          <div class="meta-box">
-            <span class="meta-label">Organización</span>
-            <div class="meta-value">${escapeHTML(partner)}</div>
+          <div class="selected-project-hero">
+            <div>
+              <div class="project-face-org">${escapeHTML(generalName)}</div>
+              <div class="project-face-title">${escapeHTML(projectName)}</div>
+              <div class="project-subtitle">
+                Carreras preferidas: ${escapeHTML(partner)}
+              </div>
+            </div>
+            <div class="project-rank">
+              PICK<br>OK
+            </div>
           </div>
 
-          <div class="meta-box">
-            <span class="meta-label">Modalidad</span>
-            <div class="meta-value">${escapeHTML(modality)}</div>
+          <div class="meta-grid">
+            <div class="meta-box">
+              <span class="meta-label">Modalidad</span>
+              <div class="meta-value">${escapeHTML(modality)}</div>
+            </div>
+
+            <div class="meta-box">
+              <span class="meta-label">Día</span>
+              <div class="meta-value">${escapeHTML(day)}</div>
+            </div>
+
+            <div class="meta-box">
+              <span class="meta-label">Horario</span>
+              <div class="meta-value">${escapeHTML(schedule)}</div>
+            </div>
+
+            <div class="meta-box">
+              <span class="meta-label">Cupos disponibles</span>
+              <div class="meta-value">${escapeHTML(String(available))}</div>
+            </div>
+
+            <div class="meta-box">
+              <span class="meta-label">Ubicación</span>
+              <div class="meta-value">${escapeHTML(location)}</div>
+            </div>
+
+            <div class="meta-box">
+              <span class="meta-label">Duración</span>
+              <div class="meta-value">${escapeHTML(duration)}</div>
+            </div>
           </div>
 
-          <div class="meta-box">
-            <span class="meta-label">Día</span>
-            <div class="meta-value">${escapeHTML(day)}</div>
+          <div class="actions" style="margin-top:14px;">
+            <button type="button" class="btn-secondary" onclick="changeSelectedProject()">
+              Cambiar proyecto
+            </button>
+            <button type="button" class="btn-blue" onclick="goToSectionAndStep('registrationSection', 4)">
+              Continuar al registro
+            </button>
           </div>
-
-          <div class="meta-box">
-            <span class="meta-label">Horario</span>
-            <div class="meta-value">${escapeHTML(schedule)}</div>
-          </div>
-
-          <div class="meta-box">
-            <span class="meta-label">Cupos disponibles</span>
-            <div class="meta-value">${escapeHTML(String(available))}</div>
-          </div>
-        </div>
-
-        <div class="actions" style="margin-top:12px;">
-          <button type="button" class="btn-blue" onclick="goToSectionAndStep('requestSection', 2)">
-            Continuar con este proyecto
-          </button>
-          <button type="button" class="btn-secondary" onclick="showStudentSection('catalogSection')">
-            Seguir explorando
-          </button>
         </div>
       `;
     }
@@ -3283,72 +3518,176 @@ INDEX_HTML = r"""
 
       const selectedId = Number(currentSelectedProject?.id ?? currentSelectedProject?.project_id ?? 0);
 
-      grid.innerHTML = projects.map((p) => {
+      grid.innerHTML = projects.map((p, idx) => {
         const projectId = Number(p.id ?? p.project_id ?? 0);
         const eventProjectId = p.event_project_id ?? '—';
+
         const generalName = p.general_name || 'Sin nombre general';
         const projectName = p.name || p.project_name || 'Sin nombre';
-        const partner = p.partner_name || p.socio || 'Sin organización';
+        const partner = p.partner_names || p.partner_name || p.socio || 'Sin preferencia';
+
         const modality = p.modalidad || p.modality_name || '—';
         const day = p.dia || p.week_days_name || '—';
         const schedule = p.horario || p.schedule_name || '—';
         const location = p.location || 'Sin ubicación';
-        const available = p.cupos_disponibles ?? '—';
-        const selected = selectedId === projectId;
+        const available = p.cupos_disponibles ?? p.cupos ?? p.slots_total ?? '—';
+
+        const objectives = p.objectives || 'No se registraron objetivos.';
+        const activities = p.activities || 'No se registraron actividades.';
+        const competencies = p.competencies || 'No se registraron competencias.';
+        const duration = p.duration || '—';
+        const audience = p.audience || '—';
+        const maxHours = p.max_hours || '—';
+        const comments = p.comments || 'Sin comentarios adicionales.';
+
+        const isSelected = selectedId === projectId;
 
         return `
-          <article class="project-card ${selected ? 'selected' : ''}">
-            <div class="project-card-top">
-              <div>
-                <div class="project-card-title">${escapeHTML(generalName)}</div>
-                <div class="project-card-subtitle">${escapeHTML(projectName)}</div>
-              </div>
-              <div>
-                <span class="chip ${selected ? 'chip-blue' : 'chip-neutral'}">
-                  ${selected ? 'SELECCIONADO' : 'DISPONIBLE'}
-                </span>
-              </div>
-            </div>
+          <article class="project-flip ${isSelected ? 'selected flipped-selected' : ''}" id="projectFlip_${projectId}">
+            <div class="project-flip-inner">
 
-            <div class="project-card-meta">
-              <span class="chip chip-neutral">${escapeHTML(partner)}</span>
-              <span class="chip chip-neutral">${escapeHTML(modality)}</span>
-              <span class="chip chip-neutral">${escapeHTML(day)}</span>
-              <span class="chip chip-neutral">${escapeHTML(schedule)}</span>
-            </div>
+              <div class="project-face project-front">
+                <div class="project-head">
+                  <div>
+                    <div class="project-face-org">${escapeHTML(generalName)}</div>
+                    <div class="project-face-title">${escapeHTML(projectName)}</div>
+                    <div class="project-subtitle">
+                      Carreras preferidas: ${escapeHTML(partner)}
+                    </div>
+                  </div>
 
-            <div class="project-card-body">
-              <div class="meta-grid">
-                <div class="meta-box">
-                  <span class="meta-label">Ubicación</span>
-                  <div class="meta-value">${escapeHTML(location)}</div>
+                  <div class="project-rank">
+                    CARD<br>#${idx + 1}
+                  </div>
                 </div>
-                <div class="meta-box">
-                  <span class="meta-label">Cupos disponibles</span>
-                  <div class="meta-value">${escapeHTML(String(available))}</div>
+
+                <div class="project-hero">
+                  <div class="project-hero-text">
+                    ${escapeHTML(String(objectives).slice(0, 180))}
+                    ${String(objectives).length > 180 ? '...' : ''}
+                  </div>
                 </div>
-                <div class="meta-box">
-                  <span class="meta-label">ID de proyecto</span>
-                  <div class="meta-value">${escapeHTML(String(projectId))}</div>
+
+                <div class="project-stats">
+                  <div class="project-stat">
+                    <span class="project-stat-label">Modalidad</span>
+                    <div class="project-stat-value">${escapeHTML(modality)}</div>
+                  </div>
+
+                  <div class="project-stat">
+                    <span class="project-stat-label">Día</span>
+                    <div class="project-stat-value">${escapeHTML(day)}</div>
+                  </div>
+
+                  <div class="project-stat">
+                    <span class="project-stat-label">Horario</span>
+                    <div class="project-stat-value">${escapeHTML(schedule)}</div>
+                  </div>
+
+                  <div class="project-stat">
+                    <span class="project-stat-label">Cupos disponibles</span>
+                    <div class="project-stat-value">${escapeHTML(String(available))}</div>
+                  </div>
                 </div>
-                <div class="meta-box">
-                  <span class="meta-label">ID en temporada</span>
-                  <div class="meta-value">${escapeHTML(String(eventProjectId))}</div>
+
+                <div class="project-extra">
+                  <div class="project-extra-row">
+                    <strong>Ubicación:</strong> ${escapeHTML(location)}
+                  </div>
+                  <div class="project-extra-row">
+                    <strong>Duración:</strong> ${escapeHTML(duration)}
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <button type="button" class="btn-secondary" onclick="flipProjectCard(${projectId})">
+                    Ver detalles →
+                  </button>
+
+                  <button type="button" class="${isSelected ? 'btn-green' : 'btn-blue'}" onclick="selectProject(${projectId})">
+                    ${isSelected ? 'Proyecto seleccionado' : 'Elegir proyecto'}
+                  </button>
                 </div>
               </div>
-            </div>
 
-            <div class="actions" style="margin-top:12px;">
-              <button type="button" class="btn-secondary" onclick="selectProject(${projectId})">
-                ${selected ? 'Proyecto elegido' : 'Elegir proyecto'}
-              </button>
-              <button type="button" class="btn-blue" onclick="selectProjectAndContinue(${projectId})">
-                Elegir y continuar
-              </button>
+              <div class="project-face project-back">
+                <div class="project-head">
+                  <div>
+                    <div class="project-face-org">Detalles del proyecto</div>
+                    <div class="project-face-title">${escapeHTML(projectName)}</div>
+                    <div class="project-subtitle">
+                      Información completa para decidir con claridad.
+                    </div>
+                  </div>
+
+                  <div class="project-rank">
+                    INFO<br>#${idx + 1}
+                  </div>
+                </div>
+
+                <div class="project-detail-block">
+                  <div class="project-detail-label">Objetivos</div>
+                  <div class="project-detail-text">${escapeHTML(objectives)}</div>
+                </div>
+
+                <div class="project-detail-block">
+                  <div class="project-detail-label">Actividades</div>
+                  <div class="project-detail-text">${escapeHTML(activities)}</div>
+                </div>
+
+                <div class="project-detail-block">
+                  <div class="project-detail-label">Competencias</div>
+                  <div class="project-detail-text">${escapeHTML(competencies)}</div>
+                </div>
+
+                <div class="meta-grid">
+                  <div class="meta-box">
+                    <span class="meta-label">Audiencia</span>
+                    <div class="meta-value">${escapeHTML(audience)}</div>
+                  </div>
+
+                  <div class="meta-box">
+                    <span class="meta-label">Horas máximas</span>
+                    <div class="meta-value">${escapeHTML(String(maxHours))}</div>
+                  </div>
+
+                  <div class="meta-box">
+                    <span class="meta-label">Event project ID</span>
+                    <div class="meta-value">${escapeHTML(String(eventProjectId))}</div>
+                  </div>
+
+                  <div class="meta-box">
+                    <span class="meta-label">Proyecto ID</span>
+                    <div class="meta-value">${escapeHTML(String(projectId))}</div>
+                  </div>
+                </div>
+
+                <div class="project-detail-block" style="margin-top:10px;">
+                  <div class="project-detail-label">Comentarios</div>
+                  <div class="project-detail-text">${escapeHTML(comments)}</div>
+                </div>
+
+                <div class="actions">
+                  <button type="button" class="btn-secondary" onclick="flipProjectCard(${projectId})">
+                    ← Volver
+                  </button>
+
+                  <button type="button" class="${isSelected ? 'btn-green' : 'btn-blue'}" onclick="selectProject(${projectId})">
+                    ${isSelected ? 'Proyecto seleccionado' : 'Elegir este proyecto'}
+                  </button>
+                </div>
+              </div>
+
             </div>
           </article>
         `;
       }).join('');
+    }
+
+    function flipProjectCard(projectId) {
+      const card = document.getElementById(`projectFlip_${projectId}`);
+      if (!card) return;
+      card.classList.toggle('flipped');
     }
 
     function selectProject(projectId) {
@@ -3899,8 +4238,15 @@ INDEX_HTML = r"""
 
         renderPassInfo(data);
         updateHeroState();
+        syncPassRefreshLock();
+
+        if (hasAccessEnabled()) {
+          goToSectionAndStep('registrationSection', 4);
+          return showMsg('Tu acceso ya fue validado. Continúa con tu inscripción final.');
+        }
+
         goToSectionAndStep('passSection', 3);
-        showMsg('Estado del pase cargado correctamente');
+        showMsg('Estado del pase cargado correctamente.');
       } catch (e) {
         console.error(e);
         showMsg(humanizeErrorMessage(e), false);
@@ -3909,6 +4255,12 @@ INDEX_HTML = r"""
 
     async function refreshStudentPass() {
       try {
+        if (hasAccessEnabled()) {
+          syncPassRefreshLock();
+          clearCurrentPlainQrToken();
+          renderStudentQR('');
+          return showMsg('Tu QR ya fue validado por staff. Continúa al registro final.', true);
+        }
         const enrolment = validateEnrolmentStrict();
         if (!enrolment) return;
 
@@ -4090,14 +4442,20 @@ INDEX_HTML = r"""
           'Todavía no hay información del pase',
           'Cuando tu solicitud exista, podrás consultar o refrescar tu credencial viva.'
         );
+
         statusBadge.className = 'chip chip-neutral';
         statusBadge.textContent = 'Sin sesión';
+
         clearCurrentPlainQrToken();
         renderStudentQR('');
+
+        if (qrPlainToken) qrPlainToken.textContent = 'Sin QR activo';
+
         renderJourneyState();
         updateHeroState();
         syncRegistrationLock();
         syncStep4GateText();
+        syncPassRefreshLock();
         return;
       }
 
@@ -4106,21 +4464,20 @@ INDEX_HTML = r"""
       const student = data.student || {};
       const session = data.pass_session || data.active_session || null;
 
-      const requestStatus = getStudentStatus();
-      const shouldShowQrSession = ['REQUESTED', 'VALIDATED'].includes(
-        String(requestStatus || '').toUpperCase()
-      );
+      const requestStatus = String(request.status || getStudentStatus() || '').toUpperCase();
+      const accessEnabled = requestStatus === 'ACCESS_ENABLED' || requestStatus === 'REGISTERED';
+      const shouldShowQrSession = ['REQUESTED', 'VALIDATED'].includes(requestStatus);
 
       const freshToken =
         data.pass_session?.plain_token ||
         data.active_session?.plain_token ||
         '';
 
-      if (freshToken) {
+      if (freshToken && shouldShowQrSession && !accessEnabled) {
         setCurrentPlainQrToken(freshToken);
       }
 
-      const tokenToRender = (session && shouldShowQrSession)
+      const tokenToRender = (session && shouldShowQrSession && !accessEnabled)
         ? getCurrentPlainQrToken()
         : '';
 
@@ -4128,24 +4485,39 @@ INDEX_HTML = r"""
       let helperText = 'Genera o consulta tu credencial viva.';
       let timerText = 'Sin vigencia';
       let badgeClass = 'chip chip-neutral';
+      let showSessionData = false;
 
-      if (session && shouldShowQrSession) {
+      if (session && shouldShowQrSession && !accessEnabled) {
         statusText = 'QR activo';
         helperText = 'Muéstralo al staff para continuar.';
         timerText = session.expires_at || '—';
         badgeClass = 'chip chip-green';
-      } else if (request.status === 'ACCESS_ENABLED') {
+        showSessionData = true;
+      } else if (requestStatus === 'ACCESS_ENABLED') {
         statusText = 'Acceso habilitado';
-        helperText = 'Ya no necesitas mostrar otro QR. Continúa al paso 4.';
-        timerText = 'Completado';
+        helperText = 'Tu QR ya fue validado. Continúa al registro final.';
+        timerText = 'QR validado';
         badgeClass = 'chip chip-blue';
+
         clearCurrentPlainQrToken();
-      } else if (request.status === 'REGISTERED') {
+
+        //AUTO-SALTO AL PASO 4 (FIX)
+        setTimeout(() => {
+          goToSectionAndStep('registrationSection', 4);
+        }, 400);
+      } else if (requestStatus === 'REGISTERED') {
         statusText = 'Proceso cerrado';
         helperText = 'Tu inscripción ya fue completada.';
         timerText = 'Finalizado';
         badgeClass = 'chip chip-green';
+
         clearCurrentPlainQrToken();
+
+        // ir al status final automáticamente
+        setTimeout(() => {
+          showStudentSection('statusSection');
+          setCurrentStep(5);
+        }, 400);
       } else {
         clearCurrentPlainQrToken();
       }
@@ -4171,14 +4543,17 @@ INDEX_HTML = r"""
                 <span class="meta-label">Folio</span>
                 <div class="meta-value">${escapeHTML(request.folio || '—')}</div>
               </div>
+
               <div class="meta-box">
                 <span class="meta-label">Temporada</span>
                 <div class="meta-value">${escapeHTML(event.display_name || '—')}</div>
               </div>
+
               <div class="meta-box">
-                <span class="meta-label">Refresh count</span>
-                <div class="meta-value">${session ? escapeHTML(session.refresh_count || 0) : 0}</div>
+                <span class="meta-label">Estado</span>
+                <div class="meta-value">${escapeHTML(statusText)}</div>
               </div>
+
               <div class="meta-box">
                 <span class="meta-label">Vigencia</span>
                 <div class="meta-value">${escapeHTML(timerText)}</div>
@@ -4187,19 +4562,42 @@ INDEX_HTML = r"""
 
             <div class="pass-info">
               <div>${escapeHTML(helperText)}</div>
-              <div class="muted">No compartas capturas. Si el staff te lo pide, actualiza el QR.</div>
+              ${
+                showSessionData
+                  ? '<div class="muted">No compartas capturas. Este QR cambia y solo sirve mientras esté activo.</div>'
+                  : '<div class="muted">Ya no necesitas refrescar este QR.</div>'
+              }
             </div>
           </div>
         </div>
       `;
 
-      if (!shouldShowQrSession) {
-        renderStudentQR('');
-        if (qrPlainToken) qrPlainToken.textContent = 'No necesitas QR en este momento';
-      } else {
+      if (shouldShowQrSession && !accessEnabled) {
         renderStudentQR(tokenToRender);
+
         if (qrPlainToken) {
-          qrPlainToken.textContent = tokenToRender || 'Genera tu código';
+          if (DEBUG_SHOW_QR_TOKEN && tokenToRender) {
+            qrPlainToken.innerHTML = `
+              <div style="font-size:11px; margin-top:6px;">
+                <div><strong>Token (debug):</strong></div>
+                <div style="word-break:break-all; font-family:monospace;">
+                  ${escapeHTML(tokenToRender)}
+                </div>
+                <button class="btn-secondary" style="margin-top:6px; font-size:11px;"
+                  onclick="copyQrToken('${tokenToRender}')">
+                  Copiar
+                </button>
+              </div>
+            `;
+          } else {
+            qrPlainToken.textContent = 'QR activo';
+          }
+        }
+
+      } else {
+        renderStudentQR('');
+        if (qrPlainToken) {
+          qrPlainToken.textContent = 'No necesitas QR en este momento';
         }
       }
 
@@ -4207,6 +4605,7 @@ INDEX_HTML = r"""
       updateHeroState();
       syncRegistrationLock();
       syncStep4GateText();
+      syncPassRefreshLock();
     }
 
     async function previewRegistration() {
@@ -4388,7 +4787,8 @@ INDEX_HTML = r"""
           });
         }
 
-        const savedEnrolment = loadSavedStudentEnrolment();
+        const savedEnrolment = AUTO_RECOVERY_ENABLED ? loadSavedStudentEnrolment() : '';
+
         if (savedEnrolment) {
           const mainInput = document.getElementById('enrolmentInput');
           const recoverInput = document.getElementById('recoverEnrolmentInput');
@@ -4435,7 +4835,8 @@ INDEX_HTML = r"""
         await loadCatalogsForSeason().catch((e) => console.error(e));
         await loadCatalog().catch((e) => console.error(e));
 
-        const enrolment = getEnrolment();
+        const enrolment = AUTO_RECOVERY_ENABLED ? getEnrolment() : '';
+
         if (enrolment) {
           await loadStudentRequest().catch((e) => console.error(e));
 
@@ -4445,13 +4846,15 @@ INDEX_HTML = r"""
           }
 
           startStudentAutoSync();
-        }
-        if (enrolment) {
           continueStudentFlowFromStatus();
         } else {
           updateResumeFlowBanner();
           showStudentSection('catalogSection');
           setCurrentStep(1);
+
+          if (!AUTO_RECOVERY_ENABLED) {
+            showMsg('Modo prueba activo: la recuperación automática está apagada.');
+          }
         }
       } catch (e) {
         console.error(e);
