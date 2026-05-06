@@ -1541,6 +1541,79 @@ INDEX_HTML = r"""
       align-items: flex-start;
       background: linear-gradient(135deg, #ffffff 0%, #eef6ff 100%);
     }
+
+    .project-focus-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+    }
+
+    .project-focus-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, .62);
+      backdrop-filter: blur(8px);
+    }
+
+    .project-focus-shell {
+      position: relative;
+      width: min(980px, 96vw);
+      max-height: 92vh;
+      overflow: auto;
+      border-radius: 30px;
+      background: white;
+      box-shadow: 0 30px 90px rgba(0,0,0,.34);
+      padding: 22px;
+      animation: projectZoomIn .22s ease;
+    }
+
+    .project-focus-close {
+      position: sticky;
+      top: 0;
+      margin-left: auto;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: #111827;
+      color: white;
+      z-index: 2;
+    }
+
+    .project-focus-card {
+      min-height: 680px;
+    }
+
+    .project-focus-card .project-flip-inner {
+      min-height: 680px;
+    }
+
+    .project-focus-card .project-face {
+      padding: 24px;
+    }
+
+    .project-focus-card .project-face-title {
+      font-size: clamp(1.35rem, 2.4vw, 2rem);
+    }
+
+    .project-focus-card .project-hero {
+      min-height: 180px;
+    }
+
+    @keyframes projectZoomIn {
+      from {
+        transform: scale(.94) translateY(18px);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3543,7 +3616,7 @@ INDEX_HTML = r"""
         const isSelected = selectedId === projectId;
 
         return `
-          <article class="project-flip ${isSelected ? 'selected flipped-selected' : ''}" id="projectFlip_${projectId}">
+          <article class="project-flip ${isSelected ? 'selected flipped-selected' : ''}" id="projectFlip_${projectId}" onclick="openProjectFocusModal(${projectId})">
             <div class="project-flip-inner">
 
               <div class="project-face project-front">
@@ -3600,11 +3673,11 @@ INDEX_HTML = r"""
                 </div>
 
                 <div class="actions">
-                  <button type="button" class="btn-secondary" onclick="flipProjectCard(${projectId})">
+                  <button type="button" class="btn-secondary" onclick="event.stopPropagation(); flipProjectCard(${projectId})">
                     Ver detalles →
                   </button>
 
-                  <button type="button" class="${isSelected ? 'btn-green' : 'btn-blue'}" onclick="selectProject(${projectId})">
+                  <button type="button" class="${isSelected ? 'btn-green' : 'btn-blue'}" onclick="event.stopPropagation(); selectProject(${projectId})">
                     ${isSelected ? 'Proyecto seleccionado' : 'Elegir proyecto'}
                   </button>
                 </div>
@@ -3668,11 +3741,11 @@ INDEX_HTML = r"""
                 </div>
 
                 <div class="actions">
-                  <button type="button" class="btn-secondary" onclick="flipProjectCard(${projectId})">
+                  <button type="button" class="btn-secondary" onclick="event.stopPropagation(); flipProjectCard(${projectId})">
                     ← Volver
                   </button>
 
-                  <button type="button" class="${isSelected ? 'btn-green' : 'btn-blue'}" onclick="selectProject(${projectId})">
+                  <button type="button" class="${isSelected ? 'btn-green' : 'btn-blue'}" onclick="event.stopPropagation(); selectProject(${projectId})">
                     ${isSelected ? 'Proyecto seleccionado' : 'Elegir este proyecto'}
                   </button>
                 </div>
@@ -3688,6 +3761,134 @@ INDEX_HTML = r"""
       const card = document.getElementById(`projectFlip_${projectId}`);
       if (!card) return;
       card.classList.toggle('flipped');
+    }
+
+    function openProjectFocusModal(projectId) {
+      const modal = document.getElementById('projectFocusModal');
+      const content = document.getElementById('projectFocusContent');
+      if (!modal || !content) return;
+
+      const p = currentCatalog.find(x => Number(x.id ?? x.project_id) === Number(projectId));
+      if (!p) return;
+
+      const projectIdSafe = Number(p.id ?? p.project_id ?? 0);
+      const eventProjectId = p.event_project_id ?? '—';
+
+      const generalName = p.general_name || 'Sin nombre general';
+      const projectName = p.name || p.project_name || 'Sin nombre';
+      const partner = p.partner_names || p.partner_name || p.socio || 'Sin preferencia';
+
+      const modality = p.modalidad || p.modality_name || '—';
+      const day = p.dia || p.week_days_name || '—';
+      const schedule = p.horario || p.schedule_name || '—';
+      const location = p.location || 'Sin ubicación';
+      const available = p.cupos_disponibles ?? p.cupos ?? p.slots_total ?? '—';
+
+      const objectives = p.objectives || 'No se registraron objetivos.';
+      const activities = p.activities || 'No se registraron actividades.';
+      const competencies = p.competencies || 'No se registraron competencias.';
+      const duration = p.duration || '—';
+      const audience = p.audience || '—';
+      const maxHours = p.max_hours || '—';
+      const comments = p.comments || 'Sin comentarios adicionales.';
+
+      content.innerHTML = `
+        <article class="project-flip project-focus-card" id="projectFocusFlip_${projectIdSafe}">
+          <div class="project-flip-inner">
+
+            <div class="project-face project-front">
+              <div class="project-head">
+                <div>
+                  <div class="project-face-org">${escapeHTML(generalName)}</div>
+                  <div class="project-face-title">${escapeHTML(projectName)}</div>
+                  <div class="project-subtitle">Carreras preferidas: ${escapeHTML(partner)}</div>
+                </div>
+                <div class="project-rank">CARD<br>#${currentCatalog.findIndex(x => Number(x.id ?? x.project_id) === Number(projectIdSafe)) + 1}</div>
+              </div>
+
+              <div class="project-hero">
+                <div class="project-hero-text">${escapeHTML(objectives)}</div>
+              </div>
+
+              <div class="project-stats">
+                <div class="project-stat"><span class="project-stat-label">Modalidad</span><div class="project-stat-value">${escapeHTML(modality)}</div></div>
+                <div class="project-stat"><span class="project-stat-label">Día</span><div class="project-stat-value">${escapeHTML(day)}</div></div>
+                <div class="project-stat"><span class="project-stat-label">Horario</span><div class="project-stat-value">${escapeHTML(schedule)}</div></div>
+                <div class="project-stat"><span class="project-stat-label">Cupos disponibles</span><div class="project-stat-value">${escapeHTML(String(available))}</div></div>
+              </div>
+
+              <div class="meta-grid">
+                <div class="meta-box"><span class="meta-label">Ubicación</span><div class="meta-value">${escapeHTML(location)}</div></div>
+                <div class="meta-box"><span class="meta-label">Duración</span><div class="meta-value">${escapeHTML(duration)}</div></div>
+              </div>
+
+              <div class="actions">
+                <button type="button" class="btn-secondary" onclick="event.stopPropagation(); flipFocusedProjectCard(${projectIdSafe})">Ver reverso →</button>
+                <button type="button" class="btn-blue" onclick="event.stopPropagation(); selectProjectFromFocus(${projectIdSafe})">Elegir este proyecto</button>
+              </div>
+            </div>
+
+            <div class="project-face project-back">
+              <div class="project-head">
+                <div>
+                  <div class="project-face-org">Reverso de la carta</div>
+                  <div class="project-face-title">${escapeHTML(projectName)}</div>
+                  <div class="project-subtitle">Información completa del proyecto.</div>
+                </div>
+                <div class="project-rank">INFO<br>FULL</div>
+              </div>
+
+              <div class="project-detail-block">
+                <div class="project-detail-label">Actividades</div>
+                <div class="project-detail-text">${escapeHTML(activities)}</div>
+              </div>
+
+              <div class="project-detail-block">
+                <div class="project-detail-label">Competencias</div>
+                <div class="project-detail-text">${escapeHTML(competencies)}</div>
+              </div>
+
+              <div class="project-detail-block">
+                <div class="project-detail-label">Comentarios</div>
+                <div class="project-detail-text">${escapeHTML(comments)}</div>
+              </div>
+
+              <div class="meta-grid">
+                <div class="meta-box"><span class="meta-label">Audiencia</span><div class="meta-value">${escapeHTML(audience)}</div></div>
+                <div class="meta-box"><span class="meta-label">Horas máximas</span><div class="meta-value">${escapeHTML(String(maxHours))}</div></div>
+                <div class="meta-box"><span class="meta-label">Event project ID</span><div class="meta-value">${escapeHTML(String(eventProjectId))}</div></div>
+                <div class="meta-box"><span class="meta-label">Proyecto ID</span><div class="meta-value">${escapeHTML(String(projectIdSafe))}</div></div>
+              </div>
+
+              <div class="actions">
+                <button type="button" class="btn-secondary" onclick="event.stopPropagation(); flipFocusedProjectCard(${projectIdSafe})">← Volver al frente</button>
+                <button type="button" class="btn-blue" onclick="event.stopPropagation(); selectProjectFromFocus(${projectIdSafe})">Elegir este proyecto</button>
+              </div>
+            </div>
+
+          </div>
+        </article>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeProjectFocusModal() {
+      const modal = document.getElementById('projectFocusModal');
+      const content = document.getElementById('projectFocusContent');
+      if (modal) modal.classList.add('hidden');
+      if (content) content.innerHTML = '';
+    }
+
+    function flipFocusedProjectCard(projectId) {
+      const card = document.getElementById(`projectFocusFlip_${projectId}`);
+      if (!card) return;
+      card.classList.toggle('flipped');
+    }
+
+    function selectProjectFromFocus(projectId) {
+      selectProject(projectId);
+      closeProjectFocusModal();
     }
 
     function selectProject(projectId) {
@@ -4192,8 +4393,28 @@ INDEX_HTML = r"""
         syncStep4InputsVisualState();
         renderStep4PremiumState();
 
-        if (oldStatus && oldStatus !== newStatus && newStatus === 'ACCESS_ENABLED') {
+        if (newStatus === 'ACCESS_ENABLED') {
           showSmartToast('Acceso habilitado', 'Ya puedes continuar al paso de inscripción.');
+          syncRegistrationLock();
+          syncStep4GateText();
+          renderStep4PremiumState();
+
+          setTimeout(() => {
+            goToSectionAndStep('registrationSection', 4);
+            showMsg('Acceso habilitado. Ya puedes cerrar tu inscripción.');
+          }, 500);
+
+          return;
+        }
+
+        if (newStatus === 'REGISTERED') {
+          setTimeout(() => {
+            showStudentSection('statusSection');
+            setCurrentStep(5);
+            showMsg('Tu inscripción ya fue completada.');
+          }, 500);
+
+          return;
         }
 
         showMsg('Solicitud cargada correctamente');
@@ -4866,6 +5087,15 @@ INDEX_HTML = r"""
     <div class="smart-toast__title">Acceso habilitado</div>
     <div class="smart-toast__text">Ya puedes pasar al cierre de inscripción.</div>
   </div>
+
+  <div id="projectFocusModal" class="project-focus-modal hidden">
+  <div class="project-focus-backdrop" onclick="closeProjectFocusModal()"></div>
+
+  <div class="project-focus-shell">
+    <button type="button" class="project-focus-close" onclick="closeProjectFocusModal()">×</button>
+    <div id="projectFocusContent"></div>
+  </div>
+</div>
 </body>
 </html>
 """

@@ -1676,6 +1676,90 @@ ADMIN_HTML = r"""
       background: var(--green-soft);
       color: var(--green);
     }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      cursor: pointer;
+      transition: .15s;
+    }
+
+    .checkbox-item:hover {
+      background: #e2e8f0;
+    }
+
+    .checkbox-item input {
+      accent-color: #2563eb;
+    }
+
+    .multi-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .multi-dropdown-btn {
+      width: 100%;
+      min-height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--line-strong);
+      background: white;
+      color: var(--text);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      font-size: .94rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .multi-dropdown-menu {
+      position: absolute;
+      z-index: 50;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-md);
+      padding: 8px;
+    }
+
+    .multi-check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: .9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .multi-check-item:hover {
+      background: var(--panel-soft);
+    }
+
+    .multi-check-item input {
+      width: auto;
+      min-height: auto;
+      accent-color: var(--module-accent);
+    }
   </style>
 </head>
 <body>
@@ -2119,11 +2203,20 @@ ADMIN_HTML = r"""
                 <input id="mp_name" placeholder="Ej: Análisis del equipo">
               </div>
               <div class="field">
-              <label>Carreras preferidas</label>
-              <select id="mp_partner" multiple size="6"></select>
-              <div class="small">
-              Puedes seleccionar más de una carrera. Mantén presionado shift para seleccionar varias.
-              </div>
+                <label>Carreras preferidas</label>
+
+                <div class="multi-dropdown" id="mp_partner_dropdown">
+                  <button type="button" class="multi-dropdown-btn" onclick="togglePartnerDropdown()">
+                    <span id="mp_partner_summary">Selecciona carreras</span>
+                    <span>▾</span>
+                  </button>
+
+                  <div id="mp_partner_checklist" class="multi-dropdown-menu hidden"></div>
+                </div>
+
+                <div class="small">
+                  Puedes seleccionar varias carreras sin necesidad de usar teclas especiales.
+                </div>
               </div>
               <div class="field">
                 <label>Modalidad</label>
@@ -3710,6 +3803,67 @@ ADMIN_HTML = r"""
       .filter(Boolean);
   }
 
+  function renderPartnerChecklist(items) {
+    const box = document.getElementById('mp_partner_checklist');
+    if (!box) return;
+
+    box.innerHTML = (items || []).map(item => `
+      <label class="multi-check-item">
+        <input type="checkbox" value="${Number(item.id)}" onchange="updatePartnerSummary()">
+        <span>${escapeHTML(item.name || item.description || item.id)}</span>
+      </label>
+    `).join('');
+
+    updatePartnerSummary();
+  }
+
+  function togglePartnerDropdown() {
+    const menu = document.getElementById('mp_partner_checklist');
+    if (!menu) return;
+    menu.classList.toggle('hidden');
+  }
+
+  function updatePartnerSummary() {
+    const summary = document.getElementById('mp_partner_summary');
+    const checked = Array.from(
+      document.querySelectorAll('#mp_partner_checklist input[type="checkbox"]:checked')
+    );
+
+    if (!summary) return;
+
+    if (!checked.length) {
+      summary.textContent = 'Selecciona carreras';
+      return;
+    }
+
+    if (checked.length === 1) {
+      const label = checked[0].closest('label')?.querySelector('span')?.textContent || '1 carrera';
+      summary.textContent = label;
+      return;
+    }
+
+    summary.textContent = `${checked.length} carreras seleccionadas`;
+  }
+
+  function getSelectedPartnerIds() {
+    return Array.from(
+      document.querySelectorAll('#mp_partner_checklist input[type="checkbox"]:checked')
+    )
+      .map(cb => Number(cb.value))
+      .filter(Boolean);
+  }
+
+  function clearPartnerChecklist() {
+    document
+      .querySelectorAll('#mp_partner_checklist input[type="checkbox"]')
+      .forEach(cb => { cb.checked = false; });
+
+    updatePartnerSummary();
+
+    const menu = document.getElementById('mp_partner_checklist');
+    if (menu) menu.classList.add('hidden');
+  }
+
   function fillSelectNoBlank(id, items, labelFn = null) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -4739,7 +4893,9 @@ ADMIN_HTML = r"""
   async function loadAdminCatalogs() {
     try {
       const data = await apiGet('/api/admin/catalogs');
-      fillSelect('mp_partner', data.socio || [], 'Selecciona', item => item.name);
+
+      renderPartnerChecklist(data.socio || []);
+
       fillSelect('mp_modality', data.modalidad || [], 'Selecciona', item => item.description);
       fillSelect('mp_week_days', data.dias || [], 'Selecciona', item => item.description);
       fillSelect('mp_schedule', data.horario || [], 'Selecciona', item => item.description);
@@ -4753,8 +4909,8 @@ ADMIN_HTML = r"""
       const payload = {
         general_name: document.getElementById('mp_general_name')?.value.trim(),
         name: document.getElementById('mp_name')?.value.trim(),
-        id_partner: getSelectedValues('mp_partner')[0] || 95,
-        partner_ids: getSelectedValues('mp_partner'),
+        id_partner: getSelectedPartnerIds()[0] || 95,
+        partner_ids: getSelectedPartnerIds(),
         id_modality: Number(document.getElementById('mp_modality')?.value),
         id_week_days: Number(document.getElementById('mp_week_days')?.value),
         id_schedule: Number(document.getElementById('mp_schedule')?.value),
@@ -4783,6 +4939,7 @@ ADMIN_HTML = r"""
       const data = await apiPost('/api/admin/projects', payload);
       showMsg(data.message || 'Proyecto base creado');
       await loadMasterProjects();
+      clearPartnerChecklist();
     } catch (e) {
       showMsg(e.message, false);
     }
