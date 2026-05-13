@@ -3864,6 +3864,36 @@ ADMIN_HTML = r"""
     if (menu) menu.classList.add('hidden');
   }
 
+  function resetMasterProjectForm() {
+    [
+      'mp_general_name',
+      'mp_name',
+      'mp_slots',
+      'mp_schedule_description',
+      'mp_duration',
+      'mp_audience',
+      'mp_max_hours',
+      'mp_location',
+      'mp_clave',
+      'mp_competencies',
+      'mp_objectives',
+      'mp_activities',
+      'mp_comments'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+
+    clearPartnerChecklist();
+
+    ['mp_modality', 'mp_week_days', 'mp_schedule'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.options.length > 0) {
+        el.selectedIndex = 0;
+      }
+    });
+  }
+
   function fillSelectNoBlank(id, items, labelFn = null) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -4938,6 +4968,7 @@ ADMIN_HTML = r"""
 
       const data = await apiPost('/api/admin/projects', payload);
       showMsg(data.message || 'Proyecto base creado');
+      resetMasterProjectForm();
       await loadMasterProjects();
       clearPartnerChecklist();
     } catch (e) {

@@ -1614,6 +1614,407 @@ INDEX_HTML = r"""
         opacity: 1;
       }
     }
+
+  @media (max-width: 760px) {
+    body {
+      background: #f6f8fb;
+    }
+
+    .page-shell {
+      padding: 10px;
+    }
+
+    .topbar {
+      align-items: stretch;
+    }
+
+    .brand strong {
+      font-size: 1.05rem;
+    }
+
+    .brand span {
+      font-size: .82rem;
+    }
+
+    .top-actions {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .top-actions .link-btn,
+    .top-actions button {
+      width: 100%;
+      text-align: center;
+      min-height: 42px;
+      padding: 9px 10px;
+    }
+
+    .hero {
+      padding: 18px;
+      border-radius: 22px;
+    }
+
+    .hero h1 {
+      font-size: 1.7rem;
+      line-height: 1.08;
+    }
+
+    .hero p {
+      font-size: .94rem;
+    }
+
+    .hero-badges {
+      gap: 6px;
+    }
+
+    .chip {
+      font-size: .72rem;
+      padding: 7px 10px;
+    }
+
+    .nav-strip {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding-bottom: 8px;
+      scroll-snap-type: x mandatory;
+    }
+
+    .nav-card {
+      min-width: 190px;
+      scroll-snap-align: start;
+      padding: 13px;
+      border-radius: 18px;
+    }
+
+    .nav-title {
+      font-size: .9rem;
+    }
+
+    .nav-desc {
+      font-size: .78rem;
+    }
+
+    .layout {
+      display: block;
+    }
+
+    .side-column {
+      display: none;
+    }
+
+    .card {
+      padding: 16px;
+      border-radius: 20px;
+    }
+
+    .card h2 {
+      font-size: 1.02rem;
+    }
+
+    .card-subtitle {
+      font-size: .88rem;
+    }
+
+    .form-grid,
+    .catalog-toolbar,
+    .meta-grid,
+    .project-stats,
+    .step4-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    input,
+    select,
+    textarea {
+      min-height: 48px;
+      font-size: 16px;
+    }
+
+    button {
+      min-height: 48px;
+      border-radius: 15px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px;
+    }
+
+    .catalog-grid {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .project-flip-inner {
+      min-height: 600px;
+    }
+
+    .project-face {
+      border-radius: 22px;
+      padding: 14px;
+    }
+
+    .project-face-title {
+      font-size: 1rem;
+    }
+
+    .project-rank {
+      min-width: 52px;
+      font-size: .68rem;
+    }
+
+    .project-hero {
+      min-height: 130px;
+    }
+
+    .project-detail-text,
+    .project-hero-text {
+      font-size: .86rem;
+    }
+
+    .selected-project-hero {
+      flex-direction: column;
+    }
+
+    .qr-shell {
+      padding: 14px;
+      border-radius: 20px;
+    }
+
+    .qr-canvas-wrap {
+      min-height: 220px;
+    }
+
+    .qr-plain {
+      font-size: .78rem;
+    }
+
+    .pass-card {
+      padding: 16px;
+      border-radius: 20px;
+    }
+
+    .pass-header {
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .journey-card {
+      padding: 16px;
+      border-radius: 22px;
+    }
+
+    .journey-track {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .journey-step {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      text-align: left;
+      column-gap: 10px;
+      align-items: center;
+    }
+
+    .journey-dot {
+      margin: 0;
+    }
+
+    .journey-label {
+      font-size: .9rem;
+    }
+
+    .journey-meta {
+      grid-column: 2;
+      margin-top: -12px;
+    }
+
+    .project-focus-modal {
+      padding: 8px;
+      align-items: end;
+    }
+
+    .project-focus-shell {
+      width: 100%;
+      max-height: 94vh;
+      border-radius: 26px 26px 0 0;
+      padding: 14px;
+    }
+
+    .project-focus-card {
+      min-height: 720px;
+    }
+
+    .project-focus-card .project-flip-inner {
+      min-height: 720px;
+    }
+
+    .project-focus-card .project-face {
+      padding: 16px;
+    }
+
+    .project-focus-card .project-face-title {
+      font-size: 1.25rem;
+    }
+
+    .smart-toast {
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      min-width: auto;
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .hero h1 {
+      font-size: 1.48rem;
+    }
+
+    .project-flip-inner {
+      min-height: 660px;
+    }
+
+    .project-focus-card,
+    .project-focus-card .project-flip-inner {
+      min-height: 760px;
+    }
+
+    .project-head {
+      gap: 8px;
+    }
+
+    .project-face-org {
+      font-size: .66rem;
+    }
+
+    .project-subtitle {
+      font-size: .8rem;
+    }
+  }
+
+  .official-receipt {
+    border: 1px solid #cdeee4;
+    background:
+      radial-gradient(circle at top right, rgba(67,170,139,.14), transparent 30%),
+      linear-gradient(180deg, #ffffff 0%, #f6fffb 100%);
+    border-radius: 26px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .receipt-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .receipt-kicker {
+    font-size: .74rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--green);
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+
+  .receipt-title {
+    font-size: clamp(1.45rem, 3vw, 2.2rem);
+    font-weight: 950;
+    letter-spacing: -.04em;
+  }
+
+  .receipt-sub {
+    margin-top: 4px;
+    color: var(--text-soft);
+    font-size: .95rem;
+  }
+
+  .receipt-status {
+    border-radius: 999px;
+    background: var(--green-soft);
+    color: var(--green);
+    border: 1px solid #cdeee4;
+    padding: 10px 14px;
+    font-size: .82rem;
+    font-weight: 950;
+  }
+
+  .receipt-folio-box {
+    border: 1px dashed #9dddc8;
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .receipt-folio-box span,
+  .receipt-item span {
+    display: block;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    font-weight: 900;
+    margin-bottom: 5px;
+  }
+
+  .receipt-folio-box strong {
+    font-size: 1.6rem;
+    font-weight: 950;
+    color: var(--text);
+  }
+
+  .receipt-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .receipt-item {
+    border: 1px solid #edf1f7;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 13px 14px;
+  }
+
+  .receipt-item strong {
+    font-size: .94rem;
+    line-height: 1.35;
+  }
+
+  .receipt-note {
+    margin-top: 16px;
+    border-radius: 16px;
+    background: #f0fdf7;
+    border: 1px solid #cdeee4;
+    color: #047857;
+    padding: 13px 14px;
+    font-size: .9rem;
+    font-weight: 800;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 760px) {
+    .receipt-top {
+      flex-direction: column;
+    }
+
+    .receipt-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .receipt-status {
+      width: 100%;
+      text-align: center;
+    }
+  }
   </style>
 </head>
 <body>
@@ -1626,10 +2027,11 @@ INDEX_HTML = r"""
         <span>Explora, solicita, valida y cierra tu inscripción con una ruta guiada.</span>
       </div>
       <div class="top-actions">
-      <a href="/admin" class="link-btn">Admin</a>
-      <a href="/health" class="link-btn">Health</a>
-      <button type="button" class="link-btn" onclick="clearStudentLocalProgress()">
-        Limpiar prueba
+      <a id="adminTopBtn" href="/admin" class="link-btn hidden">Admin</a>
+      <a id="healthTopBtn" href="/health" class="link-btn hidden">Health</a>
+      <button id="testingClearBtn" type="button" class="link-btn hidden"
+      onclick="clearStudentLocalProgress()">
+      Limpiar prueba
       </button>
       </div>
     </div>
@@ -2134,6 +2536,7 @@ INDEX_HTML = r"""
     const AUTO_RECOVERY_ENABLED = false; // habilita recuperación automática al detectar matrícula en URL o localStorage
     const TESTING_TOOLS_ENABLED = true; // botones para limpiar datos locales
     const DEBUG_SHOW_QR_TOKEN = true; // muestra el token plano del QR para pruebas 
+    const STUDENT_DEV_LINKS_ENABLED = true; // muestra enlaces de admin y health para pruebas
     let currentCatalog = [];
     let currentRequest = null;
     let currentPass = null;
@@ -2489,54 +2892,81 @@ INDEX_HTML = r"""
       const box = document.getElementById('requestInfo');
       if (!box) return;
 
+      const request = currentRequest?.request || currentRequest || {};
+      const student = currentRequest?.student || currentRequest?.user || {};
+      const folio = request.folio || '—';
+      const studentName = student.full_name || data?.accepted_full_name || 'Alumno';
+      const enrolment = student.enrolment_number || getEffectiveEnrolment() || '—';
+
       box.innerHTML = `
-        <div class="success-shell">
-          <div class="success-icon">✓</div>
-          <div class="success-title">Inscripción completada</div>
-          <div class="success-sub">
-            Tu lugar quedó registrado correctamente. Guarda esta información como comprobante de cierre.
+        <div class="official-receipt">
+          <div class="receipt-top">
+            <div>
+              <div class="receipt-kicker">Comprobante oficial</div>
+              <div class="receipt-title">Inscripción completada</div>
+              <div class="receipt-sub">Tu lugar quedó registrado correctamente.</div>
+            </div>
+            <div class="receipt-status">CONFIRMADO</div>
           </div>
 
-          <div class="info-card" style="margin-top:18px; text-align:left;">
-            <div class="info-head">
-              <div>
-                <div class="info-title">Comprobante oficial del alumno</div>
-                <div class="info-sub">Resumen final de tu inscripción cerrada</div>
-              </div>
-              <div><span class="chip chip-green">CONFIRMADO</span></div>
+          <div class="receipt-folio-box">
+            <span>Folio</span>
+            <strong>${escapeHTML(folio)}</strong>
+          </div>
+
+          <div class="receipt-grid">
+            <div class="receipt-item">
+              <span>Alumno</span>
+              <strong>${escapeHTML(studentName)}</strong>
             </div>
 
-            <div class="meta-grid">
-              <div class="meta-box">
-                <span class="meta-label">Proyecto</span>
-                <div class="meta-value">${escapeHTML(data?.project_name || '—')}</div>
-              </div>
-
-              <div class="meta-box">
-                <span class="meta-label">Organización</span>
-                <div class="meta-value">${escapeHTML(data?.general_name || '—')}</div>
-              </div>
-
-              <div class="meta-box">
-                <span class="meta-label">Token usado</span>
-                <div class="meta-value">${escapeHTML(data?.token_value || '—')}</div>
-              </div>
-
-              <div class="meta-box">
-                <span class="meta-label">Temporada</span>
-                <div class="meta-value">${escapeHTML(data?.season || getSeason() || '—')}</div>
-              </div>
-
-              <div class="meta-box">
-                <span class="meta-label">Confirmado</span>
-                <div class="meta-value">${escapeHTML(data?.accepted_at || '—')}</div>
-              </div>
-
-              <div class="meta-box">
-                <span class="meta-label">Estado</span>
-                <div class="meta-value">Inscripción cerrada correctamente</div>
-              </div>
+            <div class="receipt-item">
+              <span>Matrícula</span>
+              <strong>${escapeHTML(enrolment)}</strong>
             </div>
+
+            <div class="receipt-item">
+              <span>Proyecto</span>
+              <strong>${escapeHTML(data?.project_name || '—')}</strong>
+            </div>
+
+            <div class="receipt-item">
+              <span>Organización / nombre general</span>
+              <strong>${escapeHTML(data?.general_name || '—')}</strong>
+            </div>
+
+            <div class="receipt-item">
+              <span>Temporada</span>
+              <strong>${escapeHTML(data?.season || getSeason() || '—')}</strong>
+            </div>
+
+            <div class="receipt-item">
+              <span>Confirmado</span>
+              <strong>${escapeHTML(data?.accepted_at || new Date().toLocaleString())}</strong>
+            </div>
+
+            <div class="receipt-item">
+              <span>Token usado</span>
+              <strong>${escapeHTML(data?.token_value || '—')}</strong>
+            </div>
+
+            <div class="receipt-item">
+              <span>Estado</span>
+              <strong>Inscripción cerrada correctamente</strong>
+            </div>
+          </div>
+
+          <div class="receipt-note">
+            Guarda una captura de esta pantalla como respaldo. Si necesitas soporte, muestra tu folio y matrícula.
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn-secondary" onclick="showStudentSection('catalogSection'); setCurrentStep(1);">
+              Volver al catálogo
+            </button>
+            <button type="button" class="btn-blue" onclick="loadStudentRequest()">
+              Actualizar mi estado
+            </button>
           </div>
         </div>
       `;
@@ -2866,6 +3296,32 @@ INDEX_HTML = r"""
       el.className = 'msg ' + (ok ? 'ok' : 'err');
     }
 
+    function syncTestingToolsVisibility() {
+      const clearBtn = document.getElementById('testingClearBtn');
+
+      if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !TESTING_TOOLS_ENABLED);
+      }
+    }
+
+    function syncTestingToolsVisibility() {
+      const clearBtn = document.getElementById('testingClearBtn');
+      const adminBtn = document.getElementById('adminTopBtn');
+      const healthBtn = document.getElementById('healthTopBtn');
+
+      if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !TESTING_TOOLS_ENABLED);
+      }
+
+      if (adminBtn) {
+        adminBtn.classList.toggle('hidden', !STUDENT_DEV_LINKS_ENABLED);
+      }
+
+      if (healthBtn) {
+        healthBtn.classList.toggle('hidden', !STUDENT_DEV_LINKS_ENABLED);
+      }
+    }
+
     function copyQrToken(token) {
       try {
         navigator.clipboard.writeText(token);
@@ -3134,6 +3590,33 @@ INDEX_HTML = r"""
         }
         return null;
       }
+
+      return enrolment;
+    }
+
+    function validateEffectiveEnrolmentStrict(showError = true) {
+      const enrolment = getEffectiveEnrolment();
+
+      if (!/^[a-zA-Z0-9]{9}$/.test(enrolment)) {
+        if (showError) {
+          showMsg('Primero escribe o recupera tu matrícula para consultar tu pase.', false);
+        }
+        return null;
+      }
+
+      const mainInput = document.getElementById('enrolmentInput');
+      const recoverInput = document.getElementById('recoverEnrolmentInput');
+
+      if (mainInput && !mainInput.value.trim()) {
+        mainInput.value = enrolment.toUpperCase();
+      }
+
+      if (recoverInput && !recoverInput.value.trim()) {
+        recoverInput.value = enrolment.toUpperCase();
+      }
+
+      saveStudentEnrolment(enrolment);
+      renderGeneratedInstitutionalEmail();
 
       return enrolment;
     }
@@ -4368,7 +4851,7 @@ INDEX_HTML = r"""
 
     async function loadStudentRequest() {
       try {
-        const enrolment = validateEnrolmentStrict();
+        const enrolment = validateEffectiveEnrolmentStrict();
         if (!enrolment) return;
 
         const season = getSeason();
@@ -4444,7 +4927,7 @@ INDEX_HTML = r"""
 
     async function loadStudentPass() {
       try {
-        const enrolment = validateEnrolmentStrict();
+        const enrolment = validateEffectiveEnrolmentStrict();
         if (!enrolment) return;
 
         const season = getSeason();
@@ -4482,7 +4965,7 @@ INDEX_HTML = r"""
           renderStudentQR('');
           return showMsg('Tu QR ya fue validado por staff. Continúa al registro final.', true);
         }
-        const enrolment = validateEnrolmentStrict();
+        const enrolment = validateEffectiveEnrolmentStrict();
         if (!enrolment) return;
 
         const season = getSeason();
@@ -4974,6 +5457,7 @@ INDEX_HTML = r"""
 
     document.addEventListener('DOMContentLoaded', async () => {
       try {
+        syncTestingToolsVisibility();
         bindStudentNav();
         bindCatalogFilters();
         bindRegistrationActions();
