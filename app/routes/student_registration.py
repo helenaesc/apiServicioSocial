@@ -54,6 +54,37 @@ def _build_student_fingerprint(full_name: str, enrolment_number: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def _get_visible_event_by_season_fetch(season: str):
+    return fetch_one(
+        """
+        SELECT id, year, season, display_name, status
+        FROM events
+        WHERE season = %s
+          AND is_visible_to_students = TRUE
+          AND status IN ('VISIBLE', 'ONSITE')
+        ORDER BY year DESC, id DESC
+        LIMIT 1
+        """,
+        [season]
+    )
+
+
+def _get_visible_event_by_season(cur, season: str):
+    cur.execute(
+        """
+        SELECT id, year, season, display_name, status
+        FROM events
+        WHERE season = %s
+          AND is_visible_to_students = TRUE
+          AND status IN ('VISIBLE', 'ONSITE')
+        ORDER BY year DESC, id DESC
+        LIMIT 1
+        """,
+        [season]
+    )
+    return cur.fetchone()
+
+
 def _build_acceptance_snapshot(
     req_row: dict,
     ep_row: dict,
@@ -79,6 +110,7 @@ def _build_acceptance_snapshot(
         "token_value": token_row["token_value"],
         "legal_text_version": legal_text_version,
     }
+
 
 def _insert_registration_audit(
     cur,
@@ -129,6 +161,7 @@ def _insert_registration_audit(
         ]
     )
 
+
 @student_registration_bp.post("/api/student/registration/preview")
 def preview_registration():
     payload = request.get_json(silent=True) or {}
@@ -152,6 +185,12 @@ def preview_registration():
     except:
         return jsonify({"error": "project_id debe ser numérico"}), 400
 
+    event_row = _get_visible_event_by_season_fetch(season)
+    if not event_row:
+        return jsonify({"error": "No hay temporada visible para alumnos en esa temporada"}), 404
+
+    event_id = event_row["id"]
+
     request_sql = """
         SELECT
             ser.id AS request_id,
@@ -167,14 +206,13 @@ def preview_registration():
         JOIN events ev ON ev.id = ser.event_id
         JOIN users u ON u.id = ser.id_user
         WHERE u.enrolment_number = %s
-          AND ev.season = %s
-        ORDER BY ev.year DESC, ser.id DESC
+          AND ser.event_id = %s
         LIMIT 1
     """
-    req_row = fetch_one(request_sql, [enrolment_number, season])
+    req_row = fetch_one(request_sql, [enrolment_number, event_id])
 
     if not req_row:
-        return jsonify({"error": "No existe solicitud para esa temporada"}), 404
+        return jsonify({"error": "No existe solicitud para esta temporada visible"}), 404
 
     if req_row["request_status"] == "REGISTERED":
         return jsonify({
@@ -323,7 +361,15 @@ def confirm_registration():
     accepted_user_agent = (request.headers.get("User-Agent") or "").strip() or None
 
     def tx(conn, cur):
-        # 1) solicitud del alumno
+        event_row = _get_visible_event_by_season(cur, season)
+        if not event_row:
+            return {
+                "error": "No hay temporada visible para alumnos en esa temporada",
+                "status": 404
+            }
+
+        event_id = event_row["id"]
+
         cur.execute(
             """
             SELECT
@@ -335,19 +381,17 @@ def confirm_registration():
                 u.enrolment_number
             FROM student_event_requests ser
             JOIN users u ON u.id = ser.id_user
-            JOIN events ev ON ev.id = ser.event_id
             WHERE u.enrolment_number = %s
-              AND ev.season = %s
-            ORDER BY ev.year DESC, ser.id DESC
+              AND ser.event_id = %s
             LIMIT 1
             FOR UPDATE
             """,
-            [enrolment_number, season]
+            [enrolment_number, event_id]
         )
         req_row = cur.fetchone()
 
         if not req_row:
-            return {"error": "No existe solicitud para esa temporada", "status": 404}
+            return {"error": "No existe solicitud para esta temporada visible", "status": 404}
 
         if req_row["request_status"] == "REGISTERED":
             return {
@@ -373,7 +417,6 @@ def confirm_registration():
                 "status": 409
             }
 
-        # 2) revisar si ya existe registro previo en esta temporada
         cur.execute(
             """
             SELECT
@@ -395,7 +438,6 @@ def confirm_registration():
                 "status": 409
             }
 
-        # 3) proyecto en temporada
         cur.execute(
             """
             SELECT
@@ -423,7 +465,6 @@ def confirm_registration():
         if ep_row["event_project_status"] != "ACTIVE":
             return {"error": "El proyecto no está disponible para registro", "status": 409}
 
-        # 4) token del proyecto
         cur.execute(
             """
             SELECT
@@ -449,7 +490,6 @@ def confirm_registration():
         if int(tk_row["event_project_id"]) != int(ep_row["event_project_id"]):
             return {"error": "El token no corresponde al proyecto", "status": 409}
 
-        # 5) expirar si corresponde
         cur.execute(
             """
             UPDATE project_tokens
@@ -494,14 +534,12 @@ def confirm_registration():
         if tk_row["status"] not in ("AVAILABLE", "RESERVED"):
             return {"error": f"El token no está disponible ({tk_row['status']})", "status": 409}
 
-        # 6) validar nombre razonablemente
         expected_name = _normalize_text(req_row["full_name"])
         provided_name = _normalize_text(accepted_full_name)
 
         if expected_name != provided_name:
             return {"error": "El nombre completo no coincide con el del alumno", "status": 409}
 
-        # 7) construir fingerprint + snapshot + hash
         student_fingerprint = _build_student_fingerprint(
             accepted_full_name,
             req_row["enrolment_number"]
@@ -519,7 +557,6 @@ def confirm_registration():
         acceptance_hash = _sha256_text(snapshot_json)
         acceptance_signature = _sign_snapshot(snapshot_json)
 
-        # 8) crear o reactivar registration
         if existing_registration and existing_registration["status"] == "CANCELLED":
             cur.execute(
                 """
@@ -654,7 +691,6 @@ def confirm_registration():
                 }
             )
 
-        # 9) consumir token
         cur.execute(
             """
             UPDATE project_tokens
@@ -669,7 +705,6 @@ def confirm_registration():
             [req_row["request_id"], tk_row["id"]]
         )
 
-        # 10) cerrar solicitud
         cur.execute(
             """
             UPDATE student_event_requests

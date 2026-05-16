@@ -40,6 +40,37 @@ def _get_pass_ttl_minutes(cur) -> int:
         return 2
 
 
+def _get_visible_event_by_season_read(season: str):
+    return fetch_one(
+        """
+        SELECT id, year, season, display_name, status
+        FROM events
+        WHERE season = %s
+          AND is_visible_to_students = TRUE
+          AND status IN ('VISIBLE', 'ONSITE')
+        ORDER BY year DESC, id DESC
+        LIMIT 1
+        """,
+        [season]
+    )
+
+
+def _get_visible_event_by_season(cur, season: str):
+    cur.execute(
+        """
+        SELECT id, year, season, display_name, status
+        FROM events
+        WHERE season = %s
+          AND is_visible_to_students = TRUE
+          AND status IN ('VISIBLE', 'ONSITE')
+        ORDER BY year DESC, id DESC
+        LIMIT 1
+        """,
+        [season]
+    )
+    return cur.fetchone()
+
+
 def _expire_old_sessions(cur, request_id: int):
     cur.execute(
         """
@@ -93,17 +124,7 @@ def _serialize_pass_session(row: dict | None) -> dict | None:
     }
 
 
-@student_pass_bp.get("/api/student/pass")
-def get_student_pass():
-    enrolment_number = (request.args.get("enrolment_number") or "").strip().lower()
-    season = _normalize_season(request.args.get("season") or request.args.get("temporada"))
-
-    if not enrolment_number:
-        return jsonify({"error": "Matrícula es obligatoria"}), 400
-
-    if not season:
-        return jsonify({"error": "Temporada inválida o faltante"}), 400
-
+def _select_student_request_by_event(enrolment_number: str, event_id: int):
     sql = """
         SELECT
             ser.id AS request_id,
@@ -130,15 +151,33 @@ def get_student_pass():
         JOIN events ev ON ev.id = ser.event_id
         JOIN users u ON u.id = ser.id_user
         WHERE u.enrolment_number = %s
-          AND ev.season = %s
-        ORDER BY ev.year DESC, ser.id DESC
+          AND ser.event_id = %s
         LIMIT 1
     """
+    return fetch_one(sql, [enrolment_number, event_id])
 
-    row = fetch_one(sql, [enrolment_number, season])
+
+@student_pass_bp.get("/api/student/pass")
+def get_student_pass():
+    enrolment_number = (request.args.get("enrolment_number") or "").strip().lower()
+    season = _normalize_season(request.args.get("season") or request.args.get("temporada"))
+
+    if not enrolment_number:
+        return jsonify({"error": "Matrícula es obligatoria"}), 400
+
+    if not season:
+        return jsonify({"error": "Temporada inválida o faltante"}), 400
+
+    event_row = _get_visible_event_by_season_read(season)
+    if not event_row:
+        return jsonify({"error": "No hay temporada visible para alumnos en esa temporada"}), 404
+
+    event_id = event_row["id"]
+
+    row = _select_student_request_by_event(enrolment_number, event_id)
 
     if not row:
-        return jsonify({"error": "No existe solicitud para esa temporada"}), 404
+        return jsonify({"error": "No existe solicitud para esta temporada visible"}), 404
 
     active_sql = """
         SELECT
@@ -205,12 +244,25 @@ def refresh_student_pass():
         return jsonify({"error": "Temporada inválida o faltante"}), 400
 
     def tx(conn, cur):
+        event_row = _get_visible_event_by_season(cur, season)
+        if not event_row:
+            return {
+                "error": "No hay temporada visible para alumnos en esa temporada",
+                "status": 404
+            }
+
+        event_id = event_row["id"]
+
         cur.execute(
             """
             SELECT
                 ser.id AS request_id,
                 ser.folio,
                 ser.status AS request_status,
+                ser.requested_at,
+                ser.validated_at,
+                ser.access_enabled_at,
+                ser.registered_at,
                 ev.id AS event_id,
                 ev.year,
                 ev.season,
@@ -228,17 +280,16 @@ def refresh_student_pass():
             JOIN events ev ON ev.id = ser.event_id
             JOIN users u ON u.id = ser.id_user
             WHERE u.enrolment_number = %s
-              AND ev.season = %s
-            ORDER BY ev.year DESC, ser.id DESC
+              AND ser.event_id = %s
             LIMIT 1
             FOR UPDATE
             """,
-            [enrolment_number, season]
+            [enrolment_number, event_id]
         )
         row = cur.fetchone()
 
         if not row:
-            return {"error": "No existe solicitud para esa temporada", "status": 404}
+            return {"error": "No existe solicitud para esta temporada visible", "status": 404}
 
         if row["request_status"] in ("REGISTERED", "CANCELLED", "CLOSED"):
             return {
@@ -285,6 +336,10 @@ def refresh_student_pass():
                 "id": row["request_id"],
                 "folio": row["folio"],
                 "status": row["request_status"],
+                "requested_at": _to_iso_utc(row.get("requested_at")),
+                "validated_at": _to_iso_utc(row.get("validated_at")),
+                "access_enabled_at": _to_iso_utc(row.get("access_enabled_at")),
+                "registered_at": _to_iso_utc(row.get("registered_at")),
             },
             "event": {
                 "id": row["event_id"],
@@ -306,7 +361,22 @@ def refresh_student_pass():
             "pass_session": {
                 "id": session_id,
                 "plain_token": plain_token,
+                "status": "ACTIVE",
+                "issued_at": _to_iso_utc(datetime.now(timezone.utc)),
                 "expires_at": _to_iso_utc(expires_at),
+                "used_at": None,
+                "revoked_at": None,
+                "refresh_count": next_refresh_count,
+                "ttl_minutes": ttl_minutes
+            },
+            "active_session": {
+                "id": session_id,
+                "plain_token": plain_token,
+                "status": "ACTIVE",
+                "issued_at": _to_iso_utc(datetime.now(timezone.utc)),
+                "expires_at": _to_iso_utc(expires_at),
+                "used_at": None,
+                "revoked_at": None,
                 "refresh_count": next_refresh_count,
                 "ttl_minutes": ttl_minutes
             }

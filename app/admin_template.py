@@ -4641,16 +4641,25 @@ ADMIN_HTML = r"""
   async function bootstrapAdmin() {
     const user = await fetchSessionUser();
     applyRoleUI(user);
+
     if (!user) return;
 
-    const tasks = [loadEvents(), loadAdminCatalogs(), loadMasterProjects()];
-
     if (user.role === 'ADMIN') {
-      tasks.push(loadStaff());
-      tasks.push(loadAdminSettings());
+      await Promise.allSettled([
+        loadEvents(),
+        loadAdminCatalogs(),
+        loadMasterProjects(),
+        loadStaff(),
+        loadAdminSettings()
+      ]);
+      return;
     }
 
-    await Promise.allSettled(tasks);
+    if (user.role === 'STAFF') {
+      // STAFF solo debe cargar lo necesario para operar check-in/incidentes.
+      // No debe llamar endpoints exclusivos de ADMIN.
+      return;
+    }
   }
 
   async function createAdminEvent() {
