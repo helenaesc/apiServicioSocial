@@ -2489,13 +2489,17 @@ ADMIN_HTML = r"""
                 <input id="staffScannedToken" placeholder="Aquí aparece el token escaneado o puedes pegarlo">
               </div>
               <div class="field">
-                <label>Matrícula física presentada</label>
-                <input id="staffPhysicalEnrolment" placeholder="Ej: A01234567">
-              </div>
+                <label>Matrícula física / credencial</label>
+                <input id="staffPhysicalEnrolment" placeholder="Escanea credencial o escribe matrícula">
+                <div class="small">
+                La cámara intentará leer el código de barras. Si falla, puedes escribir la matrícula manualmente.
+                </div>
+                </div>
             </div>
 
             <div class="actions">
-              <button type="button" class="btn-primary" onclick="startQrScanner()">Abrir cámara</button>
+              <button type="button" class="btn-primary" onclick="startQrScanner()">Escanear QR alumno</button>
+              <button type="button" class="btn-secondary" onclick="startBadgeScanner()">Escanear credencial</button>
               <button type="button" class="btn-secondary" onclick="stopQrScanner()">Detener cámara</button>
               <button type="button" class="btn-secondary" onclick="scanStaffQr()">Verificar QR</button>
               <button type="button" class="btn-primary" onclick="grantStaffAccess()">Dar acceso</button>
@@ -5788,6 +5792,25 @@ ADMIN_HTML = r"""
     }
   }
 
+  function extractEnrolmentFromBarcode(rawValue) {
+    const raw = String(rawValue || '').trim().toUpperCase();
+
+    // Caso ideal: el código ya trae A01234567
+    const direct = raw.match(/[A-Z][0-9]{8}/);
+    if (direct) return direct[0];
+
+    // Caso alternativo: solo trae 9 caracteres alfanuméricos
+    const alnum = raw.match(/[A-Z0-9]{9}/);
+    if (alnum) return alnum[0];
+
+    // Caso raro: trae texto largo con la matrícula mezclada
+    const compact = raw.replace(/[^A-Z0-9]/g, '');
+    const compactMatch = compact.match(/[A-Z][0-9]{8}/);
+    if (compactMatch) return compactMatch[0];
+
+    return raw;
+  }
+
   async function startQrScanner() {
     try {
       if (staffQrScanner) await stopQrScanner();
@@ -5808,6 +5831,33 @@ ADMIN_HTML = r"""
       showMsg('Cámara activa para escaneo QR');
     } catch (e) {
       showMsg('No se pudo abrir la cámara: ' + e.message, false);
+    }
+  }
+
+  async function startBadgeScanner() {
+    try {
+      if (staffQrScanner) await stopQrScanner();
+
+      staffQrScanner = new Html5Qrcode('staffScanner');
+
+      await staffQrScanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 260, height: 160 } },
+        async (decodedText) => {
+          const enrolment = extractEnrolmentFromBarcode(decodedText);
+          const input = document.getElementById('staffPhysicalEnrolment');
+
+          if (input) input.value = enrolment;
+
+          await stopQrScanner();
+          showMsg('Credencial leída. Verifica que la matrícula sea correcta.');
+        },
+        () => {}
+      );
+
+      showMsg('Cámara activa para leer credencial física');
+    } catch (e) {
+      showMsg('No se pudo leer la credencial con cámara: ' + e.message, false);
     }
   }
 
