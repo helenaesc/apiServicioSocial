@@ -1,7 +1,7 @@
 services:
   db:
     image: mysql:8.0
-    container_name: poncho_db
+    container_name: poncho_db_dev
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
@@ -9,8 +9,9 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - db_data:/var/lib/mysql
-      - ./poncho_backup.sql:/docker-entrypoint-initdb.d/poncho_backup.sql
+      - db_data_dev:/var/lib/mysql
+      - ./sql/final:/docker-entrypoint-initdb.d
+
 
   backend:
     build: .
@@ -29,4 +30,4 @@ services:
       - "5000:5000"
 
 volumes:
-  db_data:
+  db_data_dev:
